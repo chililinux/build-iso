@@ -1,707 +1,528 @@
-name: 'BigLinux Iso Action'
-description: 'Installs prerequisites for building Manjaro on ubuntu'
+name: "Build BigCommunity ISO"
+description: "Builds a BigCommunity ISO image"
 
 inputs:
-  iso-profiles-repo:
-    description: 'iso profiles to clone'
-    required: false
-    default: 'https://github.com/biglinux/iso-profiles'
-  edition:
-    description: 'name of the iso profile to build'
+  name:
+    description: "Name for the ISO"
     required: true
-  manjarobranch:
-    description: 'stable (default), testing, unstable'
+  iso_profiles_repo:
+    description: "ISO profiles repository to clone"
     required: false
+    default: "https://github.com/talesam/iso-profiles"
+  iso_profiles_branch:
+    description: "Branch of the ISO profiles repository (optional)"
+    required: false
+  edition:
+    description: "Name of the ISO profile to build"
+    required: true
+  manjaro_branch:
+    description: "Manjaro branch (stable, testing, unstable)"
+    required: true
     default: stable
-  bigbranch:
-    description: 'stable, testing, development'
+  community_branch:
+    description: "Community branch (stable, testing)"
+    required: true
+  biglinux_branch:
+    description: "BigLinux branch (stable, testing)"
     required: true
   scope:
-    description: 'full (default) or minimal image'
+    description: "Build scope (full or minimal)"
     required: false
-    default: full
+    default: "full"
   kernel:
-    description: 'kernel version'
-    required: false
-    default: 515
-  extrarepo:
-    description: 'extra repository to buld package'
-    required: false
-  release-tag:
-    description: 'release tag to upload to (if set)'
-    required: false
-  build-mirror:
-    description: 'specific build mirror to use'
-    required: false
-    default: https://forksystems.mm.fcix.net/manjaro
-  mesa:
-    description: 'alternative mesa'
-    required: false
+    description: "Kernel version (latest, lts, oldLts)"
+    required: true
+  release_tag:
+    description: "Release tag for the ISO"
+    required: true
   tmate:
-    description: 'run tmate'
+    description: "Enable debugging with tmate"
     required: false
-  repo-mirror:
-    description: 'mirror to use in build'
-    default: repo
+    default: "false"
+  office-chooser:
+    description: "Include office suite"
     required: false
-  repo-dev:
-    description: 'developmente repository'
+    default: "false"
+  repo_unstable:
+    description: "URL for unstable repository"
+    required: false
+  mirror_dev:
+    description: "URL for development mirror"
     required: false
   mirror_unstable:
-    description: 'developmente mirror'
+    description: "URL for unstable BigCommunity mirror"
     required: false
-  repo-man-testing:
-    description: 'repository with packages build fron manjaro testing'
-    required: false
-    
+  github_token:
+    description: "GitHub token for authentication"
+    required: true
+
 outputs:
-  file-path:
-    description: "path of the generated iso"
-    value: ${{ steps.image-build.outputs.file-path }}
+  iso_path:
+    description: "Path to the generated ISO file"
+    value: ${{ steps.build.outputs.iso_path }}
+  release_name:
+    description: "Name of the release"
+    value: ${{ steps.prepare-iso.outputs.release_name }}
 
 runs:
   using: "composite"
   steps:
-    - name: clean-system
+    - name: Setup build environment
       shell: bash
       run: |
-        echo "### Clean System ###"
-        sudo rm -rf \
-        /imagegeneration \
-        /opt/az \
-        /opt/ghc \
-        /opt/pipx \
-        /opt/google \
-        /opt/microsoft \
-        /opt/hostedtoolcache \
-        /usr/lib/llvm* \
-        /var/lib/mysql \
-        /var/lib/snapd \
-        /var/lib/docker \
-        /usr/lib/google* \
-        /usr/lib/firefox \
-        /usr/local/julia* \
-        /usr/local/.ghcup \
-        /usr/local/aws-cli \
-        /usr/local/lib/android \
-        /usr/local/aws-sam-cli \
-        /usr/local/share/chromium \
-        /usr/local/lib/node_modules \
-        /usr/local/share/powershell \
-        /usr/share/swift \
-        /usr/share/dotnet
-      
-    - id: install-build-dependencie
-      shell: bash
-      run: |
-        echo "### install-build-dependencies ###"
-        sudo apt update
-        # sudo apt dist-upgrade
-        # sudo apt install \
-        # sudo apt-fast dist-upgrade -y
-        sudo apt-fast install -y \
-          gdisk \
-          zip \
-          systemd-container \
-          bmap-tools \
-          asciidoc \
-          libarchive-tools \
-          git \
-          build-essential \
-          cmake \
-          libarchive-dev \
-          pkg-config \
-          libcurl4-openssl-dev \
-          libgpgme-dev \
-          libssl-dev \
-          fakeroot \
-          dh-autoreconf \
-          haveged \
-          os-prober \
-          kwalify \
-          dosfstools \
-          libisoburn1 \
-          squashfs-tools \
-          docbook2x \
+        echo "Setting up build environment..."
+        # Atualizar o sistema
+        sudo pacman -Syu --noconfirm
+
+        # Instalar pacotes adicionais que possam ser necessários
+        sudo pacman -S --needed --noconfirm \
           mktorrent \
-          doxygen \
-          zstd
-        sudo python3 -m pip install meson
-        sudo python3 -m pip install ninja
-        
-    - id: no-fsync
+          squashfs-tools \
+          archiso \
+          manjaro-tools-iso \
+          calamares \
+          calamares-tools \
+          mkinitcpio
+
+        # Ajuste nos hooks do mkinitcpio (se ainda necessário)
+        sudo sed -i -e 's|File|Path|' /usr/share/libalpm/hooks/*hook*
+
+        # Configurar o ambiente para o usuário builduser
+        sudo -u builduser bash << EOF
+          mkdir -p /home/builduser/.config
+          echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /home/builduser/.makepkg.conf
+        EOF
+
+        # Configurações adicionais específicas para a construção de ISO
+        sudo sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
+        sudo sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
+
+        echo "Build environment setup completed."
+
+    - name: Configure disable-fsync
       shell: bash
       run: |
-        sudo wget https://raw.githubusercontent.com/biglinux/disable-fsync/main/disable-fsync/usr/lib/disable-fsync.so -O /usr/lib/disable-fsync.so
-        echo "/usr/lib/disable-fsync.so" | sudo tee -a /etc/ld.so.preload
+        echo "Configuring disable-fsync..."
+        DISABLE_FSYNC_URL="https://raw.githubusercontent.com/biglinux/disable-fsync/main/disable-fsync/usr/lib/disable-fsync.so"
+        DISABLE_FSYNC_FILE="/usr/lib/disable-fsync.so"
+        PRELOAD_FILE="/etc/ld.so.preload"
+
+        sudo wget "$DISABLE_FSYNC_URL" -O "$DISABLE_FSYNC_FILE"
+        SHA256SUM=$(curl -s "$DISABLE_FSYNC_URL" | sha256sum | awk '{print $1}')
+        echo "${SHA256SUM} ${DISABLE_FSYNC_FILE}" | sha256sum --check || exit 1
+
+        sudo sh -c "echo '${DISABLE_FSYNC_FILE}' >> '${PRELOAD_FILE}'"
         sudo ldconfig
-        
-    - id: install-pacman
-      shell: bash
-      env:
-        PACMAN_VERSION: 6.0.2
-      run: |
-        echo "### install-pacman ###"
-        sudo git clone --depth 1 https://gitlab.manjaro.org/packages/core/pacman.git
-        pushd pacman
-          # sudo wget https://sources.archlinux.org/other/pacman/pacman-${PACMAN_VERSION}.tar.xz
-          sudo wget https://github.com/BigLinux-Package-Build/build-iso/raw/main/pacman/pacman-v${PACMAN_VERSION}.tar.gz
-          # sudo tar -xvf pacman-${PACMAN_VERSION}.tar.xz
-          sudo tar -xvzf pacman-v${PACMAN_VERSION}.tar.gz
-          # pushd pacman-${PACMAN_VERSION}
-          pushd pacman-v${PACMAN_VERSION}
-            # sudo patch -p1 -i ../pacman-sync-first-option.patch
-            sudo meson --prefix=/usr \
-                      --buildtype=plain \
-                      -Ddoc=disabled \
-                      -Ddoxygen=enabled \
-                      -Dscriptlet-shell=/usr/bin/bash \
-                      -Dldconfig=/usr/bin/ldconfig \
-                      build
-            sudo meson compile -C build
-            sudo meson install -C build
-          popd
-          sudo install -m644 pacman.conf /etc/pacman.conf
-          sudo sed -i '/SyncFirst/d' /etc/pacman.conf
-          sudo install -m644 makepkg.conf /etc/
-          sudo mkdir -p /etc/pacman.d
-          # sudo touch /etc/pacman.d/mirrorlist
-          sudo wget https://raw.githubusercontent.com/BigLinux-Package-Build/manjaro-mirror/main/mirrorlist -O /etc/pacman.d/mirrorlist
-        popd
-        sudo rm -r pacman
-        
-    - id: install-keyrings
-      shell: bash
-      run: |
-        echo "### install-keyrings ###"
-        sudo install -dm755 /usr/share/pacman/keyrings/
 
-        sudo git clone --depth 1 https://gitlab.manjaro.org/packages/core/manjaro-keyring.git
-        pushd manjaro-keyring
-          sudo install -m0644 manjaro.gpg /usr/share/pacman/keyrings/
-          sudo install -m0644 manjaro-trusted /usr/share/pacman/keyrings/
-          sudo install -m0644 manjaro-revoked /usr/share/pacman/keyrings/
-        popd
-        sudo rm -r manjaro-keyring
-        
-        sudo git clone --depth 1 https://github.com/biglinux/biglinux-keyring.git
-        pushd biglinux-keyring
-          sudo install -m0644 biglinux.gpg /usr/share/pacman/keyrings/
-          sudo install -m0644 biglinux-trusted /usr/share/pacman/keyrings/
-          sudo install -m0644 biglinux-trusted /usr/share/pacman/keyrings/
-        popd
-        sudo rm -r biglinux-keyring
+        echo "disable-fsync configured successfully."
 
-        mkdir -p archlinux-keyring
-        pushd archlinux-keyring
-          wget https://archlinux.org/packages/core/any/archlinux-keyring/download -O /tmp/archlinux-keyring.tar.zst
-          tar --use-compress-program=unzstd --strip-components=4 --wildcards -xvf /tmp/archlinux-keyring.tar.zst usr/share/pacman/keyrings/*
-          sudo install -m0644 archlinux.gpg /usr/share/pacman/keyrings/
-          sudo install -m0644 archlinux-trusted /usr/share/pacman/keyrings/
-          sudo install -m0644 archlinux-revoked /usr/share/pacman/keyrings/
-        popd
-        sudo rm -r archlinux-keyring
-        
-    - id: pull-keys
+    - name: Pull and setup Community keys
       shell: bash
       run: |
-        echo "### pull-keys ###"
+        echo "Pulling and installing Community keys..."
         sudo git clone https://github.com/biglinux/biglinux-key.git
         sudo install -dm755 /etc/pacman.d/gnupg/
         sudo install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
         sudo rm -r biglinux-key
+
+        # Inicializar o chaveiro do pacman, se necessário
+        sudo pacman-key --init
+
+        # Receber e assinar a chave do Community
+        sudo pacman-key --recv-keys AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
+        sudo pacman-key --lsign-key AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
+
+        # Atualizar os bancos de dados do pacman
         sudo pacman -Sy
-        
-    - id: install-arch-install-scripts
-      shell: bash
-      env:
-        VERSION: "27"
-      run: |
-        echo "### install-arch-install-scripts ###"
-        # sudo wget https://github.com/archlinux/arch-install-scripts/archive/refs/tags/v${VERSION}.tar.gz -O arch-install-scripts.tar.gz
-        sudo wget https://github.com/BigLinux-Package-Build/build-iso/raw/main/arch-install-scripts/arch-install-scripts-${VERSION}.tar.gz -O arch-install-scripts.tar.gz
-        sudo tar -xvf arch-install-scripts.tar.gz
-        sudo make -C arch-install-scripts-${VERSION}
-        sudo make -C arch-install-scripts-${VERSION} check
-        sudo make -C arch-install-scripts-${VERSION} PREFIX=/usr install
-        
-        #sudo wget https://gitlab.manjaro.org/applications/pacman-mirrors/-/raw/v4.19x-stable/conf/pacman-mirrors.conf -O /etc/pacman-mirrors.conf
-        sudo touch /etc/pacman-mirrors.conf
-        
-        sudo rm arch-install-scripts.tar.gz
-        sudo rm -r arch-install-scripts-${VERSION}
-        
-    - id: install-calamares-tools
+
+        echo "Community keys installed and system updated."
+
+    - name: Configure repositories and build environment
       shell: bash
       run: |
-        echo "### install-calamares-tools ###"
-        sudo git clone --depth 1 https://gitlab.manjaro.org/applications/calamares-tools.git
-        
-        pushd calamares-tools
-          sudo install -d /usr/share/calamares/
-          sudo cp -rv schemas/ /usr/share/calamares/
-        popd
-        
-        sudo rm -r calamares-tools
-        
-    - id: install-mkinitcpio
-      shell: bash
-      env:
-        VERSION: "32"
-      run: |
-        echo "### install-mkinitcpio ###"
-        # sudo wget https://gitlab.archlinux.org/mkinitcpio/mkinitcpio/-/archive/v${VERSION}/mkinitcpio-v${VERSION}.tar.gz
-        sudo wget https://github.com/BigLinux-Package-Build/build-iso/raw/main/mkinitcpio/mkinitcpio-v${VERSION}.tar.gz
-        sudo tar -xf mkinitcpio-v${VERSION}.tar.gz
-        sudo make -C mkinitcpio-v${VERSION} install
-        # sudo wget https://github.com/BigLinux-Package-Build/build-iso/raw/main/mkinitcpio/mkinitcpio-${VERSION}.tar.gz
-        # sudo tar -xf mkinitcpio-${VERSION}.tar.gz
-        # sudo make -C mkinitcpio-${VERSION} install
-        sudo sed -i -e 's|File|Path|' /usr/share/libalpm/hooks/*hook
-        
-        sudo rm mkinitcpio-v${VERSION}.tar.gz
-        sudo rm -r mkinitcpio-v${VERSION}
-        
-    - id: install-manjaro-tools
-      shell: bash
-      env:
-        CUSTOM_REPO: ${{ inputs.custom-repo }}
-        # COMMIT: b3efa6f6929bfc7fc62328b64ab4ebc0800111ce
-      run: |
-        echo "### install-manjaro-tools ###"
-        #make majaro-tools
-        sudo git clone https://gitlab.manjaro.org/tools/development-tools/manjaro-tools.git
-        pushd manjaro-tools
-          # sudo git checkout $COMMIT
-          sudo make SYSCONFDIR=/etc PREFIX=/usr
-          sudo make SYSCONFDIR=/etc PREFIX=/usr install_base
-          sudo make SYSCONFDIR=/etc PREFIX=/usr install_yaml
-          sudo make SYSCONFDIR=/etc PREFIX=/usr install_iso
-        popd
-        
-        sudo rm -r manjaro-tools
-        
-        #add custom repo
-        if [ ! -z ${CUSTOM_REPO} ]; then
-          echo "## adding repo [${CUSTOM_REPO}]"
-          sudo sed -i -e "s/\[core\]/\[${CUSTOM_REPO}\]\nSigLevel = PackageRequired\nInclude = \/etc\/pacman\.d\/mirrorlist\n\n\[core\]/" /usr/share/manjaro-tools/pacman-multilib.conf
-        fi
-        
-        #change mirror
-        # sudo sed -i "s|https://mirror.alpix.eu/manjaro|${{ inputs.build-mirror }}|" /lib/manjaro-tools/util.sh
-        mirror=$(cat /etc/pacman.d/mirrorlist | head -n1 | awk '{print $3}' | sed -ne 's/\(manjaro\).*/\1/p')
-        sudo sed -i "s|https://mirror.alpix.eu/manjaro|${mirror}|" /lib/manjaro-tools/util.sh
-        sudo sed -i '/ParallelDownloads/s/#//' /usr/share/manjaro-tools/pacman-multilib.conf
-        sudo sed -i '/ParallelDownloads/s/5/8/' /usr/share/manjaro-tools/pacman-multilib.conf
-        sudo sed -i '/SyncFirst/d' /usr/share/manjaro-tools/pacman-multilib.conf
-        
-        #
-        [ "$SCOPE" == "minimal" ] && unset SCOPE && unset OFFICE
-        [ "$OFFICE" == "false" ] && unset OFFICE
+        echo "Configuring repositories and build environment..."
 
-        #source the version info from current release info
-        source <(curl -s https://gitlab.manjaro.org/packages/core/manjaro-release/-/raw/master/lsb-release)
-        sudo sed -i -e "s|dist_name=\$(get_distname)|dist_name=${DISTRIB_ID%Linux}|g" /usr/lib/manjaro-tools/util.sh
-        sudo sed -i -e 's|iso_name=$(get_osid)|iso_name=manjaro|g' /usr/lib/manjaro-tools/util.sh
-        sudo sed -i -e "s|dist_release=\$(get_release)|dist_release=${{ inputs.release-tag }}|g" /usr/lib/manjaro-tools/util.sh
-        sudo sed -i -e "s|dist_codename=\$(get_codename)|dist_codename=\"${CODE_NAME:-$DISTRIB_CODENAME}\"|g" /usr/lib/manjaro-tools/util.sh
-        
-        sudo sed -i -e 's|dist_branding=.*|dist_branding="biglinux"|' /usr/lib/manjaro-tools/util.sh
-        sudo sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|' /usr/lib/manjaro-tools/util-iso.sh
-        
-        # #troca busca de kerneis para pegar qualquer kernel
-        sudo sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
-        
-        # #disable kernel version verification
-        sudo sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
-        
-        # Remove last } in /usr/lib/manjaro-tools/util-iso-image.sh
-        sudo sed -i ':a;$!{N;ba;};s/\(.*\)}/\1/' /usr/lib/manjaro-tools/util-iso-image.sh
-        # adicionar ao arquivo /usr/lib/manjaro-tools/util-iso-image.sh
-        echo '  #BigLinux clean
-        path=$1/usr/share/doc
-        if [[ -d $path ]]; then
-          rm -Rf $path/* &> /dev/null
-        fi
+        # Função para adicionar repositórios
+        add_repository() {
+          local arquivo_conf=$1
 
-        #BigLinux clean
-        path=$1/usr/share/man
-        if [[ -d $path ]]; then
-          rm -Rf $path/* &> /dev/null
-        fi
+          # Adicione o repositório community-keyring
+          if ! grep -q 'community-keyring' "$arquivo_conf"; then
+            sudo sed -i '/SyncFirst/s/$/ community-keyring/' "$arquivo_conf"
+          fi
 
-        #Clean LibreOffice
-        path=$1/usr/lib/libreoffice/share/config
-        if [[ -d $path ]]; then
-          rm -f $path/images_karasa_jaga* &> /dev/null
-          rm -f $path/images_elementary* &> /dev/null
-          rm -f $path/images_sukapura* &> /dev/null
-          rm -f $path/images_colibre_svg.zip &> /dev/null
-          rm -f $path/images_sifr_dark_svg.zip &> /dev/null
-          rm -f $path/images_sifr_svg.zip &> /dev/null
-          rm -f $path/images_breeze_dark_svg.zip &> /dev/null
-          rm -f $path/images_breeze_svg.zip &> /dev/null
-        fi
+          # Adicione o repositório biglinux-keyring
+          if ! grep -q 'biglinux-keyring' "$arquivo_conf"; then
+            sudo sed -i '/SyncFirst/s/$/ biglinux-keyring/' "$arquivo_conf"
+          fi
 
-        #Clean LibreOffice
-        path=$1/usr/share/wallpapers
-        if [[ -d $path ]]; then
-          rm -Rf $path/Altai
-          rm -Rf $path/BytheWater
-          rm -Rf $path/Cascade
-          rm -Rf $path/ColdRipple
-          rm -Rf $path/DarkestHour
-          rm -Rf $path/EveningGlow
-          rm -Rf $path/Flow
-          rm -Rf $path/FlyingKonqui
-          rm -Rf $path/IceCold
-          rm -Rf $path/Kokkini
-          rm -Rf $path/Next
-          rm -Rf $path/Opal
-          rm -Rf $path/Patak
-          rm -Rf $path/SafeLanding
-          rm -Rf $path/summer_1am
-          rm -Rf $path/Autumn
-          rm -Rf $path/Canopee
-          rm -Rf $path/Cluster
-          rm -Rf $path/ColorfulCups
-          rm -Rf $path/Elarun
-          rm -Rf $path/FallenLeaf
-          rm -Rf $path/Fluent
-          rm -Rf $path/Grey
-          rm -Rf $path/Kite
-          rm -Rf $path/MilkyWay
-          rm -Rf $path/OneStandsOut
-          rm -Rf $path/PastelHills
-          rm -Rf $path/Path
-          rm -Rf $path/Shell
-          rm -Rf $path/Volna
-        fi
+          # Adicione o repositório biglinux-update-stable
+          if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
+            sudo sed -i '/\[core\]/{x;/^$/!{x;H;};/^$/p;x;}' "$arquivo_conf"
+            echo '[biglinux-update-stable]
+            SigLevel = PackageRequired
+            Server = https://repo.biglinux.com.br/update-stable/$arch' | sudo tee -a "$arquivo_conf"
+          fi
 
-        }' | sudo tee -a /usr/lib/manjaro-tools/util-iso-image.sh
-        
-        
-        # Add root-overlay
-        sudo sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
+          # Configure os repositórios Manjaro
+          branch="${{ inputs.manjaro_branch }}"
+          servers=(irltoolkit.mm.fcix.net mirror.fcix.net opencolo.mm.fcix.net mirrors.ocf.berkeley.edu ridgewireless.mm.fcix.net codingflyboy.mm.fcix.net mirrors.sonic.net repo.ialab.dsu.edu volico.mm.fcix.net forksystems.mm.fcix.net mnvoip.mm.fcix.net coresite.mm.fcix.net uvermont.mm.fcix.net ohioix.mm.fcix.net southfront.mm.fcix.net nnenix.mm.fcix.net mirror.math.princeton.edu nocix.mm.fcix.net mirrors.gigenet.com ask4.mm.fcix.net)
+          for server in "${servers[@]}"; do
+            echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" | sudo tee -a "$arquivo_conf"
+          done
 
-        # plymouth
-        # Add video modules to use plymouth in live mode
-        # sudo sed -i "s|loop dm-snapshot|loop dm-snapshot amdgpu radeon i915 nouveau mgag200 bochs virtio-gpu qxl vmwgfx cirrus vmwgfx vboxvideo|g" /usr/share/manjaro-tools/mkinitcpio.conf
+          # Configure os repositórios Community
+          case "${{ inputs.community_branch }}" in
+            "stable")
+              echo '[community-stable]
+              SigLevel = PackageRequired
+              Server = https://repo.communitybig.org/stable/$arch' | sudo tee -a "$arquivo_conf"
+              ;;
+            "testing")
+              echo '[community-testing]
+              SigLevel = PackageRequired
+              Server = https://repo.communitybig.org/testing/$arch' | sudo tee -a "$arquivo_conf"
+              echo '[community-stable]
+              SigLevel = PackageRequired
+              Server = https://repo.communitybig.org/stable/$arch' | sudo tee -a "$arquivo_conf"
+              ;;
+          esac
 
-        # Enable plymouth and kms
-        sudo sed -i "s|keyboard keymap|keyboard keymap kms plymouth|g" /usr/share/manjaro-tools/mkinitcpio.conf
+          # Configure os repositórios BigLinux
+          case "${{ inputs.biglinux_branch }}" in
+            "stable")
+              echo '[biglinux-stable]
+              SigLevel = PackageRequired
+              Server = https://repo.biglinux.com.br/stable/$arch' | sudo tee -a "$arquivo_conf"
+              ;;
+            "testing")
+              echo '[biglinux-testing]
+              SigLevel = PackageRequired
+              Server = https://repo.biglinux.com.br/testing/$arch' | sudo tee -a "$arquivo_conf"
+              echo '[biglinux-stable]
+              SigLevel = PackageRequired
+              Server = https://repo.biglinux.com.br/stable/$arch' | sudo tee -a "$arquivo_conf"
+              ;;
+          esac
+        }
 
-        # Disable pxe boot
-        #sudo sed -i "s|miso_pxe_common miso_pxe_http miso_pxe_nbd miso_pxe_nfs||g" /usr/share/manjaro-tools/mkinitcpio.conf
+        # Aplique as configurações
+        add_repository "/usr/share/manjaro-tools/pacman-default.conf"
+        add_repository "/usr/share/manjaro-tools/pacman-multilib.conf"
 
-        #add big update repository
-        #sudo sed -i '/SyncFirst/s/$/ biglinux-keyring/' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        sudo sed -i '/SyncFirst/d' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-            
-        sudo sed -i '/\[core\]/{h;s/.*/\[biglinux-update-stable\]/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        sudo sed -i '/\[core\]/{h;s/.*/SigLevel = PackageRequired/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        # sudo sed -i '/\[core\]/{h;s/.*/Server = https:\/\/${{ inputs.repo-mirror }}.com.br\/update-stable\/$arch/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        sudo sed -i '/\[core\]/{h;s/.*/Server = https:\/\/repo.biglinux.com.br\/update-stable\/$arch/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        sudo sed -i '/\[core\]/{h;s/.*//;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        
-        if [ "${{ inputs.manjarobranch }}" = "testing" ];then
-          sudo sed -i '/\[core\]/{h;s/.*/\[biglinux-${{ inputs.repo-man-testing }}\]/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-          sudo sed -i '/\[core\]/{h;s/.*/SigLevel = PackageRequired/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-          sudo sed -i '/\[core\]/{h;s/.*/Server = https:\/\/${{ inputs.repo-mirror }}.biglinux.com.br\/${{ inputs.repo-man-testing }}\/$arch/;p;x;}' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        fi
-        
-        if [ "${{ inputs.bigbranch }}" = "testing" ];then
-        echo "
-        [biglinux-testing]
-        SigLevel = PackageRequired
-        Server = https://${{ inputs.repo-mirror }}.biglinux.com.br/testing/"'$arch'"" | sudo tee -a /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        
-        elif [ "${{ inputs.bigbranch }}" = "development" ];then
-        echo '
-        [bigiborg-'"${{ inputs.repo-dev }}"']
-        SigLevel = PackageRequired
-        Server = https://'"${{ inputs.mirror_unstable }}"'/$arch'"
-        
-        [biglinux-testing]
-        SigLevel = PackageRequired
-        Server = https://${{ inputs.repo-mirror }}.biglinux.com.br/testing/"'$arch'"" | sudo tee -a /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
+        # Desabilite a remoção do cache de pacotes
+        sudo sed -i 's|path=$1/var/lib/pacman/sync|path=$1/usr/share/man|g' /usr/lib/manjaro-tools/util-iso-image.sh
 
-          echo "
-        [biglinux-stable]
-        SigLevel = PackageRequired
-        Server = https://${{ inputs.repo-mirror }}.biglinux.com.br/stable/"'$arch'"" | sudo tee -a /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        fi
-        
-        sudo sed -i '/SyncFirst/d' /usr/share/manjaro-tools/pacman-default.conf /usr/share/manjaro-tools/pacman-multilib.conf
-        
-        # # Disable remove pkgs cache
-        sudo sed -i 's|path=$1/var/lib/pacman/sync|path=$1/usr/share/man|'g /usr/lib/manjaro-tools/util-iso-image.sh
-        
-        # Faster compression
-        if [ "${{ inputs.bigbranch }}" != "stable" ];then
+        # Configurações de compressão
+        if [ "${{ inputs.community_branch }}" != "stable" ]; then
           sudo sed -i 's|-Xcompression-level 20|-Xcompression-level 6|g' /usr/lib/manjaro-tools/util-iso.sh
           sudo sed -i 's|256K|1024K|g' /usr/lib/manjaro-tools/util-iso.sh
         else
           sudo sed -i 's|256K|1024K|g' /usr/lib/manjaro-tools/util-iso.sh
         fi
-        
-        #change iso-profiles directory
-        # sudo sed -i 's/iso-profiles\/manjaro/iso-profiles\/biglinux/' /usr/lib/manjaro-tools/util.sh
-        # sudo sed -i 's|&& \[\[ -d ${_workdir}/iso-profiles/community \]\]||' /usr/lib/manjaro-tools/util.sh
-    
-    - id: checkout-iso-profiles
-      shell: bash
-      env:
-        REPO: ${{ inputs.iso-profiles-repo }}
-        BRANCH: ${{ inputs.iso-profiles-branch }}
-      run: sudo git clone ${BRANCH:+--branch ${BRANCH}} --depth 1 ${REPO} iso-profiles
 
-    # Tmate ##
+        # Imprima as configurações
+        echo "print mirrorlist..."
+        cat /etc/pacman.d/mirrorlist
+        echo ""
+        echo "Print pacman-default"
+        cat /usr/share/manjaro-tools/pacman-default.conf
+        echo ""
+        echo "Print pacman-multilib"
+        cat /usr/share/manjaro-tools/pacman-multilib.conf
+
+        echo "Repository and build environment configuration completed."
+
+    - name: Checkout ISO profiles
+      shell: bash
+      run: |
+        echo "Cloning ISO profiles repository..."
+        REPO="${{ inputs.iso_profiles_repo }}"
+        BRANCH="${{ inputs.iso_profiles_branch }}"
+
+        if [ -n "$BRANCH" ]; then
+          sudo git clone --branch "$BRANCH" --depth 1 "$REPO" iso-profiles
+        else
+          sudo git clone --depth 1 "$REPO" iso-profiles
+        fi
+
+        echo "ISO profiles cloned successfully."
+
+    - name: Apply Custom Profile Modifications
+      shell: bash
+      run: |
+        EDITION="${{ inputs.edition }}"
+        ISO_PROFILE_DIR="iso-profiles/community/$EDITION"
+        CUSTOM_PROFILE_DIR="iso-profiles/custom-profiles/$EDITION"
+
+        # Apply edition-specific removals
+        for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
+          if [ -f "$CUSTOM_PROFILE_DIR/$remove_file" ]; then
+            target_file="$ISO_PROFILE_DIR/Packages-${remove_file%-remove}"
+            if [ -f "$target_file" ]; then
+              echo "Removing packages from $target_file"
+              while IFS= read -r package
+              do
+                sed -i "/^$package$/d" "$target_file"
+              done < "$CUSTOM_PROFILE_DIR/$remove_file"
+            else
+              echo "Warning: $target_file does not exist. Skipping removals."
+            fi
+          else
+            echo "Info: $remove_file not found in $CUSTOM_PROFILE_DIR. Skipping."
+          fi
+        done
+
+        # Execute special commands if they exist
+        if [ -f "$CUSTOM_PROFILE_DIR/special-commands.sh" ]; then
+          bash "$CUSTOM_PROFILE_DIR/special-commands.sh"
+        fi
+
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
-      if: "${{ inputs.tmate == 'true' }}"
-      
-    - id: image-build
+      if: inputs.tmate == 'true'
+      with:
+        install-dependencies: false
+
+    - name: Build ISO Image
       shell: bash
       env:
+        NAME: ${{ inputs.name }}
         EDITION: ${{ inputs.edition }}
-        MANJAROBRANCH: ${{ inputs.manjarobranch }}
-        BIGBRANCH: ${{ inputs.bigbranch }}
+        MANJAROBRANCH: ${{ inputs.manjaro_branch }}
+        COMMUNITYBRANCH: ${{ inputs.community_branch }}
+        BIGBRANCH: ${{ inputs.biglinux_branch }}
         SCOPE: ${{ inputs.scope }}
-        # VERSION: ${{ inputs.version }}
         KERNEL: ${{ inputs.kernel }}
         OFFICE: ${{ inputs.office-chooser }}
-        MESA: ${{ inputs.mesa }}
-        EXTRAREPO: ${{ inputs.extrarepo }}
+        RELEASE_TAG: ${{ inputs.release_tag }}
       run: |
-        ## BigLinux Pre Config Build ISO
-        echo "## BigLinux Pre Config Build ISO ##"
-        
-        #MESA
-        # if [ "$KERNEL" = "oldLts" -a $EDITION != "xivastudio" ]; then
-        #   echo '
-        #   mesa-amber
-        #   lib32-mesa-amber' | sudo tee -a iso-profiles/biglinux/$EDITION/Packages-Root
-        if [ "$KERNEL" = "latest" -o "$KERNEL" = "xanmod" ]; then
-          echo '
-          mesa-tkg-stable
-          lib32-mesa-tkg-stable' | sudo tee -a iso-profiles/biglinux/$EDITION/Packages-Root
-          sudo sed -i '/libva-mesa/d'  iso-profiles/biglinux/$EDITION/Packages-Desktop
-          sudo sed -i '/libva-mesa/d'  iso-profiles/biglinux/$EDITION/Packages-Mhwd
-          sudo sed -i '/vulkan-swrast/d'  iso-profiles/biglinux/$EDITION/Packages-Desktop
+        # Denine path for directory
+        PROFILE_PATH="iso-profiles/community"
+
+        # Verificação inicial
+        if [ ! -d "iso-profiles" ]; then
+          echo "Error: iso-profiles directory not found in the current working directory."
+          exit 1
         fi
-        
-        #KERNEL
-        if [ "$KERNEL" = "oldLts" ];then
-            oldLts=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
-            KERNEL=$oldLts
-        elif [ "$KERNEL" = "atualLts" ];then
-            atualLts=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
-            KERNEL=$atualLts
-        elif [ "$KERNEL" = "latest" ];then
-          # kernelVer=62
-          # kernelVer=$(pacman -Sl | grep linux[0-9] | grep core | grep -vE "rc|headers" | sort | tail -n1 | cut -d " " -f2 | sed 's/linux//')
-          kernelVer=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-          echo "linux-latest"  | sudo tee -a iso-profiles/biglinux/$EDITION/Packages-Root
-          KERNEL=$kernelVer
-        elif [ -n "$(echo $KERNEL | grep xanmod)" ];then
-          echo '
-          linux-firmware' | sudo tee -a iso-profiles/biglinux/$EDITION/Packages-Root
-          KERNEL=-${KERNEL}
+
+        # Verificação, debugging
+        echo "Verificando o diretório iso-profiles no diretório atual:"
+        ls -la iso-profiles
+
+        echo "Verificando o diretório do perfil específico:"
+        ls -la "$PROFILE_PATH/$EDITION"
+
+        echo "Caminho completo do diretório do perfil: $(pwd)/$PROFILE_PATH/$EDITION"
+
+        #Check if iso-profiles directory exists before proceeding
+        if [ ! -d "iso-profiles" ]; then
+          echo "Error: iso-profiles directory not found in the current working directory."
+          exit 1
         fi
-        
-        # Stable
-        if [ "$BIGBRANCH" = "stable" ];then
-          echo "BUILD_RELEASE=${{ inputs.release-tag }}" | sed -E 's/_[0-9]{2}-[0-9]{2}//' | sudo tee -a iso-profiles/biglinux/$EDITION/root-overlay/etc/big-release
-        fi
-        
-        # Testing
-        if [ "$BIGBRANCH" = "testing" ];then
-          #add repo testing
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/\[biglinux-testing\]/;p;x;}' iso-profiles/biglinux/$EDITION/user-repos.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/\[biglinux-testing\]/;p;x;}' iso-profiles/biglinux/$EDITION/live-overlay/etc/pacman.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/\[biglinux-testing\]/;p;x;}' iso-profiles/biglinux/$EDITION/root-overlay/etc/pacman.conf
+
+        setup_manjaro_tools() {
+          sudo mkdir -p /var/cache/manjaro-tools/iso
+          sudo chmod 777 /var/cache/manjaro-tools/iso
           
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/SigLevel = PackageRequired/;p;x;}' iso-profiles/biglinux/$EDITION/user-repos.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/SigLevel = PackageRequired/;p;x;}' iso-profiles/biglinux/$EDITION/live-overlay/etc/pacman.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/SigLevel = PackageRequired/;p;x;}' iso-profiles/biglinux/$EDITION/root-overlay/etc/pacman.conf
+          # Check if buildiso is available
+          if ! command -v buildiso &> /dev/null; then
+            echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
+            exit 1
+          fi
           
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/Server = https:\/\/repo.biglinux.com.br\/testing\/$arch/;p;x;}' iso-profiles/biglinux/$EDITION/user-repos.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/Server = https:\/\/repo.biglinux.com.br\/testing\/$arch/;p;x;}' iso-profiles/biglinux/$EDITION/live-overlay/etc/pacman.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*/Server = https:\/\/repo.biglinux.com.br\/testing\/$arch/;p;x;}' iso-profiles/biglinux/$EDITION/root-overlay/etc/pacman.conf
+          # Check if the profile directory exists
+          if [ ! -d "$PROFILE_PATH/$EDITION" ]; then
+            echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
+            exit 1
+          fi
           
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*//;p;x;}' iso-profiles/biglinux/$EDITION/user-repos.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*//;p;x;}' iso-profiles/biglinux/$EDITION/live-overlay/etc/pacman.conf
-          sudo sed -i '/\[biglinux-stable\]/{h;s/.*//;p;x;}' iso-profiles/biglinux/$EDITION/root-overlay/etc/pacman.conf
+          echo "Manjaro tools setup completed. Directory contents:"
+          ls -la /var/cache/manjaro-tools/iso
+        }
+
+        configure_mesa() {
+          if [[ "$KERNEL" =~ ^(latest|xanmod)$ ]]; then
+              echo -e "mesa-tkg-stable\nlib32-mesa-tkg-stable" | sudo tee -a $PROFILE_PATH/$EDITION/Packages-Root
+              sudo sed -i '/libva-mesa/d; /vulkan-swrast/d' $PROFILE_PATH/$EDITION/Packages-{Desktop,Mhwd}
+          fi
+        }
+
+        configure_kernel() {
+          case "$KERNEL" in
+            oldLts)
+              KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed -n 's/.*<title>\(.*\):.*/\1/p' | sort -Vr | sed -n '2s/\.//gp')
+              ;;
+            atualLts)
+              KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed -n 's/.*<title>\(.*\):.*/\1/p' | sort -Vr | sed -n '1s/\.//gp')
+              ;;
+            latest)
+              KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
+              echo "linux-latest" | sudo tee -a $PROFILE_PATH/$EDITION/Packages-Root
+              ;;
+            xanmod*)
+              echo "linux-firmware" | sudo tee -a $PROFILE_PATH/$EDITION/Packages-Root
+              KERNEL="-${KERNEL}"
+              echo "Configurando kernel xanmod: $KERNEL"
+              ;;
+          esac
           
-          echo "BUILD_RELEASE=${{ inputs.release-tag }}" | sudo tee -a iso-profiles/biglinux/$EDITION/root-overlay/etc/big-release
-        fi
-        
-        # Development
-        if [ "$BIGBRANCH" = "development" ];then
-          #add repo
-        
-          sudo sed -i '/\[biglinux-stable\]/,$d' iso-profiles/biglinux/$EDITION/live-overlay/etc/pacman.conf
-          sudo sed -i '/\[biglinux-stable\]/,$d' iso-profiles/biglinux/$EDITION/root-overlay/etc/pacman.conf
+          # Definir KERNEL_NAME
+          if [ "$KERNEL" != "xanmod" ]; then
+            KERNEL_NAME="${KERNEL}"
+          else
+            local xan_ver
+            xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
+            KERNEL_NAME="${KERNEL//-/}${xan_ver}"
+          fi
+          echo "KERNEL_NAME definido como: $KERNEL_NAME"
+        }
+
+        configure_repos() {
+          local config_file=$1
+          local community_branch=$2
+          local biglinux_branch=$3
           
-          echo "
-          [bigiborg-${{ inputs.repo-dev }}]
+          # Community repositories
+          echo "[community-${community_branch}]
           SigLevel = PackageRequired
-          Server = https://${{ inputs.mirror_unstable }}"'/$arch'"
+          Server = https://repo.communitybig.org/${community_branch}/\$arch" | sudo tee -a "$config_file"
           
-          [biglinux-testing]
+          if [ "$community_branch" = "testing" ]; then
+            echo "[community-stable]
+            SigLevel = PackageRequired
+            Server = https://repo.communitybig.org/stable/\$arch" | sudo tee -a "$config_file"
+          fi
+          
+          # BigLinux repositories
+          echo "[biglinux-${biglinux_branch}]
           SigLevel = PackageRequired
-          Server = https://repo.biglinux.com.br/testing/"'$arch'"
+          Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch" | sudo tee -a "$config_file"
           
-          [biglinux-stable]
-          SigLevel = PackageRequired
-          Server = https://repo.biglinux.com.br/stable/"'$arch'"" | sudo tee -a iso-profiles/biglinux/$EDITION/live-overlay/etc/pacman.conf iso-profiles/biglinux/$EDITION/root-overlay/etc/pacman.conf
+          if [ "$biglinux_branch" = "testing" ]; then
+            echo "[biglinux-stable]
+            SigLevel = PackageRequired
+            Server = https://repo.biglinux.com.br/stable/\$arch" | sudo tee -a "$config_file"
+          fi
+        }
+
+        set_build_info() {
+          echo "BUILD_RELEASE=$RELEASE_TAG" | sudo tee -a $PROFILE_PATH/"$EDITION"/root-overlay/etc/big-release
+          echo "BUILD_BRANCH=$BIGBRANCH" | sudo tee -a $PROFILE_PATH/"$EDITION"/root-overlay/etc/big-release
+          echo "UNIX_TIMESTAMP=$(( $(date +%s) / 86400 ))" | sudo tee -a $PROFILE_PATH/"$EDITION"/root-overlay/etc/big-release
+        }
+
+        configure_iso_name() {
+          sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" $PROFILE_PATH/"$EDITION"/profile.conf
           
-          #add anti-ruscher
-          # echo anti-ruscher | sudo tee -a iso-profiles/biglinux/$EDITION/Packages-Root
+          case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
+            stable/stable) TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            stable/testing|testing/*) TARGET_ISO_PATH="${NAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            unstable/*) TARGET_ISO_PATH="${NAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+          esac
+        }
+
+        build_iso() {
+          local kernel_name
           
-          echo "BUILD_RELEASE=${{ inputs.release-tag }}" | sudo tee -a iso-profiles/biglinux/$EDITION/root-overlay/etc/big-release
-        fi
-        
-        #Build Release and Unix Time
-        echo "BUILD_BRANCH=$BIGBRANCH" | sudo tee -a iso-profiles/biglinux/$EDITION/root-overlay/etc/big-release
-        echo "UNIX_TIMESTAMP=$(( $(date +%s) / 86400 ))" | sudo tee -a iso-profiles/biglinux/$EDITION/root-overlay/etc/big-release
-        
-        #LABEL
-        sudo sed -i "s/label=.*/label=biglinux_${{ inputs.release-tag }}.iso/" iso-profiles/biglinux/$EDITION/profile.conf
-        
-        
-        sudo rm -r iso-profiles/biglinux-make-iso-profiles
-        
-        echo $KERNEL
-        echo $EDITION
-        echo $MANJAROBRANCH
-        echo $BIGBRANCH
-        echo $MESA
-        
-        sudo buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL} ${OFFICE:+-o}
-        
-        if [ -n "$(echo $KERNEL | grep xanmod)" ];then
-            KERNEL=$(echo ${KERNEL} | sed 's/-//')
-        fi
-        
-        sudo rm -Rf /var/lib/manjaro-tools/buildiso/*
-        
-        OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
-        
-        if [ "${EDITION}" = "xivastudio" ]; then
-          name=xivastudio
-        else
-          name=biglinux
-        fi
-        
-        #TARGET_ISO_PATH=$(basename $OUTPUT_ISO_PATH)
-        if [ "${EDITION}" = "kde" -o "${EDITION}" = "xivastudio" ];then
-          EDITION=
-        else
-          EDITION=_${EDITION}
-        fi
-        
-        #Kernel Name
-        if [ "$KERNEL" != "xanmod" ];then
-          KERNEL=k${KERNEL}
-        elif [ "$KERNEL" = "xanmod" ];then
-          xanVer=$(grep linux-xanmod $(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}') | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
-          KERNEL=$(echo ${KERNEL} | sed 's/-//')${xanVer}
-        fi
-            
-        #renome ISO
-        if [ "$MANJAROBRANCH" = "testing" ];then
-          # TARGET_ISO_PATH=${EDITION}_DEVELOPMENT_${{ inputs.release-tag }}_k${KERNEL}.iso
-          TARGET_ISO_PATH=${name}_DEVELOPMENT${EDITION}_ManTesting_${{ inputs.release-tag }}_${KERNEL}.iso
-        elif [ "$BIGBRANCH" = "development" ];then
-          # TARGET_ISO_PATH=${EDITION}_DEVELOPMENT_${{ inputs.release-tag }}_k${KERNEL}.iso
-          TARGET_ISO_PATH=${name}_DEVELOPMENT${EDITION}_${{ inputs.release-tag }}_${KERNEL}.iso
-        elif [ "$BIGBRANCH" = "beta" ];then
-         # TARGET_ISO_PATH=${EDITION}_BETA_$(echo ${{ inputs.release-tag }} | cut -d "_" -f1 )_k${KERNEL}.iso
-         TARGET_ISO_PATH=${name}_BETA${EDITION}_$(echo ${{ inputs.release-tag }} | cut -d "_" -f1 )_${KERNEL}.iso
-        else
-          # TARGET_ISO_PATH=${EDITION}_$(echo ${{ inputs.release-tag }} | cut -d "_" -f1 )_k${KERNEL}.iso
-          TARGET_ISO_PATH=${name}${EDITION}_$(echo ${{ inputs.release-tag }} | cut -d "_" -f1 )_${KERNEL}.iso
-        fi
-        
-        sudo mv $OUTPUT_ISO_PATH ./$TARGET_ISO_PATH
-        # echo "::set-output name=file-path::$TARGET_ISO_PATH"
-        echo "file-path=$TARGET_ISO_PATH" >> $GITHUB_OUTPUT
-        
-        FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
-        sudo mv $FILE_PKG ./${TARGET_ISO_PATH}.pkgs
-        
-        sudo rm -r iso-profiles
-        
-        ls -lh
-        echo ${{ steps.image-build.outputs.file-path }}
-        
-    # # Tmate ##
-    # - name: Setup TMATE Session
-    #   uses: mxschmitt/action-tmate@v3
-    #   if: "${{ inputs.tmate == 'true' }}"
-        
-    - id: hash
+          if [ "$KERNEL" != "xanmod" ]; then
+            kernel_name="${KERNEL}"
+          else
+            local xan_ver
+            xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
+            kernel_name="${KERNEL//-/}${xan_ver}"
+          fi
+          
+          echo "Build command: buildiso ${SCOPE:+-f} -p \"$EDITION\" -b \"$MANJAROBRANCH\" -k \"linux${kernel_name}\" ${OFFICE:+-o}"
+          
+          echo "Building ISO with kernel: linux${kernel_name}"
+          echo "PROFILE_PATH = $PROFILE_PATH"
+          cd $PROFILE_PATH
+          pwd
+          sudo buildiso ${SCOPE:+-f} -p "$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" ${OFFICE:+-o}
+        }
+
+        cleanup_and_move_files() {
+          sudo rm -rf /var/lib/manjaro-tools/buildiso/*
+          OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+          sudo mv "$OUTPUT_ISO_PATH" "./$TARGET_ISO_PATH"
+          echo "file-path=$TARGET_ISO_PATH" >> "$GITHUB_OUTPUT"
+          
+          FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+          sudo mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs"
+          
+          sudo rm -r iso-profiles
+        }
+
+        main() {
+          echo "## Community Pre Config Build ISO ##"
+          setup_manjaro_tools
+          configure_mesa
+          
+          echo "Starting kernel configuration..."
+          configure_kernel
+          echo "Kernel configuration completed."
+          
+          echo "Starting repository configuration..."
+          for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
+            echo "Configuring $config..."
+            configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
+          done
+          echo "Repository configuration completed."
+          
+          set_build_info
+          configure_iso_name
+          
+          sudo rm -rf iso-profiles/custom-profiles
+          
+          echo "Kernel: $KERNEL_NAME"
+          echo "Edition: $EDITION"
+          echo "ManjaroBranch: $MANJAROBRANCH"
+          echo "CommunityBranch: $COMMUNITYBRANCH"
+          echo "BigLinuxBranch: $BIGBRANCH"
+          echo "ISO profiles path: $(pwd)/$PROFILE_PATH/$EDITION"
+          
+          build_iso
+          cleanup_and_move_files
+          
+          ls -lh
+        }
+
+        main
+
+    - name: Calculate ISO MD5 Hash
       shell: bash
       run: |
-        echo "## calculating hashes"
-        md5sum ${{ steps.image-build.outputs.file-path }} >${{ steps.image-build.outputs.file-path }}.md5
-        
-    - id: upload-prepare
-      shell: bash -O extglob {0}
+        echo "Calculating MD5 hash for ISO file..."
+        ISO_PATH="${{ steps.image-build.outputs.file-path }}"
+
+        # Calculate MD5 hash
+        md5sum "$ISO_PATH" > "${ISO_PATH}.md5"
+
+        echo "MD5 hash calculated and saved:"
+        cat "${ISO_PATH}.md5"
+
+    - name: Prepare ISO for release
+      id: prepare-iso
+      shell: bash
       run: |
-        echo "## ssh setup"
-        mkdir -p /home/runner/.ssh
-        touch /home/runner/.ssh/github_actions
-        chmod 600 /home/runner/.ssh/github_actions
-        ssh-agent -a /tmp/ssh_agent.sock > /dev/null
-        # echo "::set-output name=upload-files::./${{ steps.image-build.outputs.file-path }}+(|.sha*|.pkgs|.sig|.torrent|.md5)"
-        echo "upload-files=./${{ steps.image-build.outputs.file-path }}+(|.sha*|.pkgs|.sig|.torrent|.md5)" >> $GITHUB_OUTPUT
-        
-        mkdir -p ${{ inputs.edition }}/${{ inputs.version }}
-        
-    - id: Torrent
-      shell: bash -O extglob {0}
+        ls -lh
+        release=$(basename "${{ steps.image-build.outputs.file-path }}" .iso)
+        zip -j -0 -s 2000m ${release}.zip ${{ steps.image-build.outputs.file-path }}
+        echo "release_name=${release}" >> $GITHUB_OUTPUT
+        echo "ISO prepared for release"
+
+    - name: Create GitHub Release
+      shell: bash
       env:
-        EXTRAREPO: ${{ inputs.extrarepo }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       run: |
-        echo "### Torrent ###"
-        if [ "${{ inputs.bigbranch }}" = "stable" ];then
-          mktorrent -v -a udp://tracker.opentrackr.org:1337 -l 21 \
-          -w "https://iso.biglinux.com.br/${{ steps.image-build.outputs.file-path }}" \
-          -w "https://osdn.net/projects/biglinux/storage/${{ steps.image-build.outputs.file-path }}" \
-          -o ${{ steps.image-build.outputs.file-path }}.torrent ${{ steps.image-build.outputs.file-path }}
-        fi
-    
-    - id: upload-github-release
-      shell: bash -O extglob {0}
-      env:
-        EXTRAREPO: ${{ inputs.extrarepo }}
-      run: |
-        echo "### upload-github-release ###"
-        
-        if [ "${{ inputs.bigbranch }}" = "stable" ];then
-          echo "## github upload"
-          release=$(echo ${{ steps.image-build.outputs.file-path }} | sed 's/_k.*//' | sed 's/_x.*//')
-
-          echo ${{ github.token }} | gh auth login --with-token
-          gh release create ${release} --title ${release} --repo ${{ github.repository }} --notes "automated release" || echo "release already exists"
-
-          GITHUB_LINK=https://github.com/${GITHUB_REPOSITORY}/releases/download/${release}
-
-          if [[ -z "$(du --threshold=1950M ${{ steps.image-build.outputs.file-path }})" ]]; then
-            # iso is small enough to upload already
-            gh release upload ${release} --repo ${{ github.repository }} --clobber \
-              ${{ steps.upload-prepare.outputs.upload-files }}
-          else
-            # iso is too big - creating a split-zip
-            zip -j -s 1950m ${{ steps.image-build.outputs.file-path }}.zip ${{ steps.image-build.outputs.file-path }}
-            
-            REMOTE_FILES=$(find . -maxdepth 1 -name "*.z*" -exec basename {} \; | xargs -I{} echo "-w \"${GITHUB_LINK}/{}\"")
-            gh release upload ${release} --repo ${{ github.repository }} --clobber \
-              ./${{ steps.image-build.outputs.file-path }}+(.z*|.sha*|.pkgs|.sig|.torrent|.md5)
-          fi
-        else
-          echo "ISO testing subir em outro repo"
-        fi
+        echo $GITHUB_TOKEN | gh auth login --with-token
+        release_name="${{ steps.prepare-iso.outputs.release_name }}"
+        gh release create $release_name \
+          --title "$release_name" \
+          --notes "Automated release from CI/CD" \
+          ${{ steps.build.outputs.file-path }} \
+          ${{ steps.build.outputs.file-path }}.md5 \
+          ${{ steps.build.outputs.file-path }}.pkgs \
+          ${release_name}.z*
