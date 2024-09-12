@@ -8,7 +8,7 @@ inputs:
   iso-profiles-repo:
     description: "iso profiles to clone"
     required: false
-    default: "https://github.com/talesam/iso-profiles"
+    default: "https://github.com/chililinux/iso-profiles"
   edition:
     description: "name of the iso profile to build"
     required: true
@@ -97,7 +97,7 @@ runs:
       shell: bash
       run: |
         echo "### install-build-dependencies ###"
-        sudo apt-get update
+        apt-get update
 
         # Install packages
         PACKAGES=(
@@ -129,14 +129,14 @@ runs:
           zstd
         )
 
-        sudo apt-get install -y "${PACKAGES[@]}"
+        apt-get install -y "${PACKAGES[@]}"
 
         # Install Python packages
-        sudo python3 -m pip install meson ninja
+        python3 -m pip install meson ninja
 
         # Clean up
-        sudo apt-get clean
-        sudo apt-get autoremove -y
+        apt-get clean
+        apt-get autoremove -y
 
     - id: no-fsync
       shell: bash
