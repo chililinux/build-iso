@@ -147,7 +147,7 @@ runs:
     - name: Configure repositories and build environment
       shell: bash
       run: |
-      	echo
+        echo
         echo "=>Configuring repositories and build environment..."
 
         # Função para adicionar repositórios
@@ -230,7 +230,7 @@ runs:
         fi
 
         # Imprima as configurações
-      	echo
+        echo
         echo "=>Imprima as configurações"
         echo "print mirrorlist..."
         cat /etc/pacman.d/mirrorlist
@@ -430,7 +430,7 @@ runs:
               echo "Configurando kernel xanmod: $KERNEL"
               ;;
           esac
-          
+
           # Definir KERNEL_NAME
           if [ "$KERNEL" != "xanmod" ]; then
             KERNEL_NAME="${KERNEL}"
@@ -446,23 +446,23 @@ runs:
           local config_file=$1
           local community_branch=$2
           local biglinux_branch=$3
-          
+
           # Community repositories
           echo "[community-${community_branch}]
           SigLevel = PackageRequired
           Server = https://repo.communitybig.org/${community_branch}/\$arch" | sudo tee -a "$config_file"
-          
+
           if [ "$community_branch" = "testing" ]; then
             echo "[community-stable]
             SigLevel = PackageRequired
             Server = https://repo.communitybig.org/stable/\$arch" | sudo tee -a "$config_file"
           fi
-          
+
           # BigLinux repositories
           echo "[biglinux-${biglinux_branch}]
           SigLevel = PackageRequired
           Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch" | sudo tee -a "$config_file"
-          
+
           if [ "$biglinux_branch" = "testing" ]; then
             echo "[biglinux-stable]
             SigLevel = PackageRequired
@@ -478,7 +478,7 @@ runs:
 
         configure_iso_name() {
           sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" $PROFILE_PATH/"$EDITION"/profile.conf
-          
+
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
             stable/stable) TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) TARGET_ISO_PATH="${NAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -488,7 +488,7 @@ runs:
 
         build_iso() {
           local kernel_name
-          
+
           if [ "$KERNEL" != "xanmod" ]; then
             kernel_name="${KERNEL}"
           else
@@ -496,9 +496,9 @@ runs:
             xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
             kernel_name="${KERNEL//-/}${xan_ver}"
           fi
-          
+
           echo "Build command: buildiso ${SCOPE:+-f} -p \"$EDITION\" -b \"$MANJAROBRANCH\" -k \"linux${kernel_name}\" ${OFFICE:+-o}"
-          
+
           echo "Building ISO with kernel: linux${kernel_name}"
           echo "PROFILE_PATH = $PROFILE_PATH"
           echo "EDITION: $EDITION"
@@ -514,10 +514,10 @@ runs:
           OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
           sudo mv "$OUTPUT_ISO_PATH" "./$TARGET_ISO_PATH"
           echo "file-path=$TARGET_ISO_PATH" >> "$GITHUB_OUTPUT"
-          
+
           FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
           sudo mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs"
-          
+
           sudo rm -r iso-profiles
         }
 
@@ -525,33 +525,33 @@ runs:
           echo "## Community Pre Config Build ISO ##"
           setup_manjaro_tools
           configure_mesa
-          
+
           echo "Starting kernel configuration..."
           configure_kernel
           echo "Kernel configuration completed."
-          
+
           echo "Starting repository configuration..."
           for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
             echo "Configuring $config..."
             configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
           done
           echo "Repository configuration completed."
-          
+
           set_build_info
           configure_iso_name
-          
+
           sudo rm -rf iso-profiles/custom-profiles
-          
+
           echo "Kernel: $kernel_name"
           echo "Edition: $EDITION"
           echo "ManjaroBranch: $MANJAROBRANCH"
           echo "CommunityBranch: $COMMUNITYBRANCH"
           echo "BigLinuxBranch: $BIGBRANCH"
           echo "ISO profiles path: $(pwd)/$PROFILE_PATH/$EDITION"
-          
+
           build_iso
           cleanup_and_move_files
-          
+
           ls -lh
         }
 
