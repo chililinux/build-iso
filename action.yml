@@ -252,18 +252,28 @@ runs:
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
 
-        if ! sudo git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
-          echo "Failed to clone ISO profiles repository."
-          exit 1
+        #if ! sudo git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
+        #  echo "Failed to clone ISO profiles repository."
+        #  exit 1
+        #fi
+
+        echo "####################################################################################################################"
+        pushd /home/builduser
+        if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
+           echo "Failed to clone ISO profiles repository."
+           exit 1
         fi
+				popd
         echo "=>ISO profiles cloned successfully."
         echo "####################################################################################################################"
-        echo "Copiar os profiles para manjaro share"
-        pushd /usr/share/manjaro-tools/iso-profiles
-        cp -Rpva /__w/build-iso/build-iso/iso-profiles/. .
-        popd
-        echo "####################################################################################################################"
         echo
+
+        #echo "Copiar os profiles para manjaro share"
+        #pushd /usr/share/manjaro-tools/iso-profiles
+        #cp -Rpva /__w/build-iso/build-iso/iso-profiles/. .
+        #popd
+        #echo "####################################################################################################################"
+        #echo
 
     - name: Apply Custom Profile Modifications
       shell: bash
