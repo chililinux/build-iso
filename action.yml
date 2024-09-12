@@ -1,4 +1,4 @@
-name: "Build BigCommunity ISO"
+name: "ACTION - Build BigCommunity ISO"
 description: "Builds a BigCommunity ISO image"
 
 inputs:
@@ -67,7 +67,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup build environment
+    - name: ACTION - Setup build environment
       shell: bash
       run: |
         echo "Setting up build environment..."
@@ -557,7 +557,7 @@ runs:
 
         main
 
-    - name: Calculate ISO MD5 Hash
+    - name: ACTION - Calculate ISO MD5 Hash
       shell: bash
       run: |
         echo "Calculating MD5 hash for ISO file..."
@@ -569,7 +569,7 @@ runs:
         echo "MD5 hash calculated and saved:"
         cat "${ISO_PATH}.md5"
 
-    - name: Prepare ISO for release
+    - name: ACTION - Prepare ISO for release
       id: prepare-iso
       shell: bash
       run: |
@@ -579,7 +579,7 @@ runs:
         echo "release_name=${release}" >> $GITHUB_OUTPUT
         echo "ISO prepared for release"
 
-    - name: Create GitHub Release
+    - name: ACTION - Create GitHub Release
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
