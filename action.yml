@@ -142,13 +142,13 @@ runs:
 
         # Atualizar os bancos de dados do pacman
         sudo pacman -Sy --quiet
-
-        echo "Community keys installed and system updated."
+        echo "=>Community keys installed and system updated."
 
     - name: Configure repositories and build environment
       shell: bash
       run: |
-        echo "Configuring repositories and build environment..."
+      	echo
+        echo "=>Configuring repositories and build environment..."
 
         # Função para adicionar repositórios
         add_repository() {
@@ -230,6 +230,8 @@ runs:
         fi
 
         # Imprima as configurações
+      	echo
+        echo "=>Imprima as configurações"
         echo "print mirrorlist..."
         cat /etc/pacman.d/mirrorlist
         echo ""
@@ -238,13 +240,14 @@ runs:
         echo ""
         echo "Print pacman-multilib"
         cat /usr/share/manjaro-tools/pacman-multilib.conf
-
-        echo "Repository and build environment configuration completed."
+        echo "=>Repository and build environment configuration completed."
+        echo
 
     - name: Checkout ISO profiles
       shell: bash
       run: |
-        echo "Cloning ISO profiles repository..."
+        echo
+        echo "=>Cloning ISO profiles repository..."
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
 
@@ -252,8 +255,8 @@ runs:
           echo "Failed to clone ISO profiles repository."
           exit 1
         fi
-
-        echo "ISO profiles cloned successfully."
+        echo "=>ISO profiles cloned successfully."
+        echo
 
     - name: Apply Custom Profile Modifications
       shell: bash
