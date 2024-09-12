@@ -93,6 +93,10 @@ runs:
         echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
         git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
 
+        # Copiar os profiles para manjaro share
+				cd /usr/share/manjaro-tools/iso-profiles/
+				cp -Rpva /__w/build-iso/build-iso/iso-profiles/. .
+
         # Configurar o ambiente para o usuário builduser
         sudo -u builduser bash << EOF
           mkdir -p /home/builduser/.config/manjaro-tools
