@@ -90,8 +90,11 @@ runs:
         # Configurar o ambiente para o usuário builduser
         sudo -u builduser bash << EOF
           mkdir -p /home/builduser/.config/manjaro-tools
+          mkdir -p /root/.config/manjaro-tools
           echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /home/builduser/.makepkg.conf
+          echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
           echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
+          echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
           git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
         EOF
 
