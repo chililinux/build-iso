@@ -79,6 +79,7 @@ runs:
           mktorrent \
           squashfs-tools \
           archiso \
+          manjaro-tools \
           manjaro-tools-iso \
           calamares \
           calamares-tools \
