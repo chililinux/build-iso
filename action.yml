@@ -72,10 +72,10 @@ runs:
       run: |
         echo "Setting up build environment..."
         # Atualizar o sistema
-        sudo pacman -Syu --noconfirm
+        sudo pacman -Syu --quiet --noconfirm
 
         # Instalar pacotes adicionais que possam ser necessários
-        sudo pacman -S --needed --noconfirm \
+        sudo pacman -S --quiet --needed --noconfirm \
           mktorrent \
           squashfs-tools \
           archiso \
@@ -138,7 +138,7 @@ runs:
         sudo pacman-key --lsign-key AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
 
         # Atualizar os bancos de dados do pacman
-        sudo pacman -Sy
+        sudo pacman -Sy --quiet
 
         echo "Community keys installed and system updated."
 
