@@ -1,0 +1,116 @@
+# Nome do workflow
+name: XFCE M:✅ / B:🧪 - Beta
+
+# Gatilhos para o workflow
+on:
+  workflow_dispatch: # Permite a execução manual do workflow
+    inputs:
+      debug_enabled: # Input para habilitar o modo de depuração
+        type: boolean
+        description: "With TMATE"
+        required: false
+        default: false
+
+  schedule: # Executa automaticamente toda sexta-feira às 05:00
+    - cron: "0 5 * * 5"
+
+  repository_dispatch: # Permite a execução através de eventos de webhook
+    types:
+      - webhook
+      - "**"
+
+# Jobs do workflow
+jobs:
+  # Job para preparar a release
+  prepare-release:
+    runs-on: ubuntu-20.04 # Define a máquina virtual a ser usada
+    steps:
+      - id: time
+        uses: nanzm/get-time-action@v1.1 # Ação para obter o tempo atual
+        with:
+          format: "YYYY-MM-DD_HH-mm"
+    outputs:
+      release_tag: ${{ steps.time.outputs.time }} # Saída do job
+
+  # Job para construir a release
+  build-release:
+    runs-on: ubuntu-20.04 # Define a máquina virtual a ser usada
+    needs: [prepare-release] # Depende do job prepare-release
+    strategy:
+      matrix:
+        NAME: [biglinux] # Define o nome do SO
+        EDITION: [xfce] # Define a edição
+        MANJAROBRANCH: [stable] # Define a branch do Manjaro (stable, testing ou unstable)
+        BIGBRANCH: [testing] # Define a branch do Biglinux (stable ou testing)
+        KERNEL: [atualLts] # Define a versão do kernel (atualLts, latest)
+
+    steps:
+      - name: Build and Upload GitHub
+        uses: talesam/build-iso@main # Ação para construir e fazer upload da ISO
+        with:
+          name: ${{ matrix.name }}
+          edition: ${{ matrix.edition }}
+          manjarobranch: ${{ matrix.manjarobranch }}
+          bigbranch: ${{ matrix.bigbranch }}
+          kernel: ${{ matrix.kernel }}
+          extrarepo: ${{ matrix.extrarepo }}
+          iso-profiles-repo: "https://github.com/talesam/iso-profiles"
+          release-tag: ${{ needs.prepare-release.outputs.release_tag }}
+          tmate: ${{ inputs.debug_enabled }}
+          repo-unstable: ${{ secrets.REPO_UNSTABLE }}
+          mirror-dev: ${{ secrets.MIRROR_DEV }}
+
+      # Configuração do TMATE para sessão de depuração
+      - name: Setup TMATE Session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+
+      # Verifica MD5SUM
+      - name: Verify md5sum
+        shell: bash
+        run: |
+          mkdir mnt
+          find -type f -iname "*.iso" -exec sudo mount -o loop {} mnt \;
+          pushd mnt/manjaro/x86_64/
+            for i in *.md5; do 
+              if [ "$(md5sum -c $i | cut -d " " -f2)" != "OK" ]; then
+                echo "deu ruim no md5dum do arquivo $i"
+                exit 1
+              else
+                echo "md5sum do arquivo $i está OK"
+              fi
+            done
+          popd
+          sudo umount mnt
+
+      # Prepara Upload
+      - name: upload-prepare
+        shell: bash -O extglob {0}
+        run: |
+          echo "## ssh setup"
+          mkdir -p /home/runner/.ssh
+          touch /home/runner/.ssh/github_actions
+          chmod 600 /home/runner/.ssh/github_actions
+
+      # Configuração do TMATE para sessão de depuração
+      - name: Setup TMATE Session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+
+      # Upload da ISO
+      - name: Publish Package on GitHub
+        shell: bash
+        run: |
+      # Quebra o arquivo e faz upload
+      - name: Publish Package on GitHub
+        shell: bash
+        run: |
+          ls -lh
+          release=$(find . -name *.iso | cut -d "/" -f2 | sed 's/.iso//')
+          zip -j -0 -s 2000m ${release}.zip ${release}.iso
+          ls -lh
+          echo ${{ secrets.TOKEN_RELEASE }} | gh auth login --with-token
+          gh release create ${release} --title ${release} --repo ${{ secrets.REPO_ISO }} --notes "automated release from CI/CD" || echo "release already exists"
+          for i in *.z* *.md5 *.pkgs; do 
+            gh release upload ${release} --repo ${{ secrets.REPO_ISO }} --clobber $i
+          done

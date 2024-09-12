@@ -1,4 +1,4 @@
-name: ISO Build
+name: EDITION - ISO Build
 
 on:
   repository_dispatch:
@@ -77,14 +77,14 @@ on:
 
 jobs:
   build:
-    name: Build ISO ${{ github.event.client_payload.edition || 'Unknown' }}
+    name: EDITION - Build ISO ${{ github.event.client_payload.edition || 'Unknown' }}
     runs-on: ubuntu-latest
     container:
       image: talesam/community-build:1.2
       options: --privileged
 
     steps:
-      - name: Initial Debug
+      - name: EDITION - Initial Debug
         run: |
           echo "Workflow started"
           echo "Event Name: ${{ github.event_name }}"
@@ -93,12 +93,12 @@ jobs:
           echo "Tmate from payload: ${{ github.event.client_payload.tmate }}"
           echo "Full github event: ${{ toJson(github.event) }}"
 
-      - name: Checkout repository
+      - name: EDITION - Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build ISO
+      - name: EDITION - Build ISO
         uses: ./
         id: build
         with:
@@ -125,14 +125,14 @@ jobs:
           # iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
           # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
 
-      - name: Echo ISO path
+      - name: EDITION - Echo ISO path
         shell: bash
         run: |
           echo "----------------------------------------"
           echo "ISO path: ${{ steps.build.outputs.file-path }}"
           echo "----------------------------------------"
 
-      - name: Upload ISO as artifact
+      - name: EDITION - Upload ISO as artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.build.outputs.release_name }}
@@ -141,7 +141,7 @@ jobs:
             ${{ steps.build.outputs.iso_path }}.md5
             ${{ steps.build.outputs.iso_path }}.pkgs
 
-      - name: Create Release
+      - name: EDITION - Create Release
         if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' }}
         uses: softprops/action-gh-release@v1
         with:
