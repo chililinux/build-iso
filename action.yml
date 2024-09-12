@@ -94,7 +94,7 @@ runs:
         git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
 
         # Copiar os profiles para manjaro share
-        pushd cd /usr/share/manjaro-tools/iso-profiles
+        pushd /usr/share/manjaro-tools/iso-profiles
         cp -Rpva /__w/build-iso/build-iso/iso-profiles/. .
         popd
 
