@@ -261,6 +261,7 @@ runs:
         fi
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
         sudo ln -s /home/builduser/iso-profiles /usr/share/manjaro-tools/iso-profiles
+        sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
         popd
         echo "=>ISO profiles cloned successfully."
         echo "####################################################################################################################"
