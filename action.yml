@@ -259,8 +259,8 @@ runs:
         #echo "Failed to clone ISO profiles repository."
         #  exit 1
         #fi
-        sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
 
+        sudo git clone https://github.com/chililinux/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
         #sudo buildiso -i https://github.com/chililinux/iso-profiles
         #sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
