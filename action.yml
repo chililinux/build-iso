@@ -111,7 +111,7 @@ runs:
 
         echo "Build environment setup completed."
 
-    - name: Configure disable-fsync
+    - name: ACTION - Configure disable-fsync
       shell: bash
       run: |
         echo "Configuring disable-fsync..."
@@ -128,7 +128,7 @@ runs:
 
         echo "disable-fsync configured successfully."
 
-    - name: Pull and setup Community keys
+    - name: ACTION - Pull and setup Community keys
       shell: bash
       run: |
         echo "Pulling and installing Community keys..."
@@ -148,7 +148,7 @@ runs:
         sudo pacman -Sy --quiet
         echo "=>Community keys installed and system updated."
 
-    - name: Configure repositories and build environment
+    - name: ACTION - Configure repositories and build environment
       shell: bash
       run: |
         echo
@@ -247,7 +247,7 @@ runs:
         echo "=>Repository and build environment configuration completed."
         echo
 
-    - name: Cleaning System
+    - name: ACTION - Cleaning System
       shell: bash
       run: |
         echo
@@ -258,7 +258,7 @@ runs:
         echo "####################################################################################################################"
       continue-on-error: true
 
-    - name: Checkout ISO profiles
+    - name: ACTION - Checkout ISO profiles
       shell: bash
       run: |
         echo
@@ -283,7 +283,7 @@ runs:
         echo "####################################################################################################################"
         echo
 
-    - name: Create with mknod /dev/sr0
+    - name: ACTION - Create with mknod /dev/sr0
       shell: bash
       run: |
         echo
@@ -294,7 +294,7 @@ runs:
         echo "####################################################################################################################"
       continue-on-error: true
 
-    - name: Apply Custom Profile Modifications
+    - name: ACTION - Apply Custom Profile Modifications
       shell: bash
       run: |
         EDITION="${{ inputs.edition }}"
@@ -324,14 +324,14 @@ runs:
           bash "$CUSTOM_PROFILE_DIR/special-commands.sh"
         fi
 
-    - name: Setup TMATE Session
+    - name: ACTION - Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
       if: inputs.tmate == 'true'
       with:
         install-dependencies: false
         detached: true
 
-    - name: Build ISO Image
+    - name: ACTION - Build ISO Image
       shell: bash
       env:
         NAME: ${{ inputs.name }}
