@@ -82,17 +82,17 @@ jobs:
     container:
       image: talesam/community-build:1.3
       options: --privileged
-      #volumes:
-      #- /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso
+      volumes:
+        - /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso
     steps:
-      #- name: Checkout code
-      #uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      #- name: Set up volume directory
-      #run: |
-      #mkdir -p /home/runner/work/${{ github.repository }}/volume_data
-      #echo "Directory contents before mounting:"
-      #ls -l /home/runner/work/${{ github.repository }}/volume_data
+      - name: Set up volume directory
+        run: |
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data
+          echo "Directory contents before mounting:"
+          ls -l /home/runner/work/${{ github.repository }}/volume_data
 
       - name: Initial Debug
         run: |
