@@ -549,7 +549,7 @@ runs:
           echo "KERNEL_NAME: $kernel_name"
           echo "SCOPE: $SCOPE"
           echo "OFFICE: $OFFICE"
-          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -t /__w/
+          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -t /__w/ -f
         }
 
         cleanup_and_move_files() {
