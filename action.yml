@@ -84,7 +84,6 @@ runs:
           calamares \
           calamares-tools \
           fuse-overlayfs \
-          overlayfs-tools \
           mkinitcpio
 
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
