@@ -254,6 +254,7 @@ runs:
         sudo rm -r /var/lib/manjaro-tools/buildiso/
         sudo rm -r /var/cache/manjaro-tools/
         echo "####################################################################################################################"
+      continue-on-error: true
 
     - name: Checkout ISO profiles
       shell: bash
