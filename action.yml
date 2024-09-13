@@ -106,10 +106,10 @@ runs:
       run: |
         echo "Setting up build environment..."
         # Atualizar o sistema
-        sudo pacman -Syu --quiet --noconfirm
+        #sudo pacman -Syu --quiet --noconfirm
 
         # Instalar pacotes adicionais que possam ser necessários
-        sudo pacman -S --quiet --needed --noconfirm \
+        sudo pacman -Syu --quiet --needed --noconfirm \
           mktorrent \
           squashfs-tools \
           archiso \
