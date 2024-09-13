@@ -261,6 +261,7 @@ runs:
         fi
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
         #sudo ln -s /home/builduser/iso-profiles /usr/share/manjaro-tools/iso-profiles
+        cd /usr/share/manjaro-tools/
         sudo buildiso -i https://github.com/chililinux/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
         popd
