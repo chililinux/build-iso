@@ -84,6 +84,7 @@ runs:
           calamares \
           calamares-tools \
           fuse-overlayfs \
+          overlayfs-tools \
           mkinitcpio
 
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
@@ -244,6 +245,16 @@ runs:
         cat /usr/share/manjaro-tools/pacman-multilib.conf
         echo "=>Repository and build environment configuration completed."
         echo
+
+    - name: Cleaning System
+      shell: bash
+      run: |
+        echo
+        echo "####################################################################################################################"
+        sudoc pacman -Scc --noconfirm
+        sudo rm -r /var/lib/manjaro-tools/buildiso/
+        sudo rm -r /var/cache/manjaro-tools/
+        echo "####################################################################################################################"
 
     - name: Checkout ISO profiles
       shell: bash
