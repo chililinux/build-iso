@@ -1,4 +1,4 @@
-name: "ACTION - Build BigCommunity ISO"
+name: "Build BigCommunity ISO"
 description: "Builds a BigCommunity ISO image"
 
 inputs:
@@ -67,7 +67,7 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: ACTION - clean-system
+    - name: clean-system
       shell: bash
       run: |
         echo "### Clean System ###"
@@ -101,7 +101,7 @@ runs:
           sudo rm -rf "$dir"
         done
 
-    - name: ACTION - Setup build environment
+    - name: Setup build environment
       shell: bash
       run: |
         echo "Setting up build environment..."
@@ -145,7 +145,7 @@ runs:
 
         echo "Build environment setup completed."
 
-    - name: ACTION - Configure disable-fsync
+    - name: Configure disable-fsync
       shell: bash
       run: |
         echo "Configuring disable-fsync..."
@@ -162,7 +162,7 @@ runs:
 
         echo "disable-fsync configured successfully."
 
-    - name: ACTION - Pull and setup Community keys
+    - name: Pull and setup Community keys
       shell: bash
       run: |
         echo "Pulling and installing Community keys..."
@@ -182,7 +182,7 @@ runs:
         sudo pacman -Sy --quiet
         echo "=>Community keys installed and system updated."
 
-    - name: ACTION - Configure repositories and build environment
+    - name: Configure repositories and build environment
       shell: bash
       run: |
         echo
@@ -287,7 +287,7 @@ runs:
         echo "=>Repository and build environment configuration completed."
         echo
 
-    - name: ACTION - Cleaning System
+    - name: Cleaning System
       shell: bash
       run: |
         echo
@@ -300,7 +300,7 @@ runs:
         echo "####################################################################################################################"
       continue-on-error: true
 
-    - name: ACTION - Checkout ISO profiles
+    - name: Checkout ISO profiles
       shell: bash
       run: |
         echo
@@ -325,7 +325,7 @@ runs:
         echo "####################################################################################################################"
         echo
 
-    - name: ACTION - Create with mknod /dev/sr0
+    - name: Create with mknod /dev/sr0
       shell: bash
       run: |
         echo
@@ -336,7 +336,7 @@ runs:
         echo "####################################################################################################################"
       continue-on-error: true
 
-    - name: ACTION - Apply Custom Profile Modifications
+    - name: Apply Custom Profile Modifications
       shell: bash
       run: |
         EDITION="${{ inputs.edition }}"
@@ -366,14 +366,14 @@ runs:
           bash "$CUSTOM_PROFILE_DIR/special-commands.sh"
         fi
 
-    - name: ACTION - Setup TMATE Session
+    - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
       if: inputs.tmate == 'true'
       with:
         install-dependencies: false
         detached: true
 
-    - name: ACTION - Build ISO Image
+    - name: Build ISO Image
       shell: bash
       env:
         NAME: ${{ inputs.name }}
@@ -640,7 +640,7 @@ runs:
 
         main
 
-    - name: ACTION - Calculate ISO MD5 Hash
+    - name: Calculate ISO MD5 Hash
       shell: bash
       run: |
         echo "Calculating MD5 hash for ISO file..."
@@ -652,7 +652,7 @@ runs:
         echo "MD5 hash calculated and saved:"
         cat "${ISO_PATH}.md5"
 
-    - name: ACTION - Prepare ISO for release
+    - name: Prepare ISO for release
       id: prepare-iso
       shell: bash
       run: |
@@ -662,7 +662,7 @@ runs:
         echo "release_name=${release}" >> $GITHUB_OUTPUT
         echo "ISO prepared for release"
 
-    - name: ACTION - Create GitHub Release
+    - name: Create GitHub Release
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
