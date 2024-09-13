@@ -84,6 +84,7 @@ jobs:
       options: --privileged
       volumes:
         - /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso
+        - /home/runner/work/${{ github.repository }}/volume_data_iso:/var/cache/manjaro-tools/iso
     steps:
       - name: EDITION - Checkout code
         uses: actions/checkout@v2
@@ -93,6 +94,10 @@ jobs:
           mkdir -p /home/runner/work/${{ github.repository }}/volume_data
           echo "Directory contents before mounting:"
           ls -l /home/runner/work/${{ github.repository }}/volume_data
+
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
+          echo "Directory contents before mounting:"
+          ls -l /home/runner/work/${{ github.repository }}/volume_data_iso
 
       - name: EDITION - Initial Debug
         run: |
