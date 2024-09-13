@@ -306,6 +306,7 @@ runs:
         install-dependencies: false
         # Ativa o modo de debug automático do tmate
         debug: true
+        detached: false
 
     - name: Build ISO Image
       shell: bash
