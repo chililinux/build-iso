@@ -260,8 +260,8 @@ runs:
         #  exit 1
         #fi
 
-        echo 'buildiso -i https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/'
-        sudo buildiso -i https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/
+        echo 'buildiso -i https://github.com/chililinux/iso-profiles'
+        sudo buildiso -i https://github.com/chililinux/iso-profiles
 
         echo 'sudo rm -rf /usr/share/manjaro-tools/iso-profiles'
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
