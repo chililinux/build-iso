@@ -249,22 +249,24 @@ runs:
       shell: bash
       run: |
         echo
+        echo "####################################################################################################################"
         echo "=>Cloning ISO profiles repository..."
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
 
-        echo "####################################################################################################################"
-        pushd /home/builduser
-        if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
-        echo "Failed to clone ISO profiles repository."
-          exit 1
-        fi
+        #pushd /home/builduser
+        #if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
+        #echo "Failed to clone ISO profiles repository."
+        #  exit 1
+        #fi
+
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
         #sudo ln -s /home/builduser/iso-profiles /usr/share/manjaro-tools/iso-profiles
         cd /usr/share/manjaro-tools/
-        sudo buildiso -i https://github.com/chililinux/iso-profiles
+        sudo buildiso -i https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/
+        git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
-        popd
+        #popd
         echo "=>ISO profiles cloned successfully."
         echo "####################################################################################################################"
         echo
