@@ -260,13 +260,21 @@ runs:
         #  exit 1
         #fi
 
-        sudo rm -rf /usr/share/manjaro-tools/iso-profiles
-        #sudo ln -s /home/builduser/iso-profiles /usr/share/manjaro-tools/iso-profiles
-        cd /usr/share/manjaro-tools/
+        echo 'buildiso -i https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/'
         sudo buildiso -i https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/
-        git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
+
+        echo 'sudo rm -rf /usr/share/manjaro-tools/iso-profiles'
+        sudo rm -rf /usr/share/manjaro-tools/iso-profiles
+
+        echo 'sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles'
+        sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
+
+        echo 'sudo git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" /usr/share/manjaro-tools/iso-profiles'
+        sudo git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" /usr/share/manjaro-tools/iso-profiles
+
+        echo 'sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles'
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
-        #popd
+
         echo "=>ISO profiles cloned successfully."
         echo "####################################################################################################################"
         echo
