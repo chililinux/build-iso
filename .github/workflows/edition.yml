@@ -84,14 +84,13 @@ jobs:
       options: --privileged
       volumes:
         - /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v2
-
-        - name: Set up volume directory
-          run: mkdir -p /home/runner/work/${{ github.repository }}/volume_data
-
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up volume directory
+        run: mkdir -p /home/runner/work/${{ github.repository }}/volume_data
+
       - name: Initial Debug
         run: |
           echo "Workflow started"
