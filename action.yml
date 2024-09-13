@@ -67,6 +67,40 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: ACTION - clean-system
+      shell: bash
+      run: |
+        echo "### Clean System ###"
+        DIRECTORIES=(
+          "/imagegeneration"
+          "/opt/az"
+          "/opt/ghc"
+          "/opt/pipx"
+          "/opt/google"
+          "/opt/microsoft"
+          "/opt/hostedtoolcache"
+          "/usr/lib/llvm*"
+          "/var/lib/mysql"
+          "/var/lib/snapd"
+          "/var/lib/docker"
+          "/usr/lib/google*"
+          "/usr/lib/firefox"
+          "/usr/local/julia*"
+          "/usr/local/.ghcup"
+          "/usr/local/aws-cli"
+          "/usr/local/lib/android"
+          "/usr/local/aws-sam-cli"
+          "/usr/local/share/chromium"
+          "/usr/local/lib/node_modules"
+          "/usr/local/share/powershell"
+          "/usr/share/swift"
+          "/usr/share/dotnet"
+        )
+
+        for dir in "${DIRECTORIES[@]}"; do
+          sudo rm -rf "$dir"
+        done
+
     - name: ACTION - Setup build environment
       shell: bash
       run: |
