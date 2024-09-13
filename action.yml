@@ -186,6 +186,9 @@ runs:
           # Configure os repositórios Community
           case "${{ inputs.community_branch }}" in
             "stable")
+              echo '[community-testing]
+              SigLevel = PackageRequired
+              Server = https://repo.communitybig.org/testing/$arch' | sudo tee -a "$arquivo_conf"
               echo '[community-stable]
               SigLevel = PackageRequired
               Server = https://repo.communitybig.org/stable/$arch' | sudo tee -a "$arquivo_conf"
