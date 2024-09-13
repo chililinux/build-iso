@@ -307,9 +307,6 @@ runs:
         install-dependencies: false
         detached: true
 
-    - name: Ensure Workflow Continues
-      run: echo "Workflow is continuing despite
-
     - name: Build ISO Image
       shell: bash
       env:
