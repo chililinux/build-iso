@@ -553,7 +553,7 @@ runs:
           echo "SCOPE: $SCOPE"
           echo "OFFICE: $OFFICE"
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -t /__w/ -f
-          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
+          sudo buildiso -k "linux${kernel_name}" -f
         }
 
         cleanup_and_move_files() {
