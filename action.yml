@@ -259,6 +259,7 @@ runs:
         #echo "Failed to clone ISO profiles repository."
         #  exit 1
         #fi
+        sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
 
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
         #sudo buildiso -i https://github.com/chililinux/iso-profiles
@@ -304,9 +305,10 @@ runs:
       if: inputs.tmate == 'true'
       with:
         install-dependencies: false
-        # Ativa o modo de debug automático do tmate
-        debug: true
-        detached: false
+        detached: true
+
+    - name: Ensure Workflow Continues
+      run: echo "Workflow is continuing despite
 
     - name: Build ISO Image
       shell: bash
