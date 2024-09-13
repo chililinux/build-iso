@@ -203,6 +203,9 @@ runs:
           # Configure os repositórios BigLinux
           case "${{ inputs.biglinux_branch }}" in
             "stable")
+              echo '[biglinux-testing]
+              SigLevel = PackageRequired
+              Server = https://repo.biglinux.com.br/testing/$arch' | sudo tee -a "$arquivo_conf"
               echo '[biglinux-stable]
               SigLevel = PackageRequired
               Server = https://repo.biglinux.com.br/stable/$arch' | sudo tee -a "$arquivo_conf"
@@ -501,6 +504,9 @@ runs:
           Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch" | sudo tee -a "$config_file"
 
           if [ "$biglinux_branch" = "testing" ]; then
+            echo "[biglinux-testing]
+            SigLevel = PackageRequired
+            Server = https://repo.biglinux.com.br/testing/\$arch" | sudo tee -a "$config_file"
             echo "[biglinux-stable]
             SigLevel = PackageRequired
             Server = https://repo.biglinux.com.br/stable/\$arch" | sudo tee -a "$config_file"
