@@ -20,7 +20,6 @@ jobs:
           mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
 
       - name: Setup TMATE Session
-        id: tmate
         uses: mxschmitt/action-tmate@v3
         with:
           install-dependencies: false
