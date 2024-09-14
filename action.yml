@@ -70,16 +70,7 @@ runs:
     - name: clean-system
       shell: bash
       run: |
-        RED='\033[0;31m'
-        GREEN='\033[0;32m'
-        YELLOW='\033[0;33m'
-        BLUE='\033[0;34m'
-        NC='\033[0m' # Sem cor (reset)
-        BG_RED='\033[41m'
-        BG_GREEN='\033[42m'
-        BG_YELLOW='\033[43m'
-
-        echo "${BG_RED}### Clean System ###${NC}"
+        echo "### Clean System ###$"
         DIRECTORIES=(
           "/imagegeneration"
           "/opt/az"
@@ -105,10 +96,10 @@ runs:
           "/usr/share/swift"
           "/usr/share/dotnet"
         )
-
         for dir in "${DIRECTORIES[@]}"; do
           sudo rm -rf "$dir"
         done
+        echo
 
     - name: Setup build environment
       shell: bash
