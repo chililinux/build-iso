@@ -22,7 +22,7 @@ jobs:
       - name: Setup TMATE Session
         uses: mxschmitt/action-tmate@v3
         with:
-          install-dependencies: false
+          install-dependencies: true
           detached: true
 
       - name: Print TMATE Session URL
