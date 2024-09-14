@@ -25,10 +25,15 @@ jobs:
           id
           df -hT
 
-      - name: Print a message and exit with status 0
+      - name: Print message and conditionally exit
         run: |
-          echo "This step will end the workflow with a success status."
-          exit 0  # Exiting with status code 0, which indicates success
+          CONDITION_MET=false
+          if [ "$CONDITION_MET" = true ]; then
+            echo "Condition met, continuing..."
+          else
+            echo "Condition not met, exiting..."
+            exit 1  # Exiting with status code 1 will fail the job
+          fi
 
       - name: Set up volume directory
         run: |
