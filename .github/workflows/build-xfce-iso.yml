@@ -14,12 +14,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Display the current user
+      - name: Display the current user in host
         run: |
+          echo "Current host is: $(hostname)"
           echo "Current user is: $(whoami)"
           echo "Current user ID is: $(id -u)"
           echo "Current user details:"
           id
+          df -hT
 
       - name: Set up volume directory
         run: |
