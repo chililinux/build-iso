@@ -1,0 +1,58 @@
+name: Build Arch Linux XFCE ISO
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Arch Linux XFCE ISO
+        run: |
+          # Baixa a imagem base do Arch Linux
+          docker pull archlinux/archlinux:latest
+
+          # Cria e roda um container Arch Linux
+          docker run --rm -it \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            archlinux/archlinux:latest \
+            /bin/bash -c "
+              # Atualiza o sistema
+              pacman -Syu --noconfirm
+
+              # Instala as ferramentas necessárias
+              pacman -S --noconfirm base-devel git
+
+              # Clona o repositório do Archiso
+              git clone https://gitlab.archlinux.org/archlinux/archiso
+              cd archiso
+
+              # Copia a configuração padrão
+              cp -r config/releng /workspace
+
+              # Navega para o diretório de configuração
+              cd /workspace/releng
+
+              # Instala o buildiso
+              pacman -S --noconfirm archiso
+
+              # Cria a ISO
+              buildiso -v
+            "
+
+      - name: Upload ISO Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: archlinux-xfce-iso
+          path: /workspace/releng/archlinux-xfce.iso
