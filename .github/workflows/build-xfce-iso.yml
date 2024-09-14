@@ -21,6 +21,9 @@ jobs:
             pacman -Syu --noconfirm
             pacman -S --noconfirm base-devel git manjaro-tools manjaro-tools-iso
 
+            # Clone o repositório iso-profiles
+            git clone https://github.com/chililinux/iso-profiles.git /usr/share/manjaro-tools/iso-profiles
+
             # Verifique onde os perfis estão localizados
             echo 'Verificando diretórios...'
             find / -name 'iso-profiles'
