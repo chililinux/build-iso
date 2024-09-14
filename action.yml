@@ -70,7 +70,7 @@ runs:
     - name: clean-system
       shell: bash
       run: |
-        echo "### Clean System ###$"
+        echo "####################################### Clean System"
         DIRECTORIES=(
           "/imagegeneration"
           "/opt/az"
@@ -99,11 +99,12 @@ runs:
         for dir in "${DIRECTORIES[@]}"; do
           sudo rm -rf "$dir"
         done
-        echo
+        echo "####################################### Clean System"
 
     - name: Setup build environment
       shell: bash
       run: |
+        echo "####################################### Clean System"
         echo "Setting up build environment..."
         # Atualizar o sistema
         #sudo pacman -Syu --quiet --noconfirm
@@ -143,8 +144,8 @@ runs:
         # Configurações adicionais específicas para a construção de ISO
         sudo sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
         sudo sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
-
         echo "Build environment setup completed."
+        echo "####################################### Clean System"
 
     - name: Configure disable-fsync
       shell: bash
@@ -588,7 +589,7 @@ runs:
             kernel_name="${KERNEL//-/}${xan_ver}"
           fi
 
-          echo ""
+          echo "###################################################################"
           echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o} -f"
           echo "Building ISO with kernel : linux${kernel_name}"
           echo "PROFILE_PATH             : $PROFILE_PATH"
@@ -597,11 +598,11 @@ runs:
           echo "KERNEL_NAME              : $kernel_name"
           echo "SCOPE                    : $SCOPE"
           echo "OFFICE                   : $OFFICE"
-          echo ""
+          echo "###################################################################"
 
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f > /dev/null 2>&1
-          sudo buildiso -p "community/$EDITION" -k "linux${kernel_name}" -f > /dev/null
+          sudo buildiso -p "community/$EDITION" -k "linux${kernel_name}" -f
         }
 
         cleanup_and_move_files() {
