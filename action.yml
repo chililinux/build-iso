@@ -584,15 +584,18 @@ runs:
             kernel_name="${KERNEL//-/}${xan_ver}"
           fi
 
-          echo "Build command: buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o} -f"
+          echo
+          echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o} -f"
+          echo "Building ISO with kernel : linux${kernel_name}"
+          echo "PROFILE_PATH             : $PROFILE_PATH"
+          echo "EDITION                  : $EDITION"
+          echo "MANJAROBRANCH            : $MANJAROBRANCH"
+          echo "KERNEL_NAME              : $kernel_name"
+          echo "SCOPE                    : $SCOPE"
+          echo "OFFICE                   : $OFFICE"
+          echo
+          echo
 
-          echo "Building ISO with kernel: linux${kernel_name}"
-          echo "PROFILE_PATH = $PROFILE_PATH"
-          echo "EDITION: $EDITION"
-          echo "MANJAROBRANCH: $MANJAROBRANCH"
-          echo "KERNEL_NAME: $kernel_name"
-          echo "SCOPE: $SCOPE"
-          echo "OFFICE: $OFFICE"
           sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
         }
 
