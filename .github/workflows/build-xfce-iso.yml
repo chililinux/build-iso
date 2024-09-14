@@ -24,7 +24,11 @@ jobs:
           echo "#########################################"
           id
           df -hT
-          exit 0
+
+      - name: Print a message and exit with status 0
+        run: |
+          echo "This step will end the workflow with a success status."
+          exit 0  # Exiting with status code 0, which indicates success
 
       - name: Set up volume directory
         run: |
