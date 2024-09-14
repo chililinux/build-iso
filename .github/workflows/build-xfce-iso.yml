@@ -60,7 +60,7 @@ jobs:
           docker run --rm --privileged \
             -v /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso \
             -v /mnt/var_cache_manjaro_tools:/var/cache/manjaro-tools \
-            -it talesam/community-build:1.3 /bin/bash -c "
+            talesam/community-build:1.3 /bin/bash -c "
               pacman -Syu --noconfirm && pacman -S --noconfirm tmate
               tmate
             "
