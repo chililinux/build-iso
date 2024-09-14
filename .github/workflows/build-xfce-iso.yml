@@ -14,6 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Display the current user
+        run: |
+          echo "Current user is: $(whoami)"
+          echo "Current user ID is: $(id -u)"
+          echo "Current user details:"
+          id
+
       - name: Set up volume directory
         run: |
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data
