@@ -584,7 +584,7 @@ runs:
             kernel_name="${KERNEL//-/}${xan_ver}"
           fi
 
-          echo
+          echo ""
           echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o} -f"
           echo "Building ISO with kernel : linux${kernel_name}"
           echo "PROFILE_PATH             : $PROFILE_PATH"
@@ -593,8 +593,7 @@ runs:
           echo "KERNEL_NAME              : $kernel_name"
           echo "SCOPE                    : $SCOPE"
           echo "OFFICE                   : $OFFICE"
-          echo
-          echo
+          echo ""
 
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f > /dev/null 2>&1
@@ -614,31 +613,37 @@ runs:
         }
 
         main() {
-          echo "## Community Pre Config Build ISO ##"
+          echo "BEGIN - Community Pre Config Build ISO"
           setup_manjaro_tools
           configure_mesa
+          echo "END Community Pre Config Build ISO"
+          echo
 
-          echo "BEGIN - Starting kernel configuration ############################################################"
+          echo "BEGIN - Starting kernel configuration"
           configure_kernel
-          echo "END - Kernel configuration completed #############################################################"
+          echo "END - Kernel configuration completed"
+          echo
 
-          echo "BEGIN - Starting repository configuration ########################################################"
+          echo "BEGIN - Starting repository configuration"
           for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
             echo "Configuring $config..."
             configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
           done
-          echo "END Repository configuration complete ############################################################"
+          echo "END Repository configuration complete"
+          echo
 
           set_build_info
           configure_iso_name
           sudo rm -rf iso-profiles/custom-profiles
 
-          echo "Kernel: $kernel_name"
-          echo "Edition: $EDITION"
-          echo "ManjaroBranch: $MANJAROBRANCH"
-          echo "CommunityBranch: $COMMUNITYBRANCH"
-          echo "BigLinuxBranch: $BIGBRANCH"
-          echo "ISO profiles path: $(pwd)/$PROFILE_PATH/$EDITION"
+          echo
+          echo "Kernel            : $kernel_name"
+          echo "Edition           : $EDITION"
+          echo "ManjaroBranch     : $MANJAROBRANCH"
+          echo "CommunityBranch   : $COMMUNITYBRANCH"
+          echo "BigLinuxBranch    : $BIGBRANCH"
+          echo "ISO profiles path : $(pwd)/$PROFILE_PATH/$EDITION"
+          echo
 
           build_iso
           cleanup_and_move_files
