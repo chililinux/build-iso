@@ -37,8 +37,12 @@ jobs:
           cd /workspace/releng
           buildiso -v
 
+
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v3
         with:
           name: manjaro-xfce-iso
           path: /workspace/releng/*.iso
+
+
+
