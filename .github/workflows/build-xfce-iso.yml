@@ -21,9 +21,12 @@ jobs:
           echo "Current user is: $(whoami)"
           echo "Current user ID is: $(id -u)"
           echo "Current user details:"
-          echo "#########################################"
           id
+          echo "#########################################"
           df -hT
+          echo "#########################################"
+          ls -la /mnt
+          echo "#########################################"
 
       - name: Print message and conditionally exit
         run: |
