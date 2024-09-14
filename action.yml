@@ -8,7 +8,7 @@ inputs:
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
-    default: "https://github.com/chililinux/iso-profiles"
+    default: "https://github.com/talesam/iso-profiles"
   iso_profiles_branch:
     description: "Branch of the ISO profiles repository (optional)"
     required: false
