@@ -282,7 +282,7 @@ runs:
  
         echo "Cloning ISO profiles repository..."
         #if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
-        if git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 https://github.com/chililinux/iso-profiles; then
+        if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 https://github.com/chililinux/iso-profiles; then
           echo "Falha ao clonar o repositorio iso-profiles"
           exit 1
         fi
