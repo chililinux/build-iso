@@ -149,7 +149,7 @@ runs:
     - name: Configure disable-fsync
       shell: bash
       run: |
-        echo "##########################################################################################################"
+        echo
         echo "Configuring disable-fsync..."
         DISABLE_FSYNC_URL="https://raw.githubusercontent.com/biglinux/disable-fsync/main/disable-fsync/usr/lib/disable-fsync.so"
         DISABLE_FSYNC_FILE="/usr/lib/disable-fsync.so"
@@ -162,12 +162,12 @@ runs:
         sudo sh -c "echo '${DISABLE_FSYNC_FILE}' >> '${PRELOAD_FILE}'"
         sudo ldconfig
         echo "disable-fsync configured successfully."
-        echo "##########################################################################################################"
+        echo
 
     - name: Pull and setup Community keys
       shell: bash
       run: |
-        echo "##########################################################################################################"
+        echo
         echo "Pulling and installing Community keys..."
         sudo git clone https://github.com/biglinux/biglinux-key.git
         sudo install -dm755 /etc/pacman.d/gnupg/
@@ -184,12 +184,12 @@ runs:
         # Atualizar os bancos de dados do pacman
         sudo pacman -Sy --quiet
         echo "Community keys installed and system updated."
-        echo "##########################################################################################################"
+        echo
 
     - name: Configure repositories and build environment
       shell: bash
       run: |
-        echo "BEGIN Configure repositories and build environment##########################################################################################################"
+        echo "BEGIN Configure repositories and build environment"
         echo "Configuring repositories and build environment..."
 
         # Função para adicionar repositórios
@@ -304,15 +304,11 @@ runs:
     - name: Checkout ISO profiles
       shell: bash
       run: |
-        reset=$(tput sgr0)
-        red=$(tput bold)$(tput setaf 196)
-        green=$(tput bold)$(tput setaf 2)
-
-        echo "${red}Checkout ISO profiles ${reset}"
+        echo "Checkout ISO profiles"
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
 
-        echo "${red}Cloning ISO profiles repository...${reset}"
+        echo "Cloning ISO profiles repository..."
         #pushd /home/builduser
         #if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
         #echo "Failed to clone ISO profiles repository."
@@ -325,23 +321,23 @@ runs:
         #sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
         sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
-        echo "${green}ISO profiles cloned successfully ${reset}"
-        echo "${red}END Checkout ISO profiles${reset}"
+        echo "ISO profiles cloned successfully"
+        echo "END Checkout ISO profiles"
 
     - name: Create with mknod /dev/sr0
       shell: bash
       run: |
-        echo "BEGIN Create with mknod /dev/sr0 ####################################################################################################################"
+        echo "BEGIN Create with mknod /dev/sr0"
         sudo mknod /dev/sr0 b 11 0
         sudo chmod 660 /dev/sr0
         sudo chown root:cdrom /dev/sr0
-        echo "END Create with mknod /dev/sr0 ####################################################################################################################"
+        echo "END Create with mknod /dev/sr0"
       continue-on-error: true
 
     - name: Apply Custom Profile Modifications
       shell: bash
       run: |
-        echo "BEGIN Apply Custom Profile Modifications ####################################################################################################################"
+        echo "BEGIN Apply Custom Profile Modifications"
         EDITION="${{ inputs.edition }}"
         ISO_PROFILE_DIR="iso-profiles/community/$EDITION"
         CUSTOM_PROFILE_DIR="iso-profiles/custom-profiles/$EDITION"
@@ -369,7 +365,7 @@ runs:
           bash "$CUSTOM_PROFILE_DIR/special-commands.sh"
         fi
 
-        echo "END Apply Custom Profile Modifications ####################################################################################################################"
+        echo "END Apply Custom Profile Modifications"
 
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
