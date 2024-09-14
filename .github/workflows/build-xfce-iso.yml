@@ -14,16 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Set up volume directory
-        run: |
-          mkdir -p /home/runner/work/${{ github.repository }}/volume_data
-          echo "Directory contents before mounting:"
-          ls -l /home/runner/work/${{ github.repository }}/volume_data
-
-          mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
-          echo "Directory contents before mounting:"
-          ls -l /home/runner/work/${{ github.repository }}/volume_data_iso
-
       - name: Setup TMATE Session
         id: tmate
         uses: mxschmitt/action-tmate@v3
@@ -32,11 +22,16 @@ jobs:
           detached: true
 
       - name: Print TMATE Session URL
-        run: echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
+        run: |
+          echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
+
+      - name: Set up volume directory
+        run: |
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
 
       - name: Build Manjaro XFCE ISO
         run: |
-          echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
           docker run --rm --privileged \
             -v /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso \
             -v /home/runner/work/${{ github.repository }}/volume_data_iso:/var/cache/manjaro-tools \
