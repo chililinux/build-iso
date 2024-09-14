@@ -289,21 +289,24 @@ runs:
         echo "Print pacman-multilib"
         cat /usr/share/manjaro-tools/pacman-multilib.conf
         echo "Repository and build environment configuration completed."
-        echo "END Configure repositories and build environment ##########################################################################################################"
+        echo "END Configure repositories and build environment"
 
     - name: Cleaning System
       shell: bash
       run: |
-        echo "BEGIN Cleaning System ####################################################################################################################"
+        echo
+        echo "BEGIN Cleaning System"
         sudo pacman -Scc --noconfirm
         sudo rm -rf /__t/
         sudo rm -rf /var/cache/pacman/pkg/
-        echo "END Cleaning System ####################################################################################################################"
+        echo "END Cleaning System"
+        echo
       continue-on-error: true
 
     - name: Checkout ISO profiles
       shell: bash
       run: |
+        echo
         echo "Checkout ISO profiles"
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
@@ -323,6 +326,7 @@ runs:
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
         echo "ISO profiles cloned successfully"
         echo "END Checkout ISO profiles"
+        echo
 
     - name: Create with mknod /dev/sr0
       shell: bash
@@ -580,7 +584,7 @@ runs:
             kernel_name="${KERNEL//-/}${xan_ver}"
           fi
 
-          echo "Build command: buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH"-k linux${kernel_name} ${OFFICE:+-o} -f"
+          echo "Build command: buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o} -f"
 
           echo "Building ISO with kernel: linux${kernel_name}"
           echo "PROFILE_PATH = $PROFILE_PATH"
