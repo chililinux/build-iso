@@ -86,10 +86,10 @@ jobs:
         - /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso
         - /home/runner/work/${{ github.repository }}/volume_data_iso:/var/cache/manjaro-tools/iso
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1  # Esse parâmetro define a profundidade do fetch para o último commit
+      #- name: Checkout repository
+      #uses: actions/checkout@v4
+      #with:
+      #fetch-depth: 1  # Esse parâmetro define a profundidade do fetch para o último commit
 
       - name: Set up volume directory
         run: |
@@ -110,11 +110,11 @@ jobs:
           echo "Tmate from payload : ${{ github.event.client_payload.tmate }}"
           #echo "Full github event  : ${{ toJson(github.event) }}"
 
-      #- name: Checkout repository
-        #uses: actions/checkout@v4
-        #with:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
           #fetch-depth: 0
-          #fetch-depth: 1  # Esse parâmetro define a profundidade do fetch para o último commit
+          fetch-depth: 1 # Esse parâmetro define a profundidade do fetch para o último commit
 
       - name: Build ISO
         uses: ./
