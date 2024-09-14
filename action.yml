@@ -120,6 +120,7 @@ runs:
           fuse-overlayfs \
           tree \
           duf \
+          ncurses \
           mkinitcpio
 
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
@@ -182,14 +183,14 @@ runs:
 
         # Atualizar os bancos de dados do pacman
         sudo pacman -Sy --quiet
-        echo "=>Community keys installed and system updated."
+        echo "Community keys installed and system updated."
         echo "##########################################################################################################"
 
     - name: Configure repositories and build environment
       shell: bash
       run: |
         echo "BEGIN Configure repositories and build environment##########################################################################################################"
-        echo "=>Configuring repositories and build environment..."
+        echo "Configuring repositories and build environment..."
 
         # Função para adicionar repositórios
         add_repository() {
@@ -278,7 +279,7 @@ runs:
 
         # Imprima as configurações
         echo
-        echo "=>Imprima as configurações"
+        echo "Imprima as configurações"
         echo "print mirrorlist..."
         cat /etc/pacman.d/mirrorlist
         echo ""
@@ -287,7 +288,7 @@ runs:
         echo ""
         echo "Print pacman-multilib"
         cat /usr/share/manjaro-tools/pacman-multilib.conf
-        echo "=>Repository and build environment configuration completed."
+        echo "Repository and build environment configuration completed."
         echo "END Configure repositories and build environment ##########################################################################################################"
 
     - name: Cleaning System
@@ -303,11 +304,15 @@ runs:
     - name: Checkout ISO profiles
       shell: bash
       run: |
-        echo "BEGIN Checkout ISO profiles ####################################################################################################################"
-        echo "=>Cloning ISO profiles repository..."
+        reset=$(tput sgr0)
+        red=$(tput bold)$(tput setaf 196)
+        green=$(tput bold)$(tput setaf 2)
+
+        echo "${red}Checkout ISO profiles ${reset}"
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
 
+        echo "${red}Cloning ISO profiles repository...${reset}"
         #pushd /home/builduser
         #if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
         #echo "Failed to clone ISO profiles repository."
@@ -320,8 +325,8 @@ runs:
         #sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
         sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
-        echo "=>ISO profiles cloned successfully."
-        echo "END Checkout ISO profiles ####################################################################################################################"
+        echo "${green}ISO profiles cloned successfully ${reset}"
+        echo "${red}END Checkout ISO profiles${reset}"
 
     - name: Create with mknod /dev/sr0
       shell: bash
