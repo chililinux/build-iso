@@ -27,7 +27,7 @@ jobs:
 
       - name: Print message and conditionally exit
         run: |
-          CONDITION_MET=false
+          CONDITION_MET=true
           if [ "$CONDITION_MET" = true ]; then
             echo "Condition met, continuing..."
           else
@@ -39,8 +39,8 @@ jobs:
         run: |
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
-          sudo mkdir -p /mnt/buildiso
-          sudo mkdir -p /mnt/iso
+          sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
+          sudo mkdir -p /mnt/var_cache_manjaro_tools
 
       - name: Setup TMATE Session
         uses: mxschmitt/action-tmate@v3
@@ -55,8 +55,8 @@ jobs:
       - name: Build Manjaro XFCE ISO
         run: |
           docker run --rm --privileged \
-            -v /mnt/buildiso:/var/lib/manjaro-tools/buildiso \
-            -v /mnt/iso:/var/cache/manjaro-tools/iso \
+            -v /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso \
+            -v /mnt/var_cache_manjaro_tools:/var/cache/manjaro-tools \
             talesam/community-build:1.3 /bin/bash -c "
               # Atualize o sistema e instale as ferramentas necessárias
               pacman -Syu --noconfirm
