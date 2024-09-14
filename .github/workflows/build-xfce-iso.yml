@@ -20,9 +20,15 @@ jobs:
             pacman -Syu --noconfirm
             pacman -S --noconfirm base-devel git manjaro-tools
 
-            # Execute a ferramenta buildiso
-            # Substitua <config-file> pelo caminho para o arquivo de configuração do buildiso
-            buildiso
+
+            # Navegue até o diretório de perfis
+            cd /usr/share/manjaro-tools/iso-profiles/manjaro
+
+            # Verifique os perfis disponíveis
+            ls -l
+
+            # Execute a ferramenta buildiso com o perfil xfce
+            buildiso -v -c /workspace/xfce
           "
 
       - name: Upload ISO Artifact
