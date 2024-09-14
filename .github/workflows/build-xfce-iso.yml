@@ -24,11 +24,15 @@ jobs:
           echo "Directory contents before mounting:"
           ls -l /home/runner/work/${{ github.repository }}/volume_data_iso
 
-      - name: Start tmate session
-        uses: dtolnay/tmate-action@v2
-        with:
-          tmate_version: latest
+      - name: Setup TMATE Session
         id: tmate
+        uses: mxschmitt/action-tmate@v3
+        with:
+          install-dependencies: false
+          detached: true
+
+      - name: Print TMATE Session URL
+        run: echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
 
       - name: Build Manjaro XFCE ISO
         run: |
