@@ -566,9 +566,8 @@ runs:
           echo "OFFICE                   : $OFFICE"
           echo "###################################################################"
 
-          #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f > /dev/null 2>&1
-          sudo buildiso -p "community/$EDITION" -k "linux${kernel_name}" -f
+          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o}
         }
 
         cleanup_and_move_files() {
