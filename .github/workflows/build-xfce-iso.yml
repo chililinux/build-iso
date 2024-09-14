@@ -32,7 +32,7 @@ jobs:
             ls -l
 
             # Configure o buildiso para usar o perfil xfce
-            buildiso -v -c /workspace/<config-file>
+            buildiso -v -c /workspace/xfce
           "
 
       - name: Upload ISO Artifact
