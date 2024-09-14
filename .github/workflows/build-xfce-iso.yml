@@ -24,8 +24,15 @@ jobs:
           echo "Directory contents before mounting:"
           ls -l /home/runner/work/${{ github.repository }}/volume_data_iso
 
+      - name: Start tmate session
+        uses: dtolnay/tmate-action@v2
+        with:
+          tmate_version: latest
+        id: tmate
+
       - name: Build Manjaro XFCE ISO
         run: |
+          echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
           docker run --rm --privileged \
             -v /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso \
             -v /home/runner/work/${{ github.repository }}/volume_data_iso:/var/cache/manjaro-tools \
