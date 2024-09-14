@@ -55,26 +55,6 @@ jobs:
         run: |
           echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
 
-      - name: Run Docker and Create tmate Session in CONTAINER
-        run: |
-          docker run --rm --privileged \
-            -v /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso \
-            -v /mnt/var_cache_manjaro_tools:/var/cache/manjaro-tools \
-            talesam/community-build:1.3 /bin/bash -c "
-              pacman -Syu --noconfirm && pacman -S --noconfirm tmate
-              tmate
-            "
-
-      - name: Set up tmate session URL
-        uses: mxschmitt/action-tmate@v3
-        with:
-          install-dependencies: false
-          detached: true
-
-      - name: Print TMATE Session URL
-        run: |
-          echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
-
       - name: Build Manjaro XFCE ISO
         run: |
           docker run --rm --privileged \
@@ -104,4 +84,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: manjaro-xfce-iso
-          path: /workspace/*.iso
+          path: /var/cache/manjaro-tools/iso/*.iso
