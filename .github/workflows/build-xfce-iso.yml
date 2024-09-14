@@ -18,8 +18,8 @@ jobs:
         run: |
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
-          mkdir -p /mnt/buildiso
-          mkdir -p /mnt/iso
+          sudo mkdir -p /mnt/buildiso
+          sudo mkdir -p /mnt/iso
 
       - name: Setup TMATE Session
         uses: mxschmitt/action-tmate@v3
