@@ -67,41 +67,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: clean-system
-      shell: bash
-      run: |
-        echo "BEGIN #######################################"
-        echo "Clean System"
-        DIRECTORIES=(
-          "/imagegeneration"
-          "/opt/az"
-          "/opt/ghc"
-          "/opt/pipx"
-          "/opt/google"
-          "/opt/microsoft"
-          "/opt/hostedtoolcache"
-          "/usr/lib/llvm*"
-          "/var/lib/mysql"
-          "/var/lib/snapd"
-          "/var/lib/docker"
-          "/usr/lib/google*"
-          "/usr/lib/firefox"
-          "/usr/local/julia*"
-          "/usr/local/.ghcup"
-          "/usr/local/aws-cli"
-          "/usr/local/lib/android"
-          "/usr/local/aws-sam-cli"
-          "/usr/local/share/chromium"
-          "/usr/local/lib/node_modules"
-          "/usr/local/share/powershell"
-          "/usr/share/swift"
-          "/usr/share/dotnet"
-        )
-        for dir in "${DIRECTORIES[@]}"; do
-          sudo rm -rf "$dir"
-        done
-        echo "END #########################################"
-
     - name: Setup build environment
       shell: bash
       run: |
@@ -303,17 +268,6 @@ runs:
         echo "Repository and build environment configuration completed."
         echo "END #######################################"
 
-    - name: Cleaning System
-      shell: bash
-      run: |
-        echo "BEGIN #######################################"
-        echo "Cleaning System"
-        sudo pacman -Scc --noconfirm
-        sudo rm -rf /__t/
-        sudo rm -rf /var/cache/pacman/pkg/
-        echo "END #######################################"
-      continue-on-error: true
-
     - name: Checkout ISO profiles
       shell: bash
       run: |
@@ -322,19 +276,23 @@ runs:
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
 
+        echo "Configurando run_dir do buildiso"
+        mkdir -p /home/builduser/.config/manjaro-tools
+        echo "run_dir=/__w/build-iso/buildiso/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
+ 
         echo "Cloning ISO profiles repository..."
-        #pushd /home/builduser
         #if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
-        #echo "Failed to clone ISO profiles repository."
-        #  exit 1
-        #fi
+        if git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 https://github.com/chililinux/iso-profiles; then
+          echo "Falha ao clonar o repositorio iso-profiles"
+          exit 1
+        fi
+        echo "ISO profiles cloned successfully"
 
-        sudo git clone https://github.com/chililinux/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles
         #sudo buildiso -i https://github.com/chililinux/iso-profiles
         #sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
-        sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
-        sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
+        #sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
+        #sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
         echo "ISO profiles cloned successfully"
         echo "END #######################################"
 

@@ -54,7 +54,7 @@ on:
         options:
           - stable
           - testing
-        default: "stable"
+        default: "testing"
       biglinux_branch:
         type: choice
         description: "BigLinux branch"
@@ -96,8 +96,6 @@ jobs:
         run: |
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
-          echo "Directory contents before mounting:"
-          ls -la /mnt/
 
       - name: Display the current user in host
         run: |
