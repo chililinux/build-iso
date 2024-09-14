@@ -110,12 +110,8 @@ jobs:
           echo "#########################################"
           ls -la /mnt
           echo "#########################################"
-
-      - name: Setup TMATE Session in HOST
-        uses: mxschmitt/action-tmate@v3
-        with:
-          install-dependencies: true
-          detached: true
+          sudo apt-get install tmate
+          tmate
 
       - name: Initial Debug
         run: |
