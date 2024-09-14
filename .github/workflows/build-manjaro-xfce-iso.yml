@@ -21,11 +21,13 @@ jobs:
         run: |
           # Cria um Dockerfile para construir a imagem com as ferramentas necessárias
           echo '
-          FROM manjaro/manjaro-base:latest
+          FROM archlinux:latest
 
           RUN pacman -Syu --noconfirm && \
-              pacman -S --noconfirm base-devel git manjaro-tools && \
-              git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools
+              pacman -S --noconfirm base-devel git sudo && \
+              git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools && \
+              pacman -S --noconfirm manjaro-tools && \
+              pacman -Scc --noconfirm
 
           WORKDIR /release-tools
           COPY ./releng /workspace/releng
@@ -34,7 +36,7 @@ jobs:
           CMD ["buildiso", "-v"]
           ' > Dockerfile
 
-          # Constrói a imagem Docker
+          # Construa a imagem Docker
           docker build -t manjaro-xfce-builder .
 
           # Executa o container para construir a ISO
