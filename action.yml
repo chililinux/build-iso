@@ -119,10 +119,8 @@ runs:
           manjaro-tools-iso \
           calamares \
           calamares-tools \
-          fuse-overlayfs \
           tree \
           duf \
-          ncurses \
           mkinitcpio > /dev/null
 
     - name: Ajuste nos hooks do mkinitcpio
@@ -622,8 +620,7 @@ runs:
           echo "file-path=$TARGET_ISO_PATH" >> "$GITHUB_OUTPUT"
 
           FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
-          sudo mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs"
-
+          sudo mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs" || true
           sudo rm -r iso-profiles
         }
 
