@@ -588,8 +588,7 @@ runs:
           echo "KERNEL_NAME: $kernel_name"
           echo "SCOPE: $SCOPE"
           echo "OFFICE: $OFFICE"
-          #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -t /__w/ -f
-          sudo buildiso -k "linux${kernel_name}" -f
+          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -t /__w/ -f
         }
 
         cleanup_and_move_files() {
@@ -622,7 +621,6 @@ runs:
 
           set_build_info
           configure_iso_name
-
           sudo rm -rf iso-profiles/custom-profiles
 
           echo "Kernel: $kernel_name"
