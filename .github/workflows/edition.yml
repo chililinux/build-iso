@@ -92,6 +92,12 @@ jobs:
         #with:
           #fetch-depth: 1 # Esse parâmetro define a profundidade do fetch para o último commit
 
+      - name: Setup TMATE Session in HOST
+        uses: mxschmitt/action-tmate@v3
+        with:
+          install-dependencies: true
+          detached: true
+
       - name: Set up volume directory on HOST
         run: |
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
