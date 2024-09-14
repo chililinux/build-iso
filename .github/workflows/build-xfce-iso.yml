@@ -84,4 +84,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: manjaro-xfce-iso
-          path: /var/cache/manjaro-tools/iso/*.iso
+          #path: /var/cache/manjaro-tools/iso/*.iso
+          path: /var/cache/manjaro-tools/iso/community/xfce/24.0.8/*.iso
