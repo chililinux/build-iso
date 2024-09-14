@@ -568,29 +568,6 @@ runs:
           esac
         }
 
-        build_iso() {
-          local kernel_name
-
-          if [ "$KERNEL" != "xanmod" ]; then
-            kernel_name="${KERNEL}"
-          else
-            local xan_ver
-            xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
-            kernel_name="${KERNEL//-/}${xan_ver}"
-          fi
-
-          echo "Build command: buildiso ${SCOPE:+-f} -p \"$EDITION\" -b \"$MANJAROBRANCH\" -k \"linux${kernel_name}\" ${OFFICE:+-o}"
-
-          echo "Building ISO with kernel: linux${kernel_name}"
-          echo "PROFILE_PATH = $PROFILE_PATH"
-          echo "EDITION: $EDITION"
-          echo "MANJAROBRANCH: $MANJAROBRANCH"
-          echo "KERNEL_NAME: $kernel_name"
-          echo "SCOPE: $SCOPE"
-          echo "OFFICE: $OFFICE"
-          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
-        }
-
         cleanup_and_move_files() {
           sudo rm -rf /var/lib/manjaro-tools/buildiso/*
           OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
@@ -603,21 +580,44 @@ runs:
           sudo rm -r iso-profiles
         }
 
+        build_iso() {
+          local kernel_name
+
+          if [ "$KERNEL" != "xanmod" ]; then
+            kernel_name="${KERNEL}"
+          else
+            local xan_ver
+            xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
+            kernel_name="${KERNEL//-/}${xan_ver}"
+          fi
+
+          echo "Build command: buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH"-k linux${kernel_name} ${OFFICE:+-o} -f"
+
+          echo "Building ISO with kernel: linux${kernel_name}"
+          echo "PROFILE_PATH = $PROFILE_PATH"
+          echo "EDITION: $EDITION"
+          echo "MANJAROBRANCH: $MANJAROBRANCH"
+          echo "KERNEL_NAME: $kernel_name"
+          echo "SCOPE: $SCOPE"
+          echo "OFFICE: $OFFICE"
+          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
+        }
+
         main() {
           echo "## Community Pre Config Build ISO ##"
           setup_manjaro_tools
           configure_mesa
 
-          echo "Starting kernel configuration..."
+          echo "BEGIN - Starting kernel configuration ############################################################"
           configure_kernel
-          echo "Kernel configuration completed."
+          echo "END - Kernel configuration completed #############################################################"
 
-          echo "Starting repository configuration..."
+          echo "BEGIN - Starting repository configuration ########################################################"
           for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
             echo "Configuring $config..."
             configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
           done
-          echo "Repository configuration completed."
+          echo "END Repository configuration complete ############################################################"
 
           set_build_info
           configure_iso_name
