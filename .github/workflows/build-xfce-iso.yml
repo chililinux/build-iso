@@ -69,7 +69,6 @@ jobs:
             "
 
       - name: Set up tmate session URL
-        id: tmate
         uses: mxschmitt/action-tmate@v3
         with:
           install-dependencies: false
