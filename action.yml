@@ -121,7 +121,7 @@ runs:
           tree \
           duf \
           ncurses \
-          mkinitcpio
+          mkinitcpio > /dev/null
 
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
         sudo sed -i -e 's|File|Path|' /usr/share/libalpm/hooks/*hook*
