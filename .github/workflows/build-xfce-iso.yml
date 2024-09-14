@@ -14,36 +14,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up volume directory
+        run: |
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data
+          echo "Directory contents before mounting:"
+          ls -l /home/runner/work/${{ github.repository }}/volume_data
+
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
+          echo "Directory contents before mounting:"
+          ls -l /home/runner/work/${{ github.repository }}/volume_data_iso
+
       - name: Build Manjaro XFCE ISO
         run: |
-          docker run --rm --privileged -v ${{ github.workspace }}:/workspace talesam/community-build:1.3 /bin/bash -c "
-            # Atualize o sistema e instale as ferramentas necessárias
-            pacman -Syu --noconfirm
-            pacman -S --noconfirm base-devel git manjaro-tools manjaro-tools-iso
+          docker run --rm --privileged \
+            -v /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso \
+            -v /home/runner/work/${{ github.repository }}/volume_data_iso:/var/cache/manjaro-tools \
+            talesam/community-build:1.3 /bin/bash -c "
+              # Atualize o sistema e instale as ferramentas necessárias
+              pacman -Syu --noconfirm
+              pacman -S --noconfirm base-devel git manjaro-tools manjaro-tools-iso
 
-            # Clone o repositório iso-profiles
-            rm -rf /usr/share/manjaro-tools/iso-profiles
-            git clone https://github.com/chililinux/iso-profiles.git /usr/share/manjaro-tools/iso-profiles
+              # Remova qualquer instância existente do diretório iso-profiles e clone o repositório
+              rm -rf /usr/share/manjaro-tools/iso-profiles
+              git clone https://github.com/chililinux/iso-profiles.git /usr/share/manjaro-tools/iso-profiles
 
-            # Verifique onde os perfis estão localizados
-            echo 'Verificando diretórios...'
-            find / -name 'iso-profiles'
+              # Verifique se o repositório foi clonado corretamente
+              ls -l /usr/share/manjaro-tools/iso-profiles
 
-            # Navegue até o diretório de perfis (ajuste conforme necessário)
-            PROFILE_DIR=\$(find / -name 'iso-profiles' | head -n 1)
-            if [ -z \"\$PROFILE_DIR\" ]; then
-              echo 'Diretório de perfis não encontrado!'
-              exit 1
-            fi
-            echo 'Diretório de perfis encontrado em: \$PROFILE_DIR'
+              # Navegue para o diretório de perfis e verifique os perfis disponíveis
+              cd /usr/share/manjaro-tools/iso-profiles
+              ls -l
 
-            # Verifique os perfis disponíveis
-            ls -l \$PROFILE_DIR
-
-            # Execute a ferramenta buildiso com o perfil xfce
-            # Ajuste o caminho conforme necessário
-            buildiso -v -c /workspace/xfce
-          "
+              # Execute a ferramenta buildiso com o perfil xfce
+              buildiso -v -c /workspace/xfce
+            "
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v3
