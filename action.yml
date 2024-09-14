@@ -573,18 +573,6 @@ runs:
           esac
         }
 
-        cleanup_and_move_files() {
-          sudo rm -rf /var/lib/manjaro-tools/buildiso/*
-          OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
-          sudo mv "$OUTPUT_ISO_PATH" "./$TARGET_ISO_PATH"
-          echo "file-path=$TARGET_ISO_PATH" >> "$GITHUB_OUTPUT"
-
-          FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
-          sudo mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs"
-
-          sudo rm -r iso-profiles
-        }
-
         build_iso() {
           local kernel_name
 
@@ -606,6 +594,18 @@ runs:
           echo "SCOPE: $SCOPE"
           echo "OFFICE: $OFFICE"
           sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
+        }
+
+        cleanup_and_move_files() {
+          sudo rm -rf /var/lib/manjaro-tools/buildiso/*
+          OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+          sudo mv "$OUTPUT_ISO_PATH" "./$TARGET_ISO_PATH"
+          echo "file-path=$TARGET_ISO_PATH" >> "$GITHUB_OUTPUT"
+
+          FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+          sudo mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs"
+
+          sudo rm -r iso-profiles
         }
 
         main() {
