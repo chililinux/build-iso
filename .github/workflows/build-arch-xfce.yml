@@ -19,40 +19,29 @@ jobs:
 
       - name: Build Arch Linux XFCE ISO
         run: |
-          # Baixa a imagem base do Arch Linux
-          docker pull archlinux/archlinux:latest
+          # Cria um Dockerfile para construir a imagem com as ferramentas necessárias
+          echo '
+          FROM archlinux/archlinux:latest
 
-          # Cria e roda um container Arch Linux
-          docker run --rm -it \
-            -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            archlinux/archlinux:latest \
-            /bin/bash -c "
-              # Atualiza o sistema
-              pacman -Syu --noconfirm
+          RUN pacman -Syu --noconfirm && \
+              pacman -S --noconfirm base-devel git archiso && \
+              git clone https://gitlab.archlinux.org/archlinux/archiso /archiso
 
-              # Instala as ferramentas necessárias
-              pacman -S --noconfirm base-devel git
+          WORKDIR /archiso
+          COPY ./releng /workspace/releng
+          WORKDIR /workspace/releng
 
-              # Clona o repositório do Archiso
-              git clone https://gitlab.archlinux.org/archlinux/archiso
-              cd archiso
+          CMD ["buildiso", "-v"]
+          ' > Dockerfile
 
-              # Copia a configuração padrão
-              cp -r config/releng /workspace
+          # Constrói a imagem Docker
+          docker build -t archlinux-xfce-builder .
 
-              # Navega para o diretório de configuração
-              cd /workspace/releng
-
-              # Instala o buildiso
-              pacman -S --noconfirm archiso
-
-              # Cria a ISO
-              buildiso -v
-            "
+          # Executa o container para construir a ISO
+          docker run --rm -v ${{ github.workspace }}:/workspace archlinux-xfce-builder
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v3
         with:
           name: archlinux-xfce-iso
-          path: /workspace/releng/archlinux-xfce.iso
+          path: /workspace/releng/*.iso
