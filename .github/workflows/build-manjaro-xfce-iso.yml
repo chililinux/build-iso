@@ -1,4 +1,4 @@
-name: Build Arch Linux XFCE ISO
+name: Build Manjaro XFCE ISO
 
 on:
   push:
@@ -17,17 +17,17 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
-      - name: Build Arch Linux XFCE ISO
+      - name: Build Manjaro XFCE ISO
         run: |
           # Cria um Dockerfile para construir a imagem com as ferramentas necessárias
           echo '
-          FROM archlinux/archlinux:latest
+          FROM manjaro/manjaro-base:latest
 
           RUN pacman -Syu --noconfirm && \
-              pacman -S --noconfirm base-devel git archiso && \
-              git clone https://gitlab.archlinux.org/archlinux/archiso /archiso
+              pacman -S --noconfirm base-devel git manjaro-tools && \
+              git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools
 
-          WORKDIR /archiso
+          WORKDIR /release-tools
           COPY ./releng /workspace/releng
           WORKDIR /workspace/releng
 
@@ -35,13 +35,13 @@ jobs:
           ' > Dockerfile
 
           # Constrói a imagem Docker
-          docker build -t archlinux-xfce-builder .
+          docker build -t manjaro-xfce-builder .
 
           # Executa o container para construir a ISO
-          docker run --rm -v ${{ github.workspace }}:/workspace archlinux-xfce-builder
+          docker run --rm -v ${{ github.workspace }}:/workspace manjaro-xfce-builder
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: archlinux-xfce-iso
+          name: manjaro-xfce-iso
           path: /workspace/releng/*.iso
