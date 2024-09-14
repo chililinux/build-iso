@@ -601,7 +601,7 @@ runs:
 
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
           #sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f > /dev/null 2>&1
-          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f > /dev/null
+          sudo buildiso -p "community/$EDITION" -k "linux${kernel_name}" -f > /dev/null
         }
 
         cleanup_and_move_files() {
