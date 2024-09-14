@@ -18,24 +18,48 @@ jobs:
         run: |
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data
           #mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
-          mkdir -p /mnt/buildiso
-          mkdir -p /mnt/iso
+          sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
+          sudo mkdir -p /mnt/var_cache_manjaro_tools
 
-      - name: Setup TMATE Session
+      - name: Display the current user in host
+        run: |
+          echo "#########################################"
+          echo "Current host is: $(hostname)"
+          echo "Current user is: $(whoami)"
+          echo "Current user ID is: $(id -u)"
+          echo "Current user details:"
+          id
+          echo "#########################################"
+          df -hT
+          echo "#########################################"
+          ls -la /mnt
+          echo "#########################################"
+
+      - name: Print message and conditionally exit
+        run: |
+          CONDITION_MET=true
+          if [ "$CONDITION_MET" = true ]; then
+            echo "Condition met, continuing..."
+          else
+            echo "Condition not met, exiting..."
+            exit 1  # Exiting with status code 1 will fail the job
+          fi
+
+      - name: Setup TMATE Session in HOST
         uses: mxschmitt/action-tmate@v3
         with:
           install-dependencies: true
           detached: true
 
-      - name: Print TMATE Session URL
+      - name: Print TMATE Session URL HOST
         run: |
           echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
 
       - name: Build Manjaro XFCE ISO
         run: |
           docker run --rm --privileged \
-            -v /home/runner/work/${{ github.repository }}/volume_data:/var/lib/manjaro-tools/buildiso \
-            -v /home/runner/work/${{ github.repository }}/volume_data_iso:/var/cache/manjaro-tools \
+            -v /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso \
+            -v /mnt/var_cache_manjaro_tools:/var/cache/manjaro-tools \
             talesam/community-build:1.3 /bin/bash -c "
               # Atualize o sistema e instale as ferramentas necessárias
               pacman -Syu --noconfirm
@@ -53,11 +77,12 @@ jobs:
               ls -l
 
               # Execute a ferramenta buildiso com o perfil xfce
-              buildiso -v -c /workspace/xfce
+              buildiso -p community/xfce -f
             "
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v3
         with:
           name: manjaro-xfce-iso
-          path: /workspace/*.iso
+          #path: /var/cache/manjaro-tools/iso/*.iso
+          path: /var/cache/manjaro-tools/iso/community/xfce/24.0.8/*.iso
