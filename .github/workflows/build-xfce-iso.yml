@@ -14,6 +14,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Set up volume directory
+        run: |
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data
+          mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
+
       - name: Setup TMATE Session
         id: tmate
         uses: mxschmitt/action-tmate@v3
@@ -24,11 +29,6 @@ jobs:
       - name: Print TMATE Session URL
         run: |
           echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
-
-      - name: Set up volume directory
-        run: |
-          mkdir -p /home/runner/work/${{ github.repository }}/volume_data
-          mkdir -p /home/runner/work/${{ github.repository }}/volume_data_iso
 
       - name: Build Manjaro XFCE ISO
         run: |
