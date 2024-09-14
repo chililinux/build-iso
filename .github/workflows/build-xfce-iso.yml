@@ -45,10 +45,34 @@ jobs:
             exit 1  # Exiting with status code 1 will fail the job
           fi
 
-      - name: Setup TMATE Session
+      - name: Setup TMATE Session in HOST
         uses: mxschmitt/action-tmate@v3
         with:
           install-dependencies: true
+          detached: true
+
+      - name: Print TMATE Session URL HOST
+        run: |
+          echo "Access tmate session at: ${{ steps.tmate.outputs.tmate_web_url }}"
+
+      - name: Run Docker and Create tmate Session in CONTAINER
+        uses: docker://talesam/community-build:1.3
+        with:
+          entrypoint: /bin/bash
+        run: |
+          docker run --rm --privileged \
+            -v /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso \
+            -v /mnt/var_cache_manjaro_tools:/var/cache/manjaro-tools \
+            talesam/community-build:1.3 /bin/bash -c "
+              pacman -Syu --noconfirm && pacman -S --noconfirm tmate
+              tmate
+            "
+
+      - name: Set up tmate session URL
+        id: tmate
+        uses: mxschmitt/action-tmate@v3
+        with:
+          install-dependencies: false
           detached: true
 
       - name: Print TMATE Session URL
