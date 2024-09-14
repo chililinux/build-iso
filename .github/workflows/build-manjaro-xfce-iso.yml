@@ -18,30 +18,24 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Manjaro XFCE ISO
+        uses: docker://talesam/community-build:1.3
+        with:
+          entrypoint: /bin/bash
         run: |
-          # Cria o Dockerfile
-          echo '
-          FROM archlinux:latest
+          # Instale as ferramentas necessárias e configure o ambiente
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm base-devel git manjaro-tools
 
-          RUN pacman -Syu --noconfirm && \
-              pacman -S --noconfirm base-devel git sudo && \
-              pacman -S --noconfirm manjaro-tools && \
-              pacman -Scc --noconfirm
+          # Clone o repositório de ferramentas
+          git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools
 
-          RUN git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools
+          # Certifique-se de que o diretório releng está presente e copie-o
+          mkdir -p /workspace/releng
+          cp -r ./releng /workspace/releng
 
-          WORKDIR /release-tools
-          COPY ./releng /workspace/releng
-          WORKDIR /workspace/releng
-
-          CMD ["buildiso", "-v"]
-          ' > Dockerfile
-
-          # Construa a imagem Docker
-          docker build -t manjaro-xfce-builder .
-
-          # Executa o container para construir a ISO
-          docker run --rm -v ${{ github.workspace }}:/workspace manjaro-xfce-builder
+          # Navegue até o diretório releng e construa a ISO
+          cd /workspace/releng
+          buildiso -v
 
       - name: Upload ISO Artifact
         uses: actions/upload-artifact@v3
