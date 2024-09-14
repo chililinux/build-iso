@@ -19,15 +19,16 @@ jobs:
 
       - name: Build Manjaro XFCE ISO
         run: |
-          # Cria um Dockerfile para construir a imagem com as ferramentas necessárias
+          # Cria o Dockerfile
           echo '
           FROM archlinux:latest
 
           RUN pacman -Syu --noconfirm && \
               pacman -S --noconfirm base-devel git sudo && \
-              git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools && \
               pacman -S --noconfirm manjaro-tools && \
               pacman -Scc --noconfirm
+
+          RUN git clone https://gitlab.manjaro.org/manjaro/release-tools /release-tools
 
           WORKDIR /release-tools
           COPY ./releng /workspace/releng
