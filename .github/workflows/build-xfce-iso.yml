@@ -77,7 +77,7 @@ jobs:
               ls -l
 
               # Execute a ferramenta buildiso com o perfil xfce
-              buildiso -v -c /workspace/xfce
+              buildiso -p community/xfce -f
             "
 
       - name: Upload ISO Artifact
