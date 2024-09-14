@@ -70,7 +70,8 @@ runs:
     - name: clean-system
       shell: bash
       run: |
-        echo "####################################### Clean System"
+        echo "BEGIN #######################################"
+        echo "Clean System"
         DIRECTORIES=(
           "/imagegeneration"
           "/opt/az"
@@ -99,12 +100,12 @@ runs:
         for dir in "${DIRECTORIES[@]}"; do
           sudo rm -rf "$dir"
         done
-        echo "####################################### Clean System"
+        echo "END #########################################"
 
     - name: Setup build environment
       shell: bash
       run: |
-        echo "####################################### Clean System"
+        echo "BEGIN #######################################"
         echo "Setting up build environment..."
         # Atualizar o sistema
         #sudo pacman -Syu --quiet --noconfirm
@@ -124,9 +125,16 @@ runs:
           ncurses \
           mkinitcpio > /dev/null
 
+    - name: Ajuste nos hooks do mkinitcpio
+      shell: bash
+      run: |
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
         sudo sed -i -e 's|File|Path|' /usr/share/libalpm/hooks/*hook*
 
+    - name: Configurar o ambiente para o usuário root e builduser
+      shell: bash
+      run: |
+        echo "BEGIN #######################################"
         # Configurar o ambiente para o usuário root
         #mkdir -p /root/.config/manjaro-tools
         #echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
@@ -140,17 +148,22 @@ runs:
           #echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
           #git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
         EOF
+        echo "END #######################################"
 
+    - name: Configurações adicionais específicas para a construção de ISO
+      shell: bash
+      run: |
+        echo "BEGIN #######################################"
         # Configurações adicionais específicas para a construção de ISO
         sudo sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
         sudo sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
         echo "Build environment setup completed."
-        echo "####################################### Clean System"
+        echo "END #######################################"
 
     - name: Configure disable-fsync
       shell: bash
       run: |
-        echo
+        echo "BEGIN #######################################"
         echo "Configuring disable-fsync..."
         DISABLE_FSYNC_URL="https://raw.githubusercontent.com/biglinux/disable-fsync/main/disable-fsync/usr/lib/disable-fsync.so"
         DISABLE_FSYNC_FILE="/usr/lib/disable-fsync.so"
@@ -163,7 +176,7 @@ runs:
         sudo sh -c "echo '${DISABLE_FSYNC_FILE}' >> '${PRELOAD_FILE}'"
         sudo ldconfig
         echo "disable-fsync configured successfully."
-        echo
+        echo "END #######################################"
 
     - name: Pull and setup Community keys
       shell: bash
@@ -190,7 +203,7 @@ runs:
     - name: Configure repositories and build environment
       shell: bash
       run: |
-        echo "BEGIN Configure repositories and build environment"
+        echo "BEGIN #######################################"
         echo "Configuring repositories and build environment..."
 
         # Função para adicionar repositórios
@@ -290,24 +303,23 @@ runs:
         echo "Print pacman-multilib"
         cat /usr/share/manjaro-tools/pacman-multilib.conf
         echo "Repository and build environment configuration completed."
-        echo "END Configure repositories and build environment"
+        echo "END #######################################"
 
     - name: Cleaning System
       shell: bash
       run: |
-        echo
-        echo "BEGIN Cleaning System"
+        echo "BEGIN #######################################"
+        echo "Cleaning System"
         sudo pacman -Scc --noconfirm
         sudo rm -rf /__t/
         sudo rm -rf /var/cache/pacman/pkg/
-        echo "END Cleaning System"
-        echo
+        echo "END #######################################"
       continue-on-error: true
 
     - name: Checkout ISO profiles
       shell: bash
       run: |
-        echo
+        echo "BEGIN #######################################"
         echo "Checkout ISO profiles"
         REPO="${{ inputs.iso_profiles_repo }}"
         BRANCH="${{ inputs.iso_profiles_branch }}"
@@ -326,19 +338,17 @@ runs:
         sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
         sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
         echo "ISO profiles cloned successfully"
-        echo "END Checkout ISO profiles"
-        echo
+        echo "END #######################################"
 
     - name: Create with mknod /dev/sr0
       shell: bash
       run: |
-        echo ""
-        echo "BEGIN Create with mknod /dev/sr0"
+        echo "BEGIN #######################################"
+        echo "Create with mknod /dev/sr0"
         sudo mknod /dev/sr0 b 11 0
         sudo chmod 660 /dev/sr0
         sudo chown root:root /dev/sr0
-        echo "END Create with mknod /dev/sr0"
-        echo ""
+        echo "END #######################################"
       continue-on-error: true
 
     - name: Apply Custom Profile Modifications
