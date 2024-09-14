@@ -331,16 +331,19 @@ runs:
     - name: Create with mknod /dev/sr0
       shell: bash
       run: |
+        echo ""
         echo "BEGIN Create with mknod /dev/sr0"
         sudo mknod /dev/sr0 b 11 0
         sudo chmod 660 /dev/sr0
-        sudo chown root:cdrom /dev/sr0
+        sudo chown root:root /dev/sr0
         echo "END Create with mknod /dev/sr0"
+        echo ""
       continue-on-error: true
 
     - name: Apply Custom Profile Modifications
       shell: bash
       run: |
+        echo ""
         echo "BEGIN Apply Custom Profile Modifications"
         EDITION="${{ inputs.edition }}"
         ISO_PROFILE_DIR="iso-profiles/community/$EDITION"
@@ -370,6 +373,7 @@ runs:
         fi
 
         echo "END Apply Custom Profile Modifications"
+        echo ""
 
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
