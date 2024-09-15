@@ -70,22 +70,25 @@ runs:
     - name: Display the current user in CONTAINER
       shell: bash
       run: |
-        echo "#########################################"
-        echo "Current host is: $(hostname)"
-        echo "Current user is: $(whoami)"
-        echo "Current user ID is: $(id -u)"
-        echo "Current user details:"
-        id
-        echo "#########################################"
+        # Display the current user in CONTAINER
+        echo "##########################################################################"
+        echo "Current host is     : $(hostname)"
+        echo "Current user is     : $(whoami)"
+        echo "Current user ID is  : $(id -u)"
+        echo "Current user details: $(id)"
+        echo "##########################################################################"
         df -hT
-        echo "#########################################"
+        echo "##########################################################################"
+        docker images
+        docker ps
+        echo "##########################################################################"
         ls -la /mnt
-        echo "#########################################"
+        echo "##########################################################################"
 
     - name: Setup build environment
       shell: bash
       run: |
-        # setting up build environment"
+        # Setup build environment
         # atualizar e instalar pacotes adicionais
         sudo pacman -Syu --quiet --needed --noconfirm \
           mktorrent \
