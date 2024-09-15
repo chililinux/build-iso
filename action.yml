@@ -503,28 +503,37 @@ runs:
           local biglinux_branch=$3
 
           # Community repositories
-          echo "[community-${community_branch}]
-          SigLevel = PackageRequired
-          Server = https://repo.communitybig.org/${community_branch}/\$arch" | sudo tee -a "$config_file"
+          {
+          echo "[community-${community_branch}]"
+          echo "SigLevel = PackageRequired"
+          echo "Server = https://repo.communitybig.org/${community_branch}/\$arch"
+          } >> "$config_file"
 
-          if [ "$community_branch" = "testing" ]; then
-            echo "[community-stable]
-            SigLevel = PackageRequired
-            Server = https://repo.communitybig.org/stable/\$arch" | sudo tee -a "$config_file"
+          if [[ "$community_branch" == "testing" ]]; then
+            {
+            echo "[community-stable]"
+            echo "SigLevel = PackageRequired"
+            echo "Server = https://repo.communitybig.org/stable/\$arch"
+            } >> "$config_file"
           fi
 
           # BigLinux repositories
-          echo "[biglinux-${biglinux_branch}]
-          SigLevel = PackageRequired
-          Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch" | sudo tee -a "$config_file"
+          {
+          echo "[biglinux-${biglinux_branch}]"
+          echo "SigLevel = PackageRequired"
+          echo "Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch"
+          } >> "$config_file"
 
-          if [ "$biglinux_branch" = "testing" ]; then
-            echo "[biglinux-testing]
-            SigLevel = PackageRequired
-            Server = https://repo.biglinux.com.br/testing/\$arch" | sudo tee -a "$config_file"
-            echo "[biglinux-stable]
-            SigLevel = PackageRequired
-            Server = https://repo.biglinux.com.br/stable/\$arch" | sudo tee -a "$config_file"
+          if [[ "$biglinux_branch" == "testing" ]]; then
+            {
+            echo "[biglinux-testing]"
+            echo "SigLevel = PackageRequired"
+            echo "Server = https://repo.biglinux.com.br/testing/\$arch"
+            echo
+            echo "[biglinux-stable]"
+            echo "SigLevel = PackageRequired"
+            echo "Server = https://repo.biglinux.com.br/stable/\$arch""
+            } >> "$config_file"
           fi
         }
 
@@ -569,7 +578,7 @@ runs:
           echo "###################################################################"
 
           #buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} > /dev/null 2>&1
-          buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o}
+          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o}
         }
 
         cleanup_and_move_files() {
