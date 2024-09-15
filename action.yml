@@ -115,9 +115,31 @@ runs:
           manjaro-tools-iso \
           calamares \
           calamares-tools \
+          mkinitcpio \
           tree \
           duf \
-          mkinitcpio > /dev/null
+          chili-nanorc
+          chili-bashrc > /dev/null
+
+    - name: Ajustar ambiente do builduser
+      shell: bash
+      run: |
+        # Ajustar ambiente do root
+        pushd /root
+        cp -Rpva /etc/sketc/.bash* .
+        cp -Rpva /etc/sketc/.ps* .
+        cp -Rpva /etc/sketc/.dircolors* .
+        cp -Rpva /etc/sketc/.git-prompt* .
+        popd || true
+
+        # Ajustar ambiente do builduser
+        sudo -u builduser bash << EOF
+        cd $HOME
+        cp -Rpva /etc/sketc/.bash* .
+        cp -Rpva /etc/sketc/.ps* .
+        cp -Rpva /etc/sketc/.dircolors* .
+        cp -Rpva /etc/sketc/.git-prompt* .
+        EOF
 
     - name: Ajuste nos hooks do mkinitcpio
       shell: bash
