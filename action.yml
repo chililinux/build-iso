@@ -118,7 +118,7 @@ runs:
           mkinitcpio \
           tree \
           duf \
-          chili-nanorc
+          chili-nanorc \
           chili-bashrc > /dev/null
 
     - name: Ajustar ambiente do builduser
