@@ -67,15 +67,26 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Display the current user in CONTAINER
+      shell: bash
+      run: |
+        echo "#########################################"
+        echo "Current host is: $(hostname)"
+        echo "Current user is: $(whoami)"
+        echo "Current user ID is: $(id -u)"
+        echo "Current user details:"
+        id
+        echo "#########################################"
+        df -hT
+        echo "#########################################"
+        ls -la /mnt
+        echo "#########################################"
+
     - name: Setup build environment
       shell: bash
       run: |
-        echo "BEGIN #######################################"
-        echo "Setting up build environment..."
-        # Atualizar o sistema
-        #sudo pacman -Syu --quiet --noconfirm
-
-        # Instalar pacotes adicionais que possam ser necessários
+        # setting up build environment"
+        # atualizar e instalar pacotes adicionais
         sudo pacman -Syu --quiet --needed --noconfirm \
           mktorrent \
           squashfs-tools \
@@ -98,7 +109,6 @@ runs:
       shell: bash
       run: |
         # Configurar o ambiente para o usuário root
-        echo "BEGIN #######################################"
         mkdir -p /root/.config/manjaro-tools
         echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
         echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
@@ -106,28 +116,23 @@ runs:
 
         # Configurar o ambiente para o usuário builduser
         sudo -u builduser bash << EOF
-          echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /home/builduser/.makepkg.conf
-          mkdir -p /home/builduser/.config/manjaro-tools
-          echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-          git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
+        echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /home/builduser/.makepkg.conf
+        mkdir -p /home/builduser/.config/manjaro-tools
+        echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
+        git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
         EOF
-        echo "END #######################################"
 
     - name: Configurações adicionais específicas para a construção de ISO
       shell: bash
       run: |
-        echo "BEGIN #######################################"
         # Configurações adicionais específicas para a construção de ISO
         sudo sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
         sudo sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
-        echo "Build environment setup completed."
-        echo "END #######################################"
 
     - name: Configure disable-fsync
       shell: bash
       run: |
-        echo "BEGIN #######################################"
-        echo "Configuring disable-fsync..."
+        # Configuring disable-fsync
         DISABLE_FSYNC_URL="https://raw.githubusercontent.com/biglinux/disable-fsync/main/disable-fsync/usr/lib/disable-fsync.so"
         DISABLE_FSYNC_FILE="/usr/lib/disable-fsync.so"
         PRELOAD_FILE="/etc/ld.so.preload"
@@ -135,17 +140,13 @@ runs:
         sudo wget "$DISABLE_FSYNC_URL" -O "$DISABLE_FSYNC_FILE"
         SHA256SUM=$(curl -s "$DISABLE_FSYNC_URL" | sha256sum | awk '{print $1}')
         echo "${SHA256SUM} ${DISABLE_FSYNC_FILE}" | sha256sum --check || exit 1
-
         sudo sh -c "echo '${DISABLE_FSYNC_FILE}' >> '${PRELOAD_FILE}'"
         sudo ldconfig
-        echo "disable-fsync configured successfully."
-        echo "END #######################################"
 
     - name: Pull and setup Community keys
       shell: bash
       run: |
-        echo
-        echo "Pulling and installing Community keys..."
+        # Pulling and installing Community keys
         sudo git clone https://github.com/biglinux/biglinux-key.git
         sudo install -dm755 /etc/pacman.d/gnupg/
         sudo install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
@@ -160,15 +161,11 @@ runs:
 
         # Atualizar os bancos de dados do pacman
         sudo pacman -Sy --quiet
-        echo "Community keys installed and system updated."
-        echo
 
     - name: Configure repositories and build environment
       shell: bash
       run: |
-        echo "BEGIN #######################################"
-        echo "Configuring repositories and build environment..."
-
+        # Configuring repositories and build environment
         # Função para adicionar repositórios
         add_repository() {
           local arquivo_conf=$1
@@ -204,34 +201,46 @@ runs:
               echo '[community-testing]
               SigLevel = PackageRequired
               Server = https://repo.communitybig.org/testing/$arch' | sudo tee -a "$arquivo_conf"
+
               echo '[community-stable]
               SigLevel = PackageRequired
               Server = https://repo.communitybig.org/stable/$arch' | sudo tee -a "$arquivo_conf"
+
+              echo '[community-extra]
+              SigLevel = PackageRequired
+              Server = https://repo.communitybig.org/extra/$arch' | sudo tee -a "$arquivo_conf"
               ;;
             "testing")
+              echo '[community-stable]
+              SigLevel = PackageRequired
+              Server = https://repo.communitybig.org/stable/$arch' | sudo tee -a "$arquivo_conf"
+
               echo '[community-testing]
               SigLevel = PackageRequired
               Server = https://repo.communitybig.org/testing/$arch' | sudo tee -a "$arquivo_conf"
-              echo '[community-stable]
+
+              echo '[community-extra]
               SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/stable/$arch' | sudo tee -a "$arquivo_conf"
+              Server = https://repo.communitybig.org/extra/$arch' | sudo tee -a "$arquivo_conf"
               ;;
           esac
 
           # Configure os repositórios BigLinux
           case "${{ inputs.biglinux_branch }}" in
             "stable")
-              echo '[biglinux-testing]
-              SigLevel = PackageRequired
-              Server = https://repo.biglinux.com.br/testing/$arch' | sudo tee -a "$arquivo_conf"
               echo '[biglinux-stable]
               SigLevel = PackageRequired
               Server = https://repo.biglinux.com.br/stable/$arch' | sudo tee -a "$arquivo_conf"
+
+              echo '[biglinux-testing]
+              SigLevel = PackageRequired
+              Server = https://repo.biglinux.com.br/testing/$arch' | sudo tee -a "$arquivo_conf"
               ;;
             "testing")
               echo '[biglinux-testing]
               SigLevel = PackageRequired
               Server = https://repo.biglinux.com.br/testing/$arch' | sudo tee -a "$arquivo_conf"
+
               echo '[biglinux-stable]
               SigLevel = PackageRequired
               Server = https://repo.biglinux.com.br/stable/$arch' | sudo tee -a "$arquivo_conf"
@@ -247,7 +256,7 @@ runs:
         sudo sed -i 's|path=$1/var/lib/pacman/sync|path=$1/usr/share/man|g' /usr/lib/manjaro-tools/util-iso-image.sh
 
         # Configurações de compressão
-        if [ "${{ inputs.community_branch }}" != "stable" ]; then
+        if [[ "${{ inputs.community_branch }}" != "stable" ]]; then
           sudo sed -i 's|-Xcompression-level 20|-Xcompression-level 6|g' /usr/lib/manjaro-tools/util-iso.sh
           sudo sed -i 's|256K|1024K|g' /usr/lib/manjaro-tools/util-iso.sh
         else
@@ -255,61 +264,37 @@ runs:
         fi
 
         # Imprima as configurações
-        echo
-        echo "Imprima as configurações"
-        echo "print mirrorlist..."
-        cat /etc/pacman.d/mirrorlist
-        echo ""
-        echo "Print pacman-default"
-        cat /usr/share/manjaro-tools/pacman-default.conf
-        echo ""
-        echo "Print pacman-multilib"
-        cat /usr/share/manjaro-tools/pacman-multilib.conf
-        echo "Repository and build environment configuration completed."
-        echo "END #######################################"
+        # print mirrorlist
+        cat /etc/pacman.d/mirrorlist || true
+        # Print pacman-default
+        cat /usr/share/manjaro-tools/pacman-default.conf || true
+        # print pacman-multilib
+        cat /usr/share/manjaro-tools/pacman-multilib.conf || true
 
     - name: Checkout iso-profiles
       shell: bash
       run: |
-        echo "BEGIN #######################################"
-        echo "Checkout iso-profiles"
+        # Cloning ISO profiles repository
         REPO="${{ inputs.iso_profiles_repo }}"
-        BRANCH="${{ inputs.iso_profiles_branch }}"
-
-        #echo "Configurando run_dir do buildiso"
-        #mkdir -p /home/builduser/.config/manjaro-tools
-        #echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-        echo "Cloning ISO profiles repository..."
-        if ! git clone ${BRANCH:+--branch "${BRANCH}"} --depth 1 "$REPO" iso-profiles; then
+        if ! git clone --depth 1 "$REPO" iso-profiles; then
           echo "Falha ao clonar o repositorio iso-profiles"
           exit 1
         fi
-        git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
-        echo "ISO profiles cloned successfully"
-
-        sudo rm -rf /usr/share/manjaro-tools/iso-profiles
-        #sudo buildiso -i https://github.com/chililinux/iso-profiles
-        #sudo git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles
-        #sudo git clone https://github.com/chililinux/iso-profiles /usr/share/manjaro-tools/iso-profiles
-        #sudo rm -rf /usr/share/manjaro-tools/iso-profiles/custom-profiles
-        echo "ISO profiles cloned successfully"
-        echo "END #######################################"
+        git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles || true
+        sudo rm -rf /usr/share/manjaro-tools/iso-profiles || true
 
     - name: Create with mknod /dev/sr0
       shell: bash
       run: |
-        echo "BEGIN #######################################"
         echo "Create with mknod /dev/sr0"
-        sudo mknod /dev/sr0 b 11 0
-        sudo chmod 660 /dev/sr0
-        sudo chown root:root /dev/sr0
-        echo "END #######################################"
+        sudo mknod /dev/sr0 b 11 0 || true
+        sudo chmod 660 /dev/sr0 || true
+        sudo chown root:root /dev/sr0 || true
       continue-on-error: true
 
     - name: Apply Custom Profile Modifications
       shell: bash
       run: |
-        echo ""
         echo "BEGIN Apply Custom Profile Modifications"
         EDITION="${{ inputs.edition }}"
         ISO_PROFILE_DIR="iso-profiles/community/$EDITION"
@@ -317,7 +302,7 @@ runs:
 
         # Apply edition-specific removals
         for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
-          if [ -f "$CUSTOM_PROFILE_DIR/$remove_file" ]; then
+          if [[ -f "$CUSTOM_PROFILE_DIR/$remove_file" ]]; then
             target_file="$ISO_PROFILE_DIR/Packages-${remove_file%-remove}"
             if [ -f "$target_file" ]; then
               echo "Removing packages from $target_file"
@@ -364,30 +349,20 @@ runs:
         # Denine path for directory
         PROFILE_PATH="iso-profiles/community"
 
-        # Verificação inicial
-        if [ ! -d "iso-profiles" ]; then
+        # Check if iso-profiles directory exists before proceeding
+        if [[ ! -d "iso-profiles" ]]; then
           echo "Error: iso-profiles directory not found in the current working directory."
           exit 1
         fi
 
-        # Verificação, debugging
-        echo "Verificando o diretório iso-profiles no diretório atual:"
-        ls -la iso-profiles
-
-        echo "Verificando o diretório do perfil específico:"
+        # Verificando o diretório do perfil específico
         ls -la "$PROFILE_PATH/$EDITION"
-
         echo "Caminho completo do diretório do perfil: $(pwd)/$PROFILE_PATH/$EDITION"
 
-        #Check if iso-profiles directory exists before proceeding
-        if [ ! -d "iso-profiles" ]; then
-          echo "Error: iso-profiles directory not found in the current working directory."
-          exit 1
-        fi
+        # listando diretório iso-profiles no diretório atual
+        ls -la iso-profiles
 
         setup_manjaro_tools() {
-          echo "Setting up Manjaro tools..."
-
           # Criar e configurar diretórios
           sudo mkdir -p /var/cache/manjaro-tools/iso
           sudo chmod 777 /var/cache/manjaro-tools/iso
@@ -399,7 +374,7 @@ runs:
           fi
 
           # Verificar se o diretório do perfil existe
-          if [ ! -d "$PROFILE_PATH/$EDITION" ]; then
+          if [[ ! -d "$PROFILE_PATH/$EDITION" ]]; then
               echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
               exit 1
           fi
@@ -437,20 +412,24 @@ runs:
         }
 
         add_big_cleanups() {
+          # Big cleanups
           local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
           sudo tee -a "$cleanup_script" > /dev/null << 'EOF'
-          # Big cleanups
           local path=$1
+
           # Remove documentation
           rm -rf "$path/usr/share/doc"/* 2> /dev/null
+
           # Remove man pages
           rm -rf "$path/usr/share/man"/* 2> /dev/null
+
           # Clean LibreOffice configs
           local libreoffice_path="$path/usr/lib/libreoffice/share/config"
           if [[ -d "$libreoffice_path" ]]; then
               rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
               rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
           fi
+
           # Clean wallpapers
           local wallpapers_path="$path/usr/share/wallpapers"
           if [[ -d "$wallpapers_path" ]]; then
@@ -537,9 +516,9 @@ runs:
           sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" $PROFILE_PATH/"$EDITION"/profile.conf
 
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
-            stable/stable) TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            stable/stable)            TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) TARGET_ISO_PATH="${NAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
-            unstable/*) TARGET_ISO_PATH="${NAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            unstable/*)               TARGET_ISO_PATH="${NAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
           esac
         }
 
@@ -624,13 +603,13 @@ runs:
     - name: Calculate ISO MD5 Hash
       shell: bash
       run: |
-        echo "Calculating MD5 hash for ISO file..."
+        # Calculating MD5 hash for ISO file
         ISO_PATH="${{ steps.image-build.outputs.file-path }}"
 
         # Calculate MD5 hash
         md5sum "$ISO_PATH" > "${ISO_PATH}.md5"
 
-        echo "MD5 hash calculated and saved:"
+        # MD5 hash calculated and saved
         cat "${ISO_PATH}.md5"
 
     - name: Prepare ISO for release
@@ -641,7 +620,6 @@ runs:
         release=$(basename "${{ steps.image-build.outputs.file-path }}" .iso)
         zip -j -0 -s 2000m ${release}.zip ${{ steps.image-build.outputs.file-path }}
         echo "release_name=${release}" >> $GITHUB_OUTPUT
-        echo "ISO prepared for release"
 
     - name: Create GitHub Release
       shell: bash
