@@ -300,13 +300,16 @@ runs:
         git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles || true
 
         # removendo iso-profiles em /usr/share/manjaro-tools/iso-profiles
-        #rm -rf /usr/share/manjaro-tools/iso-profiles || true
+        rm -rf /usr/share/manjaro-tools/iso-profiles || true
+        if ! git clone --depth 1 "$REPO" iso-profiles /usr/share/manjaro-tools/iso-profiles; then
+          echo "Falha ao clonar o repositorio iso-profiles para /usr/share/manjaro-tools/iso-profiles"
+          exit 1
+        fi
+        # ativando 'git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles'
+        git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles || true
 
         # clean '/__t/' directory
         rm -rf /__t/* || true
-
-        # Initialize iso-profiles repo [default: main]
-        buildiso -i "$REPO"
 
     - name: Create mknod /dev/sr0
       shell: bash
