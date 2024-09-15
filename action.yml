@@ -712,7 +712,8 @@ runs:
       shell: bash
       run: |
         # Calculating MD5 hash for ISO file
-        ISO_PATH="${{ steps.image-build.outputs.file-path }}"
+        #ISO_PATH="${{ steps.image-build.outputs.file-path }}"
+        ISO_PATH="$WORK_PATH/$ISO_BASENAME"
 
         # Calculate MD5 hash
         md5sum "$ISO_PATH" > "${ISO_PATH}.md5"
@@ -726,8 +727,11 @@ runs:
       run: |
         echo $PWD
         ls -la
-        release=$(basename "${{ steps.image-build.outputs.file-path }}" .iso)
-        zip -j -0 -s 2000m ${release}.zip ${{ steps.image-build.outputs.file-path }}
+        #release=$(basename "${{ steps.image-build.outputs.file-path }}" .iso)
+        #zip -j -0 -s 2000m ${release}.zip ${{ steps.image-build.outputs.file-path }}
+        #echo "release_name=${release}" >> $GITHUB_OUTPUT
+        release="$WORK_PATH/$ISO_BASENAME"
+        zip -j -0 -s 2000m ${release}.zip "$relese"
         echo "release_name=${release}" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
