@@ -5,6 +5,7 @@ inputs:
   name:
     description: "Name for the ISO"
     required: true
+    default: bigcommunity
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
@@ -396,7 +397,7 @@ runs:
     - name: Build ISO Image
       shell: bash
       env:
-        NAME: ${{ inputs.name }}
+        DISTRONAME: ${{ inputs.name }}
         EDITION: ${{ inputs.edition }}
         MANJAROBRANCH: ${{ inputs.manjaro_branch }}
         COMMUNITYBRANCH: ${{ inputs.community_branch }}
@@ -480,7 +481,7 @@ runs:
           # cleanups
           local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
 
-          sudo tee -a "$cleanup_script" > /dev/null << 'EOF'
+          tee -a "$cleanup_script" > /dev/null << 'EOF'
           local path=$1
 
           # Remove documentation
@@ -612,12 +613,11 @@ runs:
         }
 
         configure_iso_name() {
-          sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION/profile.conf"
-          NAME="bigcommunity"
+          sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION/profile.conf"
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
-            stable/stable)            TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
-            stable/testing|testing/*) TARGET_ISO_PATH="${NAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
-            unstable/*)               TARGET_ISO_PATH="${NAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            stable/stable)            TARGET_ISO_PATH="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            stable/testing|testing/*) TARGET_ISO_PATH="${DISTRONAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            unstable/*)               TARGET_ISO_PATH="${DISTRONAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
           esac
         }
 
