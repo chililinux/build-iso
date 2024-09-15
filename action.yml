@@ -643,7 +643,7 @@ runs:
           echo "###################################################################"
 
           #buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} > /dev/null 2>&1
-          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o}
+          sudo buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} -f
         }
 
         cleanup_and_move_files() {
