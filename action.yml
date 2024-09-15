@@ -410,6 +410,8 @@ runs:
         # Denine path for directory
         WORK_PATH="/__w/build-iso/build-iso"
         PROFILE_PATH="$WORK_PATH/iso-profiles/community"
+        echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
+        echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
 
         # Check if iso-profiles directory exists before proceeding
         if [[ ! -d "iso-profiles" ]]; then
@@ -657,6 +659,8 @@ runs:
           OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
           ISO_BASENAME=$(basename "$OUTPUT_ISO_PATH")
           FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+          echo "::set-output name=file-path::$TARGET_ISO_PATH"
+          echo "ISO_BASENAME=$ISO_BASENAME" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
 
           echo "OUTPUT_ISO_PATH=$OUTPUT_PATH_ISO"
           echo "ISO_BASENAME=$ISO_BASENAME"
