@@ -99,6 +99,7 @@ jobs:
 
       - name: Display the current user in host
         run: |
+          # Display the current user in host
           echo "#########################################"
           echo "Current host is: $(hostname)"
           echo "Current user is: $(whoami)"

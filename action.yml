@@ -532,7 +532,7 @@ runs:
             echo
             echo "[biglinux-stable]"
             echo "SigLevel = PackageRequired"
-            echo "Server = https://repo.biglinux.com.br/stable/\$arch""
+            echo "Server = https://repo.biglinux.com.br/stable/\$arch"
             } >> "$config_file"
           fi
         }
