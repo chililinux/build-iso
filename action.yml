@@ -408,7 +408,7 @@ runs:
         # BUILD ISO Image
 
         # Denine path for directory
-        PROFILE_PATH="iso-profiles/community"
+        PROFILE_PATH="/__w/build-iso/build-iso/iso-profiles/community"
 
         # Check if iso-profiles directory exists before proceeding
         if [[ ! -d "iso-profiles" ]]; then
@@ -418,55 +418,55 @@ runs:
 
         # Verificando o diretório do perfil específico
         ls -la "$PROFILE_PATH/$EDITION"
-        echo "Caminho completo do diretório do perfil: $(pwd)/$PROFILE_PATH/$EDITION"
+        echo "Caminho completo do diretório do perfil: $PROFILE_PATH/$EDITION"
 
         # listando diretório iso-profiles no diretório atual
-        ls -la iso-profiles
+        ls -la "$PROFILE_PATH"
 
         setup_manjaro_tools() {
           # Criar e configurar diretórios
-          sudo mkdir -p /var/cache/manjaro-tools/iso
-          sudo chmod 777 /var/cache/manjaro-tools/iso
+          mkdir -p /var/cache/manjaro-tools/iso
+          chmod 777 /var/cache/manjaro-tools/iso
 
           # Verificar se buildiso está disponível
           if ! command -v buildiso &> /dev/null; then
-              echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
-              exit 1
+            echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
+            exit 1
           fi
 
           # Verificar se o diretório do perfil existe
           if [[ ! -d "$PROFILE_PATH/$EDITION" ]]; then
-              echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
-              exit 1
+            echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
+            exit 1
           fi
 
           # Configurar o nome da distribuição e ISO
-          sudo sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
-          sudo sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
+          sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
+          sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
 
           # Configurar a marca do BigCommunity
-          sudo sed -i -e 's|dist_branding=.*|dist_branding="bigcommunity"|' /usr/lib/manjaro-tools/util.sh
+          sed -i -e 's|dist_branding=.*|dist_branding="bigcommunity"|' /usr/lib/manjaro-tools/util.sh
 
           # Modificar o nome do arquivo ISO
-          sudo sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|' /usr/lib/manjaro-tools/util-iso.sh
+          sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|' /usr/lib/manjaro-tools/util-iso.sh
 
           # Modificar a busca por versões de kernel
-          sudo sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
+          sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
 
           # Desabilitar a verificação de versão do kernel
-          sudo sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
+          sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
           # Configurar o caminho do perfil ISO
-          sudo sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
+          sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
 
           # Adicionar limpezas do Big
           add_big_cleanups
 
           # Adicionar root-overlay
-          sudo sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
+          sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
 
           # Habilitar plymouth e kms
-          sudo sed -i "s|keyboard keymap|keyboard keymap kms plymouth|g" /usr/share/manjaro-tools/mkinitcpio.conf
+          sed -i "s|keyboard keymap|keyboard keymap kms plymouth|g" /usr/share/manjaro-tools/mkinitcpio.conf
 
           echo "Manjaro tools setup completed. Directory contents of /var/cache/manjaro-tools/iso:"
           ls -la /var/cache/manjaro-tools/iso
@@ -501,10 +501,12 @@ runs:
 
         configure_mesa() {
           if [[ "$KERNEL" =~ ^(latest|xanmod)$ ]]; then
-              echo ""                >> $PROFILE_PATH/$EDITION/Packages-Root
-              echo "mesa-tkg-stable" >> $PROFILE_PATH/$EDITION/Packages-Root
-              echo "mesa-tkg-stable" >> $PROFILE_PATH/$EDITION/Packages-Root
-              sed -i '/libva-mesa/d; /vulkan-swrast/d' $PROFILE_PATH/$EDITION/Packages-{Desktop,Mhwd}
+            {
+            echo ""
+            echo "mesa-tkg-stable"
+            echo "mesa-tkg-stable"
+            } >> $PROFILE_PATH/$EDITION/Packages-Root
+            sed -i '/libva-mesa/d; /vulkan-swrast/d' $PROFILE_PATH/$EDITION/Packages-{Desktop,Mhwd}
           fi
         }
 
@@ -518,10 +520,10 @@ runs:
               ;;
             latest)
               KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-              echo "linux-latest" | sudo tee -a $PROFILE_PATH/$EDITION/Packages-Root
+              echo "linux-latest" >> $PROFILE_PATH/$EDITION/Packages-Root
               ;;
             xanmod*)
-              echo "linux-firmware" | sudo tee -a $PROFILE_PATH/$EDITION/Packages-Root
+              echo "linux-firmware" >> $PROFILE_PATH/$EDITION/Packages-Root
               KERNEL="-${KERNEL}"
               echo "Configurando kernel xanmod: $KERNEL"
               ;;
@@ -605,7 +607,7 @@ runs:
         }
 
         configure_iso_name() {
-          sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" $PROFILE_PATH/"$EDITION"/profile.conf
+          sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION/profile.conf"
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
             stable/stable)            TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) TARGET_ISO_PATH="${NAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -614,7 +616,7 @@ runs:
         }
 
         build_iso() {
-          local kernel_name="${KERNEL}"
+          local kernel_name="$KERNEL"
 
           if [[ "$KERNEL" == "xanmod" ]]; then
             local xan_ver
@@ -640,9 +642,8 @@ runs:
           # habilitando safe.directory
           git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles || true
 
-          #buildiso ${SCOPE:+-f} -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" ${OFFICE:+-o} > /dev/null 2>&1
-          #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" -f
-          sudo buildiso -p "community/$EDITION" -k "linux${kernel_name}" -f
+          #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
+          sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}"
         }
 
         cleanup_and_move_files() {
@@ -685,7 +686,7 @@ runs:
           echo "ManjaroBranch     : $MANJAROBRANCH"
           echo "CommunityBranch   : $COMMUNITYBRANCH"
           echo "BigLinuxBranch    : $BIGBRANCH"
-          echo "ISO profiles path : $PWD/$PROFILE_PATH/$EDITION"
+          echo "ISO profiles path : $PROFILE_PATH/$EDITION"
           echo
 
           build_iso
