@@ -736,7 +736,7 @@ runs:
         #zip -j -0 -s 2000m ${release}.zip ${{ steps.image-build.outputs.file-path }}
         #echo "release_name=${release}" >> $GITHUB_OUTPUT
         release="$WORK_PATH/$ISO_BASENAME"
-        zip -j -0 -s 2000m ${release}.zip "$relese"
+        zip -j -0 -s 2000m ${release}.zip "$release"
         echo "release_name=${release}" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
