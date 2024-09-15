@@ -107,7 +107,7 @@ runs:
         } >> /etc/pacman.conf
 
         # atualizar e instalar pacotes adicionais
-        pacman -Syu --quiet --needed --noconfirm \
+        pacman -Syu --quiet --needed --noconfirm --overwrite \* \
           mktorrent \
           squashfs-tools \
           archiso \
