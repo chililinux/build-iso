@@ -185,11 +185,11 @@ runs:
             sed -i '/\[core\]/{x;/^$/!{x;H;};/^$/p;x;}' "$arquivo_conf"
 
             # Adiciona o conteúdo ao arquivo
-            cat <<EOL >> "$arquivo_conf"
-            [biglinux-update-stable]
-            SigLevel = PackageRequired
-            Server = https://repo.biglinux.com.br/update-stable/\$arch
-            EOL
+            {
+            echo '[biglinux-update-stable]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.biglinux.com.br/update-stable/$arch'
+            } >> "$arquivo_conf"
           fi
 
           # Configure os repositórios Manjaro
@@ -202,65 +202,64 @@ runs:
           # Configure os repositórios Community
           case "${{ inputs.community_branch }}" in
             "stable")
-              cat <<EOL >> "$arquivo_conf"
-              [biglinux-update-stable]
-              SigLevel = PackageRequired
-              Server = https://repo.biglinux.com.br/update-stable/\$arch
-              EOL
-
-              [community-stable]
-              SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/stable/\$arch
-
-              [community-testing]
-              SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/testing/\$arch
-
-              [community-extra]
-              SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/extra/\$arch
-              EOL
+              {
+              echo '[biglinux-update-stable]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.biglinux.com.br/update-stable/$arch'
+              echo
+              echo '[community-stable]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.communitybig.org/stable/$arch'
+              echo
+              echo '[community-testing]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.communitybig.org/testing/$arch'
+              echo
+              echo '[community-extra]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.communitybig.org/extra/$arch'
+              } >> "$arquivo_conf"
               ;;
             "testing")
-              cat <<EOL >> "$arquivo_conf"
-              [community-testing]
-              SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/testing/\$arch
-
-              [community-stable]
-              SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/stable/\$arch
-
-              [community-extra]
-              SigLevel = PackageRequired
-              Server = https://repo.communitybig.org/extra/\$arch
-              EOL
+              {
+              echo '[community-testing]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.communitybig.org/testing/$arch'
+              echo
+              echo '[community-stable]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.communitybig.org/stable/$arch'
+              echo
+              echo '[community-extra]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.communitybig.org/extra/$arch'
+              } >> "$arquivo_conf"
               ;;
           esac
 
           # Configure os repositórios BigLinux
           case "${{ inputs.biglinux_branch }}" in
             "stable")
-              cat <<EOL >> "$arquivo_conf"
-              [biglinux-stable]
-              SigLevel = PackageRequired
-              Server = https://repo.biglinux.com.br/stable/\$arch
-
-              [biglinux-testing]
-              SigLevel = PackageRequired
-              Server = https://repo.biglinux.com.br/testing/\$arch
-              EOL
+              {
+              echo '[biglinux-stable]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.biglinux.com.br/stable/$arch'
+              echo
+              echo '[biglinux-testing]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.biglinux.com.br/testing/$arch'
+              } >> "$arquivo_conf"
               ;;
             "testing")
-              cat <<EOL >> "$arquivo_conf"
-              [biglinux-testing]
-              SigLevel = PackageRequired
-              Server = https://repo.biglinux.com.br/testing/\$arch
-
-              [biglinux-stable]
-              SigLevel = PackageRequired
-              Server = https://repo.biglinux.com.br/stable/\$arch
-              EOL
+              {
+              echo '[biglinux-testing]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.biglinux.com.br/testing/$arch'
+              echo
+              echo '[biglinux-stable]'
+              echo 'SigLevel = PackageRequired'
+              echo 'Server = https://repo.biglinux.com.br/stable/$arch'
+              } >> "$arquivo_conf"
               ;;
           esac
         }
