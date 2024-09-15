@@ -109,7 +109,7 @@ runs:
       shell: bash
       run: |
         # Configurar o ambiente para o usuário root
-        mkdir -p /root/.config/manjaro-tools
+        sudo mkdir -p /root/.config/manjaro-tools
         echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
         echo "run_dir=/__w/build-iso/build-iso/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
         git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles
@@ -300,10 +300,13 @@ runs:
         git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles || true
 
         # removendo iso-profiles em /usr/share/manjaro-tools/iso-profiles
-        rm -rf /usr/share/manjaro-tools/iso-profiles || true
+        #rm -rf /usr/share/manjaro-tools/iso-profiles || true
 
         # clean '/__t/' directory
         rm -rf /__t/* || true
+
+        # Initialize iso-profiles repo [default: main]
+        buildiso -i "$REPO"
 
     - name: Create mknod /dev/sr0
       shell: bash
