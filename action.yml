@@ -125,20 +125,20 @@ runs:
       shell: bash
       run: |
         # Ajustar ambiente do root
-        pushd /root
-        cp -Rpva /etc/sketc/.bash* .
-        cp -Rpva /etc/sketc/.ps* .
-        cp -Rpva /etc/sketc/.dircolors* .
-        cp -Rpva /etc/sketc/.git-prompt* .
+        pushd /root || true
+        cp -Rpva /etc/skel/.bash* . || true
+        cp -Rpva /etc/skel/.ps* . || true
+        cp -Rpva /etc/skel/.dircolors* . || true
+        cp -Rpva /etc/skel/.git-prompt* . || true
         popd || true
 
         # Ajustar ambiente do builduser
         sudo -u builduser bash << EOF
         cd $HOME
-        cp -Rpva /etc/sketc/.bash* .
-        cp -Rpva /etc/sketc/.ps* .
-        cp -Rpva /etc/sketc/.dircolors* .
-        cp -Rpva /etc/sketc/.git-prompt* .
+        cp -Rpva /etc/skel/.bash* .
+        cp -Rpva /etc/skel/.ps* .
+        cp -Rpva /etc/skel/.dircolors* .
+        cp -Rpva /etc/skel/.git-prompt* .
         EOF
 
     - name: Ajuste nos hooks do mkinitcpio
