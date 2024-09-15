@@ -408,7 +408,8 @@ runs:
         # BUILD ISO Image
 
         # Denine path for directory
-        PROFILE_PATH="/__w/build-iso/build-iso/iso-profiles/community"
+        WORK_PATH="/__w/build-iso/build-iso"
+        PROFILE_PATH="$WORK_PATH/iso-profiles/community"
 
         # Check if iso-profiles directory exists before proceeding
         if [[ ! -d "iso-profiles" ]]; then
@@ -609,6 +610,7 @@ runs:
 
         configure_iso_name() {
           sudo sed -i "s/label=.*/label=bigcommunity_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION/profile.conf"
+          NAME="bigcommunity"
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
             stable/stable)            TARGET_ISO_PATH="${NAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) TARGET_ISO_PATH="${NAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -653,14 +655,20 @@ runs:
 
         cleanup_and_move_files() {
           OUTPUT_ISO_PATH=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+          ISO_BASENAME=$(basename "$OUTPUT_ISO_PATH")
           FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')
+
           echo "OUTPUT_ISO_PATH=$OUTPUT_PATH_ISO"
+          echo "ISO_BASENAME=$ISO_BASENAME"
+          echo "FILE_PKG=$FILE_PKG"
 
           rm -rf /var/lib/manjaro-tools/buildiso/*
-          mv -fv "$OUTPUT_ISO_PATH" "./$TARGET_ISO_PATH" || true
+          #mv -fv "$OUTPUT_ISO_PATH" "./$TARGET_ISO_PATH" || true
+          mv -fv "$OUTPUT_ISO_PATH" "$WORK_PATH/$ISO_BASENAME" || true
           echo "file-path=$TARGET_ISO_PATH" >> "$GITHUB_OUTPUT"
 
-          mv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs" || true
+          #mv -fv "$FILE_PKG" "./${TARGET_ISO_PATH}.pkgs" || true
+          mv -fv "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || true
           #rm -r iso-profiles
         }
 
@@ -716,7 +724,8 @@ runs:
       id: prepare-iso
       shell: bash
       run: |
-        ls -lh
+        echo $PWD
+        ls -la
         release=$(basename "${{ steps.image-build.outputs.file-path }}" .iso)
         zip -j -0 -s 2000m ${release}.zip ${{ steps.image-build.outputs.file-path }}
         echo "release_name=${release}" >> $GITHUB_OUTPUT
