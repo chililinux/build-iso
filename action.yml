@@ -644,7 +644,7 @@ runs:
           git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles || true
 
           # Query settings and pretend build
-          sudo buildiso -q
+          sudo buildiso -q || true
           # END Query settings and pretend build
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
