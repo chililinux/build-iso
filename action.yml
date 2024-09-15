@@ -30,7 +30,7 @@ inputs:
     required: false
     default: "full"
   kernel:
-    description: "Kernel version (latest, lts, oldLts)"
+    description: "Kernel version (latest, lts, oldLts, xanmod)"
     required: true
   release_tag:
     description: "Release tag for the ISO"
@@ -473,8 +473,9 @@ runs:
         }
 
         add_big_cleanups() {
-          # Big cleanups
+          # cleanups
           local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
+
           sudo tee -a "$cleanup_script" > /dev/null << 'EOF'
           local path=$1
 
@@ -487,14 +488,14 @@ runs:
           # Clean LibreOffice configs
           local libreoffice_path="$path/usr/lib/libreoffice/share/config"
           if [[ -d "$libreoffice_path" ]]; then
-              rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
-              rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
+            rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
+            rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
           fi
 
           # Clean wallpapers
           local wallpapers_path="$path/usr/share/wallpapers"
           if [[ -d "$wallpapers_path" ]]; then
-              rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
+            rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
           fi
         EOF
         }
@@ -504,7 +505,7 @@ runs:
             {
             echo ""
             echo "mesa-tkg-stable"
-            echo "mesa-tkg-stable"
+            echo "lib32-mesa-tkg-stable"
             } >> $PROFILE_PATH/$EDITION/Packages-Root
             sed -i '/libva-mesa/d; /vulkan-swrast/d' $PROFILE_PATH/$EDITION/Packages-{Desktop,Mhwd}
           fi
@@ -520,11 +521,11 @@ runs:
               ;;
             latest)
               KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-              echo "linux-latest" >> $PROFILE_PATH/$EDITION/Packages-Root
+              echo "linux-latest" >> "$PROFILE_PATH/$EDITION/Packages-Root"
               ;;
             xanmod*)
-              echo "linux-firmware" >> $PROFILE_PATH/$EDITION/Packages-Root
-              KERNEL="-${KERNEL}"
+              echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+              KERNEL="-$KERNEL"
               echo "Configurando kernel xanmod: $KERNEL"
               ;;
           esac
@@ -641,6 +642,10 @@ runs:
           ln -sf /__w/build-iso/build-iso/iso-profiles /usr/share/manjaro-tools/iso-profiles || true
           # habilitando safe.directory
           git config --global --add safe.directory /usr/share/manjaro-tools/iso-profiles || true
+
+          # Query settings and pretend build
+          sudo buildiso -q
+          # END Query settings and pretend build
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
           sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}"
