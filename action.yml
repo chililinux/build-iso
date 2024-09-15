@@ -116,6 +116,7 @@ runs:
           calamares \
           calamares-tools \
           mkinitcpio \
+          zip \
           tree \
           duf \
           chili-nanorc \
