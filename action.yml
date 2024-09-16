@@ -406,6 +406,7 @@ runs:
     - name: Build ISO Image
       shell: bash
       env:
+        DEBUG: ${{ inputs.tmake }}
         DISTRONAME: ${{ inputs.name }}
         EDITION: ${{ inputs.edition }}
         MANJAROBRANCH: ${{ inputs.manjaro_branch }}
@@ -665,14 +666,15 @@ runs:
           git config --global --add safe.directory "$PATH_MANJARO_ISO_PROFILES" || true
 
           # Query settings and pretend build
-          sudo buildiso -qf || true
+          #sudo buildiso -qf || true
           # END Query settings and pretend build
 
-          # saindo para testes
-          # exit 0
-
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
-          sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
+          if [[ "$DEBUG" == 'true' ]]; then
+            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}"
+          else
+            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
+          fi
         }
 
         cleanup_and_move_files() {
