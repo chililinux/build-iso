@@ -2,7 +2,7 @@ name: "Build BigCommunity ISO"
 description: "Builds a BigCommunity ISO image"
 
 inputs:
-  distro_name:
+  name:
     description: "Name for the ISO"
     required: true
     default: bigcommunity
@@ -404,7 +404,7 @@ runs:
     - name: Build ISO Image
       shell: bash
       env:
-        DISTRONAME: ${{ inputs.distro_name }}
+        DISTRONAME: ${{ inputs.name }}
         EDITION: ${{ inputs.edition }}
         MANJAROBRANCH: ${{ inputs.manjaro_branch }}
         COMMUNITYBRANCH: ${{ inputs.community_branch }}
