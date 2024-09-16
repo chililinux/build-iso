@@ -524,35 +524,35 @@ runs:
         }
 
         configure_kernel() {
-          echo "Configuring kernel: $KERNEL"
           case "$KERNEL" in
-          oldLts)
-            KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
-            ;;
-          atualLts)
-            KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
-            ;;
-          latest)
-            KERNEL_VER=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-            echo "linux-latest" >>"$PROFILE_PATH/$EDITION/Packages-Root"
-            ;;
-          xanmod*)
-            echo "linux-firmware" >>"$PROFILE_PATH/$EDITION/Packages-Root"
-            KERNEL_VER="-${KERNEL}"
-            ;;
+            oldLts)
+              KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
+              ;;
+            atualLts)
+              KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
+              ;;
+            latest)
+              KERNEL_VER=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
+              echo "linux-latest" >> $PROFILE_PATH/$EDITION/Packages-Root
+              ;;
+            xanmod*)
+              echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root
+              KERNEL="-${KERNEL}"
+              echo "Configurando kernel xanmod: $KERNEL"
+              ;;
           esac
 
           # Definir KERNEL_NAME
-          if [[ "$KERNEL" != "xanmod" ]]; then
+          if [ "$KERNEL" != "xanmod" ]; then
             KERNEL_NAME="linux${KERNEL_VER}"
           else
             local xan_ver
             xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
             KERNEL_NAME="linux${KERNEL//-/}${xan_ver}"
           fi
-          echo "KERNEL_VER  set to: $KERNEL_VER"
-          echo "KERNEL_NAME set to: $KERNEL_NAME"
 
+          echo "KERNEL_VER: $KERNEL_VER"
+          echo "KERNEL_NAME: $KERNEL_NAME"
           # Adicione o pacote do kernel ao Packages-Root
           echo "${KERNEL_NAME}" >>"$PROFILE_PATH/$EDITION/Packages-Root"
           echo "Added ${KERNEL_NAME} to Packages-Root"
