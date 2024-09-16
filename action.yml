@@ -156,14 +156,14 @@ runs:
         sudo mkdir -p /root/.config/manjaro-tools
         echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
         echo "run_dir=$WORK_PATH/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
-        git config --global --add safe.directory $WORK_PATH/iso-profiles
+        git config --global --add safe.directory "$WORK_PATH/iso-profiles"
 
         # Configurar o ambiente para o usuário builduser
         sudo -u builduser bash << EOF
         echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /home/builduser/.makepkg.conf
         mkdir -p /home/builduser/.config/manjaro-tools || true
         echo "run_dir=$WORK_PATH/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-        git config --global --add safe.directory $WORK_PATH/iso-profiles || true
+        git config --global --add safe.directory "$WORK_PATH/iso-profiles" || true
         EOF
 
     - name: Configurações adicionais específicas para a construção de ISO
@@ -347,7 +347,7 @@ runs:
           exit 1
         fi
         # ativando 'git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles'
-        git config --global --add safe.directory $WORK_PATH/iso-profiles || true
+        git config --global --add safe.directory "$WORK_PATH/iso-profiles" || true
 
         # clean '/__t/' directory
         rm -rf /__t/* || true
@@ -643,9 +643,13 @@ runs:
           echo "PROFILE_PATH             : $PROFILE_PATH"
           echo "EDITION                  : $EDITION"
           echo "MANJAROBRANCH            : $MANJAROBRANCH"
-          echo "KERNEL_NAME              : $kernel_name"
+          echo "KERNEL_NAME              : linux${kernel_name}"
           echo "SCOPE                    : $SCOPE"
           echo "OFFICE                   : $OFFICE"
+          echo "###################################################################"
+          echo "WORK_PATH                : $WORK_PATH"
+          echo "PROFILE_PATH             : $PROFILE_PATH"
+          echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
           echo "###################################################################"
 
           # removendo iso-profiles em /usr/share/manjaro-tools/iso-profiles
