@@ -658,12 +658,12 @@ runs:
           # removendo iso-profiles em /usr/share/manjaro-tools/iso-profiles
           rm -rf "$PATH_MANJARO_ISO_PROFILES" || true
           # criando link simbolico para /__w/build-iso/build-iso/iso-profiles
-          ln -sf "$WORK_PATH/iso-profiles" "$PATH_MANJARO_ISO_PROFILES" || true
+          ln -sfv "$WORK_PATH/iso-profiles" "$PATH_MANJARO_ISO_PROFILES" || true
           # habilitando safe.directory
           git config --global --add safe.directory "$PATH_MANJARO_ISO_PROFILES" || true
 
           # Query settings and pretend build
-          sudo buildiso -qf || true
+          #sudo buildiso -qf || true
           # END Query settings and pretend build
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
