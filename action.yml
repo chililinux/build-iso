@@ -1,14 +1,11 @@
 name: "Build BigCommunity ISO"
 description: "Builds a BigCommunity ISO image"
 
-env:
-  WORK_PATH: "/__w/build-iso/build-iso"
-  PROFILE_PATH: "/__w/build-iso/build-iso/iso-profiles/community"
-
 inputs:
   name:
     description: "Name for the ISO"
     required: true
+    default: 'bigcommunity'
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
@@ -67,6 +64,10 @@ outputs:
   release_name:
     description: "Name of the release"
     value: ${{ steps.prepare-iso.outputs.release_name }}
+
+env:
+  WORK_PATH: '/__w/build-iso/build-iso'
+  PROFILE_PATH: '/__w/build-iso/build-iso/iso-profiles/community'
 
 runs:
   using: "composite"
