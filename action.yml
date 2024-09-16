@@ -555,7 +555,7 @@ runs:
                 awk '{print $2}' |
                 cut -d "-" -f1 |
                 sed 's/\.//')
-              KERNEL_NAME="linux${KERNEL//-/}${xan_ver}"
+              KERNEL_NAME="linux-${KERNEL//-/}${xan_ver}"
             fi
             echo "KERNEL_VER  set to: $KERNEL_VER"
             echo "KERNEL_NAME set to: $KERNEL_NAME"
