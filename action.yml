@@ -424,8 +424,8 @@ runs:
         echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
 
         # Check if iso-profiles directory exists before proceeding
-        if [[ ! -d "iso-profiles" ]]; then
-          echo "Error: iso-profiles directory not found in the current working directory."
+        if [[ ! -d "$WORK_PATH/iso-profiles" ]]; then
+          echo "ERRO(L427): $WORK_PATH/iso-profiles directory not found."
           exit 1
         fi
 
