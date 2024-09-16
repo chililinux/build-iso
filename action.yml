@@ -208,6 +208,10 @@ runs:
 
     - name: Configure repositories and build environment
       shell: bash
+      env:
+        PATH_MANJARO_ISO_PROFILES: "/usr/share/manjaro-tools/iso-profiles"
+        PATH_MANJARO_TOOLS: "/usr/share/manjaro-tools"
+        VAR_CACHE_MANJARO_TOOLS: "/var/cache/manjaro-tools"
       run: |
         # Configuring repositories and build environment
         # Função para adicionar repositórios
@@ -406,9 +410,9 @@ runs:
         KERNEL: ${{ inputs.kernel }}
         OFFICE: ${{ inputs.office-chooser }}
         RELEASE_TAG: ${{ inputs.release_tag }}
-        PATH_MANJARO_ISO_PROFILES: '/usr/share/manjaro-tools/iso-profiles'
-        PATH_MANJARO_TOOLS: '/usr/share/manjaro-tools'
-        VAR_CACHE_MANJARO_TOOLS: '/var/cache/manjaro-tools'
+        PATH_MANJARO_ISO_PROFILES: "/usr/share/manjaro-tools/iso-profiles"
+        PATH_MANJARO_TOOLS: "/usr/share/manjaro-tools"
+        VAR_CACHE_MANJARO_TOOLS: "/var/cache/manjaro-tools"
       run: |
         # BUILD ISO Image
 
