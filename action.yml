@@ -5,7 +5,7 @@ inputs:
   name:
     description: "Name for the ISO"
     required: true
-    default: 'bigcommunity'
+    default: "bigcommunity"
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
@@ -681,7 +681,7 @@ runs:
           echo "ISO_NAME=$ISO_NAME"
           echo "ISO_BASENAME=$ISO_BASENAME"
           echo "FILE_PKG=$FILE_PKG"
-function sh_func_name()ler
+
           rm -rf /var/lib/manjaro-tools/buildiso/*
           #mv -fv "$OUTPUT_ISO_PATH" "./$ISO_NAME" || true
           mv -fv "$OUTPUT_ISO_PATH" "$WORK_PATH/$ISO_BASENAME" || true
