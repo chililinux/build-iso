@@ -524,6 +524,7 @@ runs:
         }
 
         configure_kernel() {
+          echo "Configurando kernel : $KERNEL"
           case "$KERNEL" in
             oldLts)
               KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
@@ -536,14 +537,13 @@ runs:
               echo "linux-latest" >> $PROFILE_PATH/$EDITION/Packages-Root
               ;;
             xanmod*)
-              echo "linux-firmware" >> $PROFILE_PATH/$EDITION/Packages-Root
               KERNEL_VER="-${KERNEL}"
-              echo "Configurando kernel xanmod: $KERNEL"
+              echo "linux-firmware" >> $PROFILE_PATH/$EDITION/Packages-Root
               ;;
           esac
 
           # Definir KERNEL_NAME
-          if [ "$KERNEL" != "xanmod" ]; then
+          if [[ "$KERNEL" != "xanmod" ]]; then
             KERNEL_NAME="linux${KERNEL_VER}"
           else
             local xan_ver
@@ -670,7 +670,7 @@ runs:
           exit 1
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
-          sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}"
+          sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
         }
 
         cleanup_and_move_files() {
