@@ -537,7 +537,7 @@ runs:
               ;;
             xanmod*)
               echo "linux-firmware" >> $PROFILE_PATH/$EDITION/Packages-Root
-              KERNEL="-${KERNEL}"
+              KERNEL_VER="-${KERNEL}"
               echo "Configurando kernel xanmod: $KERNEL"
               ;;
           esac
