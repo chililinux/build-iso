@@ -561,8 +561,8 @@ runs:
             echo "KERNEL_NAME set to: $KERNEL_NAME"
 
             # Adicione o pacote do kernel ao Packages-Root
-            #echo "${KERNEL_NAME}" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-            #echo "Added ${KERNEL_NAME} to Packages-Root"
+            echo "${KERNEL_NAME}" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+            echo "Added ${KERNEL_NAME} to Packages-Root"
         }
 
         configure_repos() {
@@ -706,7 +706,7 @@ runs:
           # END Community Pre Config Build ISO"
 
           # Starting kernel configuration
-          configure_kernel
+          #configure_kernel
           # END Kernel configuration completed"
 
           # Starting repository configuration
