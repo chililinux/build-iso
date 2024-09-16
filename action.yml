@@ -536,7 +536,7 @@ runs:
               echo "linux-latest" >> $PROFILE_PATH/$EDITION/Packages-Root
               ;;
             xanmod*)
-              echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root
+              echo "linux-firmware" >> $PROFILE_PATH/$EDITION/Packages-Root
               KERNEL="-${KERNEL}"
               echo "Configurando kernel xanmod: $KERNEL"
               ;;
@@ -551,8 +551,9 @@ runs:
             KERNEL_NAME="linux${KERNEL//-/}${xan_ver}"
           fi
 
-          echo "KERNEL_VER: $KERNEL_VER"
+          echo "KERNEL_VER : $KERNEL_VER"
           echo "KERNEL_NAME: $KERNEL_NAME"
+
           # Adicione o pacote do kernel ao Packages-Root
           echo "${KERNEL_NAME}" >>"$PROFILE_PATH/$EDITION/Packages-Root"
           echo "Added ${KERNEL_NAME} to Packages-Root"
