@@ -152,6 +152,11 @@ runs:
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
       run: |
+        WORK_PATH='/__w/build-iso/build-iso'
+        PROFILE_PATH='/__w/build-iso/build-iso/iso-profiles/community'
+        echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
+        echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
+
         # Configurar o ambiente para o usuário root
         sudo mkdir -p /root/.config/manjaro-tools
         echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
@@ -415,10 +420,7 @@ runs:
         VAR_CACHE_MANJARO_TOOLS: "/var/cache/manjaro-tools"
       run: |
         # BUILD ISO Image
-
         # Denine path for directory
-        #echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
-        #echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
 
         # Check if iso-profiles directory exists before proceeding
         if [[ ! -d "$WORK_PATH/iso-profiles" ]]; then
