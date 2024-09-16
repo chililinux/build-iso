@@ -76,7 +76,7 @@ on:
         default: "xfce"
 
 jobs:
-  config:
+  build:
     name: Build ISO ${{ github.event.client_payload.edition || 'Unknown' }}
     runs-on: ubuntu-latest
     container:

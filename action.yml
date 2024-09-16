@@ -5,7 +5,7 @@ inputs:
   name:
     description: "Name for the ISO"
     required: true
-    default: 'bigcommunity'
+    default: "bigcommunity"
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
@@ -151,9 +151,6 @@ runs:
 
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
-      env:
-        WORK_PATH: '/__w/build-iso/build-iso'
-        PROFILE_PATH: '/__w/build-iso/build-iso/iso-profiles/community'
       run: |
         # Configurar o ambiente para o usuário root
         sudo mkdir -p /root/.config/manjaro-tools
@@ -464,10 +461,10 @@ runs:
           sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|' /usr/lib/manjaro-tools/util-iso.sh
 
           # Modificar a busca por versões de kernel
-          sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
+          #sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
 
           # Desabilitar a verificação de versão do kernel
-          sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
+          #sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
           # Configurar o caminho do perfil ISO
           sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
@@ -525,33 +522,46 @@ runs:
         }
 
         configure_kernel() {
-          case "$KERNEL" in
-            oldLts)
-              KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed -n 's/.*<title>\(.*\):.*/\1/p' | sort -Vr | sed -n '2s/\.//gp')
-              ;;
-            atualLts)
-              KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed -n 's/.*<title>\(.*\):.*/\1/p' | sort -Vr | sed -n '1s/\.//gp')
-              ;;
-            latest)
-              KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-              echo "linux-latest" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-              ;;
-            xanmod*)
-              echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-              KERNEL="-$KERNEL"
-              echo "Configurando kernel xanmod: $KERNEL"
-              ;;
-          esac
+            echo "Configuring kernel: $KERNEL"
+            case "$KERNEL" in
+                oldLts)
+                    KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
+                    ;;
+                atualLts)
+                    KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
+                    ;;
+                latest)
+                    KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
+                    echo "linux-latest" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+                    ;;
+                xanmod*)
+                    echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+                    KERNEL="-${KERNEL}"
+                    ;;
+            esac
 
-          # Definir KERNEL_NAME
-          if [[ "$KERNEL" != "xanmod" ]]; then
-            KERNEL_NAME="$KERNEL"
-          else
-            local xan_ver
-            xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
-            KERNEL_NAME="${KERNEL//-/}${xan_ver}"
-          fi
-          echo "KERNEL_NAME definido como: $KERNEL_NAME"
+            echo "KERNEL set to: $KERNEL"
+
+            # Definir KERNEL_NAME
+            if [[ "$KERNEL" != "xanmod" ]]; then
+                KERNEL_NAME="$KERNEL"
+            else
+                local xan_ver
+                xan_ver=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} + |
+                          sort -nr |
+                          awk 'NR==1 {print $2}' |
+                          xargs grep linux-xanmod |
+                          grep -v headers |
+                          awk '{print $2}' |
+                          cut -d "-" -f1 |
+                          sed 's/\.//')
+                KERNEL_NAME="${KERNEL//-/}${xan_ver}"
+            fi
+            echo "KERNEL_NAME set to: $KERNEL_NAME"
+
+            # Adicione o pacote do kernel ao Packages-Root
+            echo "linux${KERNEL_NAME}" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+            echo "Added linux${KERNEL_NAME} to Packages-Root"
         }
 
         configure_repos() {
