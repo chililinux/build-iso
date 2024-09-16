@@ -66,8 +66,8 @@ outputs:
     value: ${{ steps.prepare-iso.outputs.release_name }}
 
 env:
-  WORK_PATH: '/__w/build-iso/build-iso'
-  PROFILE_PATH: '/__w/build-iso/build-iso/iso-profiles/community'
+  WORK_PATH: "/__w/build-iso/build-iso"
+  PROFILE_PATH: "/__w/build-iso/build-iso/iso-profiles/community"
 
 runs:
   using: "composite"
@@ -421,8 +421,8 @@ runs:
         # BUILD ISO Image
 
         # Denine path for directory
-        echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
-        echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
+        #echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
+        #echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
 
         # Check if iso-profiles directory exists before proceeding
         if [[ ! -d "$WORK_PATH/iso-profiles" ]]; then
