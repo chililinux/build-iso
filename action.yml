@@ -406,7 +406,7 @@ runs:
     - name: Build ISO Image
       shell: bash
       env:
-        DEBUG: ${{ inputs.tmake }}
+        DEBUG: ${{ inputs.tmate }}
         DISTRONAME: ${{ inputs.name }}
         EDITION: ${{ inputs.edition }}
         MANJAROBRANCH: ${{ inputs.manjaro_branch }}
@@ -464,10 +464,10 @@ runs:
           sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|' /usr/lib/manjaro-tools/util-iso.sh
 
           # Modificar a busca por versões de kernel
-          #sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
+          sed -i '/_kernver=/s/_kernver=.*/_kernver=$(find $1\/usr\/lib\/modules\/ -type f -name version -exec cat {} +)/' /usr/lib/manjaro-tools/util-iso-boot.sh
 
           # Desabilitar a verificação de versão do kernel
-          #sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
+          sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
           # Configurar o caminho do perfil ISO
           sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
