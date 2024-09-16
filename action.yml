@@ -525,26 +525,26 @@ runs:
             echo "Configuring kernel: $KERNEL"
             case "$KERNEL" in
                 oldLts)
-                    KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
+                    KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
                     ;;
                 atualLts)
-                    KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
+                    KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
                     ;;
                 latest)
-                    KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
+                    KERNEL_VER=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
                     echo "linux-latest" >> "$PROFILE_PATH/$EDITION/Packages-Root"
                     ;;
                 xanmod*)
                     echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-                    KERNEL="-${KERNEL}"
+                    KERNEL_VER="-${KERNEL}"
                     ;;
             esac
 
-            echo "KERNEL set to: $KERNEL"
+            echo "KERNEL_VER set to: $KERNEL_VER"
 
             # Definir KERNEL_NAME
             if [[ "$KERNEL" != "xanmod" ]]; then
-                KERNEL_NAME="$KERNEL"
+                KERNEL_NAME="linux${KERNEL_VER}"
             else
                 local xan_ver
                 xan_ver=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} + |
@@ -555,13 +555,13 @@ runs:
                           awk '{print $2}' |
                           cut -d "-" -f1 |
                           sed 's/\.//')
-                KERNEL_NAME="${KERNEL//-/}${xan_ver}"
+                KERNEL_NAME="linux${KERNEL//-/}${xan_ver}"
             fi
             echo "KERNEL_NAME set to: $KERNEL_NAME"
 
             # Adicione o pacote do kernel ao Packages-Root
-            echo "linux${KERNEL_NAME}" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-            echo "Added linux${KERNEL_NAME} to Packages-Root"
+            echo "${KERNEL_NAME}" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+            echo "Added ${KERNEL_NAME} to Packages-Root"
         }
 
         configure_repos() {
@@ -640,23 +640,23 @@ runs:
         }
 
         build_iso() {
-          local kernel_name="$KERNEL"
+          local kernel_name="$KERNEL_NAME"
 
           if [[ "$KERNEL" == "xanmod" ]]; then
             local xan_ver
             xan_ver=$(grep linux-xanmod "$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} \; | sort -nr | awk 'NR==1 {print $2}')" | grep -v headers | cut -d " " -f2 | cut -d "-" -f1 | sed ':a;$!{N;ba;};s/\(.*\)\..*/\1/' | sed 's/\.//')
-            kernel_name="${KERNEL//-/}${xan_ver}"
+            KERNEL_NAME="linux${KERNEL//-/}${xan_ver}"
           fi
 
           echo "########################## RESUMO #################################"
           echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o}"
-          echo "Building ISO with kernel : linux${kernel_name}"
           echo "PROFILE_PATH             : $PROFILE_PATH"
           echo "EDITION                  : $EDITION"
           echo "MANJAROBRANCH            : $MANJAROBRANCH"
           echo "COMMUNITYBRANCH          : $COMMUNITYBRANCH"
           echo "BIGLINUXBRANCH           : $BIGBRANCH"
-          echo "KERNEL_NAME              : linux${kernel_name}"
+          echo "KERNEL_VER               : ${KERNEL_VER}"
+          echo "KERNEL_NAME              : ${KERNEL_NAME}"
           echo "SCOPE                    : $SCOPE"
           echo "OFFICE                   : $OFFICE"
           echo "###################################################################"
@@ -681,7 +681,7 @@ runs:
           # END Query settings and pretend build
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
-          sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}"
+          sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}"
         }
 
         cleanup_and_move_files() {
