@@ -2,69 +2,69 @@ name: ISO Build
 
 on:
   repository_dispatch:
-    types:
-      - "ISO-*"
+    types: 
+      - 'ISO-*'
   workflow_dispatch:
     inputs:
       name:
         type: string
-        description: "Name for the ISO"
+        description: 'Name for the ISO'
         required: true
-        default: "bigcommunity"
+        default: 'bigcommunity'
       scope:
         type: choice
-        description: "Build scope"
+        description: 'Build scope'
         options:
           - full
           - minimal
-        default: "full"
+        default: 'full'
       office-chooser:
         type: boolean
-        description: "Include office suite"
+        description: 'Include office suite'
         required: false
         default: false
       tmate:
         type: boolean
-        description: "Enable debugging with tmate"
+        description: 'Enable debugging with tmate'
         required: false
         default: false
       release_tag:
         type: string
-        description: "Release tag (e.g., YYYY-MM-DD_HH-mm)"
+        description: 'Release tag (e.g., YYYY-MM-DD_HH-mm)'
         required: true
       kernel:
         type: choice
-        description: "Kernel version"
+        description: 'Kernel version'
         options:
           - latest
           - lts
           - oldLts
-        default: "lts"
+        default: 'lts'
       manjaro_branch:
         type: choice
-        description: "Manjaro branch"
+        description: 'Manjaro branch'
         options:
           - stable
           - testing
           - unstable
-        default: "stable"
+        default: 'stable'
       community_branch:
         type: choice
-        description: "Community branch"
+        description: 'Community branch'
         options:
           - stable
           - testing
-        default: "testing"
+        default: 'stable'
       biglinux_branch:
         type: choice
-        description: "BigLinux branch"
+        description: 'BigLinux branch'
         options:
           - stable
           - testing
-        default: "stable"
+        default: 'stable'
       edition:
         type: choice
-        description: "Edition"
+        description: 'Edition'
         options:
           - cinnamon
           - cosmic
@@ -73,7 +73,7 @@ on:
           - kde
           - xfce
           - wmaker
-        default: "xfce"
+        default: 'xfce'
 
 jobs:
   build:
@@ -85,18 +85,14 @@ jobs:
       volumes:
         - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
         - /mnt/var_cache_manjaro_tools_iso:/var/cache/manjaro-tools/iso
-
+      
     steps:
-      #- name: Checkout repository
-      #uses: actions/checkout@v4
-      #with:
-      #fetch-depth: 1 # Esse parâmetro define a profundidade do fetch para o último commit
-
       - name: Set up volume directory on HOST
         run: |
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
 
+          
       - name: Display the current user in host
         run: |
           # Display the current user in host
@@ -110,22 +106,21 @@ jobs:
           df -hT
           echo "#########################################"
           ls -la /mnt
-          echo "#########################################"
-
+          echo "#########################################"    
+      
       - name: Initial Debug
         run: |
           echo "Workflow started"
-          echo "Event Name         : ${{ github.event_name }}"
-          echo "Event Action       : ${{ github.event.action }}"
-          echo "Edition            : ${{ github.event.client_payload.edition || inputs.edition }}"
-          echo "Tmate from payload : ${{ github.event.client_payload.tmate }}"
-          echo "Full github event  : ${{ toJson(github.event) }}"
-
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Event Action: ${{ github.event.action }}"
+          echo "Edition: ${{ github.event.client_payload.edition || inputs.edition }}"
+          echo "Tmate from payload: ${{ github.event.client_payload.tmate }}"
+          echo "Full github event: ${{ toJson(github.event) }}"
+    
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          #fetch-depth: 0
-          fetch-depth: 1 # Esse parâmetro define a profundidade do fetch para o último commit
+          fetch-depth: 0
 
       - name: Build ISO
         uses: ./
@@ -158,13 +153,39 @@ jobs:
         shell: bash
         run: |
           echo "----------------------------------------"
-          echo "ISO path: ${{ steps.build.outputs.file-path }}"
+          echo "ISO path: ${{ steps.build.outputs.iso_path }}"
           echo "----------------------------------------"
 
+      - name: Calculate ISO MD5 Hash
+        shell: bash
+        run: |
+          echo "Calculating MD5 hash for ISO file..."
+          ISO_PATH="${{ steps.build.outputs.iso_path }}"
+          echo "ISO_PATH is: '$ISO_PATH'"
+
+          if [ -f "$ISO_PATH" ]; then
+            md5sum "$ISO_PATH" > "${ISO_PATH}.md5"
+            echo "MD5 hash calculated and saved:"
+            cat "${ISO_PATH}.md5"
+          else
+            echo "Error: ISO file not found at $ISO_PATH"
+            exit 1
+          fi
+
+      - name: Prepare ISO for release
+        id: prepare-iso
+        shell: bash
+        run: |
+          ls -lh
+          release=$(basename "${{ steps.build.outputs.iso_path }}" .iso)
+          zip -j -0 -s 2000m ${release}.zip ${{ steps.build.outputs.iso_path }}
+          echo "release_name=${release}" >> $GITHUB_OUTPUT
+          echo "ISO prepared for release"
+
       - name: Upload ISO as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.build.outputs.release_name }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}
           path: |
             ${{ steps.build.outputs.iso_path }}
             ${{ steps.build.outputs.iso_path }}.md5
@@ -178,7 +199,7 @@ jobs:
             ${{ steps.build.outputs.iso_path }}
             ${{ steps.build.outputs.iso_path }}.md5
             ${{ steps.build.outputs.iso_path }}.pkgs
-            ${{ steps.build.outputs.release_name }}.z*
+            ${{ steps.prepare-iso.outputs.release_name }}.z*
           tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
-          name: ${{ steps.build.outputs.release_name }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}
           generate_release_notes: true
