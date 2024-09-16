@@ -67,10 +67,6 @@ outputs:
 
 runs:
   using: "composite"
-  env:
-    WORK_PATH: '/__w/build-iso/build-iso'
-    PROFILE_PATH: '/__w/build-iso/build-iso/iso-profiles/community'
-
   steps:
     - name: Display the current user in CONTAINER
       shell: bash
@@ -155,6 +151,9 @@ runs:
 
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
+      env:
+        WORK_PATH: '/__w/build-iso/build-iso'
+        PROFILE_PATH: '/__w/build-iso/build-iso/iso-profiles/community'
       run: |
         # Configurar o ambiente para o usuário root
         sudo mkdir -p /root/.config/manjaro-tools
