@@ -638,7 +638,7 @@ runs:
             kernel_name="${KERNEL//-/}${xan_ver}"
           fi
 
-          echo "###################################################################"
+          echo "########################## RESUMO #################################"
           echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${kernel_name} ${OFFICE:+-o}"
           echo "Building ISO with kernel : linux${kernel_name}"
           echo "PROFILE_PATH             : $PROFILE_PATH"
@@ -655,8 +655,8 @@ runs:
           echo "ISO profiles path        : $PROFILE_PATH/$EDITION"
           echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
           echo "###################################################################"
-          echo "ROOT_RUN_DIR             : $(cat /root/.config/manjaro-tools/iso-profiles.conf)"
-          echo "BUILDUSER_RUN_DIR        : $(cat /home/builduser/.config/manjaro-tools/iso-profiles.conf)"
+          echo "ROOT_RUN_DIR             : $(< /root/.config/manjaro-tools/iso-profiles.conf)"
+          echo "BUILDUSER_RUN_DIR        : $(< /home/builduser/.config/manjaro-tools/iso-profiles.conf)"
           echo "###################################################################"
 
           # removendo iso-profiles em /usr/share/manjaro-tools/iso-profiles
