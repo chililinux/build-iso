@@ -643,12 +643,15 @@ runs:
           echo "PROFILE_PATH             : $PROFILE_PATH"
           echo "EDITION                  : $EDITION"
           echo "MANJAROBRANCH            : $MANJAROBRANCH"
+          echo "COMMUNITYBRANCH          : $COMMUNITYBRANCH"
+          echo "BIGLINUXBRANCH           : $BIGBRANCH"
           echo "KERNEL_NAME              : linux${kernel_name}"
           echo "SCOPE                    : $SCOPE"
           echo "OFFICE                   : $OFFICE"
           echo "###################################################################"
           echo "WORK_PATH                : $WORK_PATH"
           echo "PROFILE_PATH             : $PROFILE_PATH"
+          echo "ISO profiles path        : $PROFILE_PATH/$EDITION"
           echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
           echo "###################################################################"
 
@@ -709,15 +712,6 @@ runs:
           set_build_info
           configure_iso_name
           rm -rf iso-profiles/custom-profiles
-
-          echo
-          echo "Kernel            : $kernel_name"
-          echo "Edition           : $EDITION"
-          echo "ManjaroBranch     : $MANJAROBRANCH"
-          echo "CommunityBranch   : $COMMUNITYBRANCH"
-          echo "BigLinuxBranch    : $BIGBRANCH"
-          echo "ISO profiles path : $PROFILE_PATH/$EDITION"
-          echo
 
           build_iso
           cleanup_and_move_files
