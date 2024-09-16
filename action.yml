@@ -342,7 +342,7 @@ runs:
         REPO="${{ inputs.iso_profiles_repo }}"
         echo "Repository: $REPO"
 
-        if ! git clone --depth 1 "$REPO" iso-profiles; then
+        if ! git clone --depth 1 "$REPO" "$WORK_PATH/iso-profiles"; then
           echo "Falha ao clonar o repositorio iso-profiles"
           exit 1
         fi
@@ -663,7 +663,7 @@ runs:
           git config --global --add safe.directory "$PATH_MANJARO_ISO_PROFILES" || true
 
           # Query settings and pretend build
-          #sudo buildiso -qf || true
+          sudo buildiso -qf || true
           # END Query settings and pretend build
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
