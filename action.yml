@@ -526,20 +526,20 @@ runs:
         configure_kernel() {
           echo "Configuring kernel: $KERNEL"
           case "$KERNEL" in
-            oldLts)
+          oldLts)
             KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
             ;;
-            atualLts)
-              KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
-              ;;
-            latest)
-              KERNEL_VER=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-              echo "linux-latest" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-              ;;
-            xanmod*)
-              echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
-              KERNEL_VER="-${KERNEL}"
-              ;;
+          atualLts)
+            KERNEL_VER=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
+            ;;
+          latest)
+            KERNEL_VER=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
+            echo "linux-latest" >>"$PROFILE_PATH/$EDITION/Packages-Root"
+            ;;
+          xanmod*)
+            echo "linux-firmware" >>"$PROFILE_PATH/$EDITION/Packages-Root"
+            KERNEL_VER="-${KERNEL}"
+            ;;
           esac
 
           # Definir KERNEL_NAME
@@ -561,7 +561,7 @@ runs:
           echo "KERNEL_NAME set to: $KERNEL_NAME"
 
           # Adicione o pacote do kernel ao Packages-Root
-          echo "${KERNEL_NAME}" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+          echo "${KERNEL_NAME}" >>"$PROFILE_PATH/$EDITION/Packages-Root"
           echo "Added ${KERNEL_NAME} to Packages-Root"
         }
 
