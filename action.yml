@@ -627,7 +627,8 @@ runs:
         }
 
         configure_iso_name() {
-          sed -i "s/label=.*/label=${DISTRONAME^^}_${RELEASE_TAG}/" "$PROFILE_PATH/$EDITION/profile.conf"
+          #sed -i "s/label=.*/label=${DISTRONAME^^}_${RELEASE_TAG}/" "$PROFILE_PATH/$EDITION/profile.conf"
+          sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION/profile.conf"
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
             stable/stable)            ISO_NAME="${DISTRONAME}_stable_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) ISO_NAME="${DISTRONAME}_beta_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -668,7 +669,8 @@ runs:
           sudo buildiso -qf || true
           # END Query settings and pretend build
 
-          exit 1
+          # saindo para testes
+          exit 0
 
           #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${kernel_name}" "${OFFICE:+-o}" > /dev/null 2>&1
           sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
