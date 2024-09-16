@@ -151,6 +151,9 @@ runs:
 
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
+      env:
+        WORK_PATH: "/__w/build-iso/build-iso"
+        PROFILE_PATH: "$WORK_PATH/iso-profiles/community"
       run: |
         # Configurar o ambiente para o usuário root
         sudo mkdir -p /root/.config/manjaro-tools
@@ -417,8 +420,6 @@ runs:
         # BUILD ISO Image
 
         # Denine path for directory
-        WORK_PATH="/__w/build-iso/build-iso"
-        PROFILE_PATH="$WORK_PATH/iso-profiles/community"
         echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
         echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
 
