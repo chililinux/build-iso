@@ -492,7 +492,7 @@ runs:
           local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
 
           tee -a "$cleanup_script" > /dev/null << 'EOF'
-          
+
           # Big cleanups
           local path=$1
 
@@ -523,7 +523,7 @@ runs:
             # Criar e configurar diretórios
             mkdir -p /var/cache/manjaro-tools/iso
             chmod 777 /var/cache/manjaro-tools/iso
-            
+
             # Verificar se buildiso está disponível
             if ! command -v buildiso &> /dev/null; then
                 echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
@@ -551,7 +551,7 @@ runs:
 
             # Configurar o caminho do perfil ISO
             sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
-            
+
             # Adicionar limpezas do Big
             add_big_cleanups
 
@@ -598,7 +598,7 @@ runs:
               sed -i '/^linux[0-9]/d' "$pkg_file"
               sed -i '/^linux-latest/d' "$pkg_file"
           done
-          
+
           # Definir KERNEL_NAME e adicionar linux-firmware se necessário
           if [[ "$KERNEL" == "-xanmod"* ]]; then
               KERNEL_NAME="${KERNEL#-}"
@@ -624,7 +624,7 @@ runs:
           fi
 
           echo "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
-          
+
           # Modificar a função prepare_boot_extras em util-iso-boot.sh
           sed -i "/prepare_boot_extras()/,/^}/c\\
           prepare_boot_extras(){\\
@@ -643,16 +643,16 @@ runs:
                   ls -l \$1/boot/\\
               fi\\
           }" /usr/lib/manjaro-tools/util-iso-boot.sh
-          
+
           echo "KERNEL_NAME set to: $KERNEL_NAME"
-          
+
           # Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*
           for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
               sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
               sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
               sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
           done
-          
+
           echo "Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:"
           for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
               echo "### $pkg_file ###"
@@ -736,10 +736,10 @@ runs:
           echo "Debug: DISTRONAME=$DISTRONAME"
           echo "Debug: MANJAROBRANCH=$MANJAROBRANCH"
           echo "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
-          
+
           # Use $DISTRONAME aqui também, em vez de "bigcommunity"
-          sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" $PROFILE_PATH/"$EDITION"/profile.conf
-          
+          sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION"/profile.conf
+
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
             stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) ISO_BASENAME="${DISTRONAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -755,64 +755,71 @@ runs:
           echo "MANJAROBRANCH            : $MANJAROBRANCH"
           echo "COMMUNITYBRANCH          : $COMMUNITYBRANCH"
           echo "BIGLINUXBRANCH           : $BIGBRANCH"
-          echo "KERNEL_VER               : ${KERNEL_VER}"
+          echo "KERNEL_VERSION_DOT       : ${KERNEL_VERSION_DOT}"
           echo "KERNEL_NAME              : ${KERNEL_NAME}"
           echo "SCOPE                    : $SCOPE"
           echo "OFFICE                   : $OFFICE"
           echo "###################################################################"
+          echo "ISO_BASENAME             : $ISO_BASENAME"
           echo "WORK_PATH                : $WORK_PATH"
           echo "PROFILE_PATH             : $PROFILE_PATH"
           echo "ISO profiles path        : $PROFILE_PATH/$EDITION"
           echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
           echo "###################################################################"
+          echo "DEBUG                    : $DEBUG"
           echo "ROOT_RUN_DIR             : $(< /root/.config/manjaro-tools/iso-profiles.conf)"
           echo "BUILDUSER_RUN_DIR        : $(< /home/builduser/.config/manjaro-tools/iso-profiles.conf)"
           echo "###################################################################"
 
-            # Executar buildiso e capturar o código de saída
-              sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
-            BUILD_EXIT_CODE=$?
+          # Executar buildiso e capturar o código de saída
+          if [[ $DEBUG == 'true' ]]; then
+            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
+          else
+            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
+          fi
+          BUILD_EXIT_CODE=$?
 
-            # Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
-            echo "Checking kernel files in rootfs:"
-            find /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot -name "vmlinuz*"
-            
-            echo "Checking kernel files in iso/boot:"
-            find /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot -name "vmlinuz*"
-            
-            if [ ! -f "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/vmlinuz*" ]; then
-                echo "Warning: Kernel file not found in iso/boot. Attempting manual copy..."
-                mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
-                cp /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
-            fi
+          # Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
+          echo "Checking kernel files in rootfs:"
+          find /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot -name "vmlinuz*"
 
-            # Exibir conteúdo de diretórios relevantes para diagnóstico
-            echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
-            ls -la /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot
-            
-            echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
-            ls -la /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot
+          echo "Checking kernel files in iso/boot:"
+          find /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot -name "vmlinuz*"
 
-            # Se buildiso falhou, sair com o código de erro
-            if [ $BUILD_EXIT_CODE -ne 0 ]; then
-                echo "Error: buildiso command failed with exit code $BUILD_EXIT_CODE"
-                exit $BUILD_EXIT_CODE
-            fi
+          if [ ! -f "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/vmlinuz*" ]; then
+            echo "Warning: Kernel file not found in iso/boot. Attempting manual copy..."
+            mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
+            cp /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
+          fi
+
+          # Exibir conteúdo de diretórios relevantes para diagnóstico
+          echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
+          ls -la /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot
+
+          echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
+          ls -la /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot
+
+          # Se buildiso falhou, sair com o código de erro
+          if [ $BUILD_EXIT_CODE -ne 0 ]; then
+            echo "Error: buildiso command failed with exit code $BUILD_EXIT_CODE"
+            exit $BUILD_EXIT_CODE
+          fi
         }
 
         cleanup_and_move_files() {
-            OUTPUT_ISO_PATH_NAME=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
-            FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
-            
-            echo "ISO_BASENAME=$ISO_BASENAME" >> "$GITHUB_ENV"  # Exporta ISO_BASENAME para outras etapas
+          OUTPUT_ISO_PATH_NAME=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
+          FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
 
-            echo "ISO_BASENAME=$ISO_BASENAME"
-            echo "FILE_PKG=$FILE_PKG"
+          echo "ISO_BASENAME=$ISO_BASENAME"                 >> "$GITHUB_ENV"  # Exporta ISO_BASENAME para outras etapas
+          echo "OUTPUT_ISO_PATH_NAME=$OUTPUT_ISO_PATH_NAME" >> "$GITHUB_ENV"  # Exporta OUTPUT_ISO_PATH_NAME para outras etapas
 
-            mv -fv "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || echo "Failed to move ISO file"
-            echo "iso_path=$WORK_PATH/$ISO_BASENAME" >> "$GITHUB_OUTPUT"
-            
-            mv -fv "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || echo "Failed to move pkgs file"
+          echo "ISO_BASENAME        : $ISO_BASENAME"
+          echo "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
+          echo "FILE_PKG            : $FILE_PKG"
+
+          mv -fv "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || echo "Failed to move ISO file"
+          mv -fv "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs"      || echo "Failed to move pkgs file"
+          echo "iso_path=$WORK_PATH/$ISO_BASENAME" >> "$GITHUB_OUTPUT"
         }
 
         main() {
@@ -842,42 +849,7 @@ runs:
         }
         main
 
-    - name: Calculate ISO MD5 Hash
+    - name: Set ISO path
       shell: bash
       run: |
-        echo "Calculating MD5 hash for ISO file..."
-        ISO_PATH="${{ steps.build.outputs.iso_path }}"
-
-        if [ -f "$ISO_PATH" ]; then
-          md5sum "$ISO_PATH" > "${ISO_PATH}.md5"
-          echo "MD5 hash calculated and saved:"
-          cat "${ISO_PATH}.md5"
-        else
-          echo "Error: ISO file not found at $ISO_PATH"
-          exit 1
-        fi
-
-    - name: Prepare ISO for release
-      id: prepare-iso
-      shell: bash
-      run: |
-        ls -lh
-        release=$(basename "${{ steps.build.outputs.iso_path }}" .iso)
-        zip -j -0 -s 2000m ${release}.zip ${{ steps.build.outputs.iso_path }}
-        echo "release_name=${release}" >> $GITHUB_OUTPUT
-        echo "ISO prepared for release"
-
-    - name: Create GitHub Release
-      shell: bash
-      env:
-        GITHUB_TOKEN: ${{ inputs.github_token }}
-      run: |
-        echo $GITHUB_TOKEN | gh auth login --with-token
-        release_name="${{ steps.prepare-iso.outputs.release_name }}"
-        gh release create $release_name \
-          --title "$release_name" \
-          --notes "Automated release from CI/CD" \
-          ${{ steps.build.outputs.iso_path }} \
-          ${{ steps.build.outputs.iso_path }}.md5 \
-          ${{ steps.build.outputs.iso_path }}.pkgs \
-          ${release_name}.z*
+        echo "ISO_PATH=$WORK_PATH/$ISO_BASENAME" >> $GITHUB_ENV

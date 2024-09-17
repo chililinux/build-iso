@@ -149,26 +149,20 @@ jobs:
           # iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
           # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
 
-      - name: Echo ISO path
-        shell: bash
-        run: |
-          echo "----------------------------------------"
-          echo "ISO path: ${{ steps.build.outputs.iso_path }}"
-          echo "----------------------------------------"
+      - name: Set ISO path
+        run: echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
 
       - name: Calculate ISO MD5 Hash
         shell: bash
         run: |
           echo "Calculating MD5 hash for ISO file..."
-          ISO_PATH="${{ steps.build.outputs.iso_path }}"
-          echo "ISO_PATH is: '$ISO_PATH'"
-
-          if [ -f "$ISO_PATH" ]; then
-            md5sum "$ISO_PATH" > "${ISO_PATH}.md5"
+          echo "ISO_PATH is: '${{ env.ISO_PATH }}'"
+          if [ -f "${{ env.ISO_PATH }}" ]; then
+            md5sum "${{ env.ISO_PATH }}" > "${{ env.ISO_PATH }}.md5"
             echo "MD5 hash calculated and saved:"
-            cat "${ISO_PATH}.md5"
+            cat "${{ env.ISO_PATH }}.md5"
           else
-            echo "Error: ISO file not found at $ISO_PATH"
+            echo "Error: ISO file not found at ${{ env.ISO_PATH }}"
             exit 1
           fi
 
@@ -177,8 +171,8 @@ jobs:
         shell: bash
         run: |
           ls -lh
-          release=$(basename "${{ steps.build.outputs.iso_path }}" .iso)
-          zip -j -0 -s 2000m ${release}.zip ${{ steps.build.outputs.iso_path }}
+          release=$(basename "${{ env.ISO_PATH }}" .iso)
+          zip -j -0 -s 2000m ${release}.zip ${{ env.ISO_PATH }}
           echo "release_name=${release}" >> $GITHUB_OUTPUT
           echo "ISO prepared for release"
 
@@ -187,18 +181,18 @@ jobs:
         with:
           name: ${{ steps.prepare-iso.outputs.release_name }}
           path: |
-            ${{ steps.build.outputs.iso_path }}
-            ${{ steps.build.outputs.iso_path }}.md5
-            ${{ steps.build.outputs.iso_path }}.pkgs
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
 
       - name: Create Release
         if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' }}
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ steps.build.outputs.iso_path }}
-            ${{ steps.build.outputs.iso_path }}.md5
-            ${{ steps.build.outputs.iso_path }}.pkgs
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
             ${{ steps.prepare-iso.outputs.release_name }}.z*
           tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
           name: ${{ steps.prepare-iso.outputs.release_name }}
