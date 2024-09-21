@@ -129,19 +129,19 @@ runs:
       run: |
         # Ajustar ambiente do root
         pushd /root || true
-        cp -Rpa /etc/skel/.bash* . || true
-        cp -Rpa /etc/skel/.ps* . || true
-        cp -Rpa /etc/skel/.dircolors* . || true
-        cp -Rpa /etc/skel/.git-prompt* . || true
+        cp -Rpva /etc/skel/.bash* . || true
+        cp -Rpva /etc/skel/.ps* . || true
+        cp -Rpva /etc/skel/.dircolors* . || true
+        cp -Rpva /etc/skel/.git-prompt* . || true
         popd || true
 
         # Ajustar ambiente do builduser
         sudo -u builduser bash << EOF
         cd $HOME
-        cp -Rpa /etc/skel/.bash* .
-        cp -Rpa /etc/skel/.ps* .
-        cp -Rpa /etc/skel/.dircolors* .
-        cp -Rpa /etc/skel/.git-prompt* .
+        cp -Rpva /etc/skel/.bash* .
+        cp -Rpva /etc/skel/.ps* .
+        cp -Rpva /etc/skel/.dircolors* .
+        cp -Rpva /etc/skel/.git-prompt* .
         EOF
 
     - name: Ajuste nos hooks do mkinitcpio
@@ -150,29 +150,48 @@ runs:
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
         sed -i -e 's|File|Path|' /usr/share/libalpm/hooks/*hook*
 
-    - name: Configurar o ambiente para o usuário root e builduser
+    - name: Ajustar variáveis de ambiente
       shell: bash
       run: |
         #WORK_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}"
         #PROFILE_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}/iso-profiles/community"
-        WORK_PATH='/__w/build-iso/build-iso'
-        PROFILE_PATH='/__w/build-iso/build-iso/iso-profiles/community'
+        WORK_PATH="/__w/build-iso/build-iso"
+        WORK_PATH_ISO_PROFILES="/__w/build-iso/build-iso/iso-profiles"
+        PROFILE_PATH="/__w/build-iso/build-iso/iso-profiles/community"
+        echo "WORK_PATH=$WORK_PATH"                           >> $GITHUB_ENV  # Exporta para outras etapas
+        echo "WORK_PATH_ISO_PROFILES=$WORK_PATH_ISO_PROFILES" >> $GITHUB_ENV  # Exporta para outras etapas
+        echo "PROFILE_PATH=$PROFILE_PATH"                     >> $GITHUB_ENV  # Exporta para outras etapas
 
-        echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
-        echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
+    - name: Checkout iso-profiles
+      shell: bash
+      run: |
+        # Cloning iso-profiles repository
+        REPO="${{ inputs.iso_profiles_repo }}"
+        echo "Repository: $REPO"
 
+        if ! git clone --depth 1 "$REPO" "$WORK_PATH_ISO_PROFILES"; then
+          echo "Falha ao clonar o repositorio $REPO em $WORK_PATH_ISO_PROFILES"
+          exit 1
+        fi
+        # ativando 'git config --global --add safe.directory'
+        git config --global --add safe.directory "$WORK_PATH_ISO_PROFILES" || true
+
+        # clean '/__t/' directory
+        rm -rf /__t/* || true
+
+    - name: Configurar o ambiente para o usuário root e builduser
+      shell: bash
+      run: |
         # Configurar o ambiente para o usuário root
         mkdir -p /root/.config/manjaro-tools
         echo 'PACKAGER="Community Package/ISO Build <vcatafesta@gmail.com>"' >> /root/.makepkg.conf
-        echo "run_dir=$WORK_PATH/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
-        git config --global --add safe.directory "$WORK_PATH/iso-profiles"
+        echo "run_dir=$WORK_PATH_ISO_PROFILES" > /root/.config/manjaro-tools/iso-profiles.conf
 
         # Configurar o ambiente para o usuário builduser
         sudo -u builduser bash << EOF
         echo 'PACKAGER="Community Package/ISO Build <vcatafesta@gmail.com>"' >> /home/builduser/.makepkg.conf
         mkdir -p /home/builduser/.config/manjaro-tools || true
-        echo "run_dir=$WORK_PATH/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-        git config --global --add safe.directory "$WORK_PATH/iso-profiles" || true
+        echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
         EOF
 
     - name: Additional configurations specific to ISO building
@@ -346,23 +365,6 @@ runs:
         # print pacman-multilib
         cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
 
-    - name: Checkout iso-profiles
-      shell: bash
-      run: |
-        # Cloning iso-profiles repository
-        REPO="${{ inputs.iso_profiles_repo }}"
-        echo "Repository: $REPO"
-
-        if ! git clone --depth 1 "$REPO" "$WORK_PATH/iso-profiles"; then
-          echo "Falha ao clonar o repositorio iso-profiles"
-          exit 1
-        fi
-        # ativando 'git config --global --add safe.directory /__w/build-iso/build-iso/iso-profiles'
-        git config --global --add safe.directory "$WORK_PATH/iso-profiles" || true
-
-        # clean '/__t/' directory
-        rm -rf /__t/* || true
-
     - name: Create mknod /dev/sr0
       shell: bash
       run: |
@@ -432,8 +434,8 @@ runs:
         # Denine path for directory
 
         # Check if iso-profiles directory exists before proceeding
-        if [[ ! -d "$WORK_PATH/iso-profiles" ]]; then
-          echo "ERRO(L427): $WORK_PATH/iso-profiles directory not found."
+        if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
+          echo "ERRO(L427): $WORK_PATH_ISO_PROFILES directory not found."
           exit 1
         fi
 
@@ -729,20 +731,19 @@ runs:
           echo "###################################################################"
 
           # Executar buildiso e capturar o código de saída
-          #if [[ "$DEBUG" == 'true' ]]; then
+          if [[ "$DEBUG" == 'true' ]]; then
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
             #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
-            sudo -u builduser bash << EOF
-              buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
+            sudo -u builduser bash <<-EOF
+            buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
             EOF
-
-          #else
+          else
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null; exit \$?" builduser
             #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
-            sudo -u builduser bash << EOF
-              buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
+            sudo -u builduser bash <<-EOF
+            buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
             EOF
-          #fi
+          fi
 
           BUILD_EXIT_CODE=$?
 
