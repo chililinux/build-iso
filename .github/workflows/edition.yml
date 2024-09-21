@@ -176,7 +176,7 @@ jobs:
           echo "#########################################"
           df -hT
           echo "#########################################"
-          ll /mnt
+          ls -lah --color=auto /mnt
 
       - name: Build ISO
         uses: ./
