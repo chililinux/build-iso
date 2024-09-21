@@ -153,10 +153,10 @@ runs:
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
       run: |
-        #WORK_PATH='/__w/build-iso/build-iso'
-        #PROFILE_PATH='/__w/build-iso/build-iso/iso-profiles/community'
-        WORK_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}"
-        PROFILE_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}/iso-profiles/community"
+        #WORK_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}"
+        #PROFILE_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}/iso-profiles/community"
+        WORK_PATH='/__w/build-iso/build-iso'
+        PROFILE_PATH='/__w/build-iso/build-iso/iso-profiles/community'
 
         echo "WORK_PATH=$WORK_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas
         echo "PROFILE_PATH=$PROFILE_PATH" >> $GITHUB_ENV  # Exporta WORK_PATH para outras etapas

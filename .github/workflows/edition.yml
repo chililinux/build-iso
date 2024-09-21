@@ -85,7 +85,7 @@ jobs:
 
       - name: Install dependencies on HOST
         run: |
-          sudo apt-get update
+          #sudo apt-get update
           sudo apt-get install -y inetutils-tools
 
       - name: Set up volume directory on HOST
@@ -177,6 +177,9 @@ jobs:
           df -hT
           echo "#########################################"
           ls -lah --color=auto /mnt
+          echo "#########################################"
+          tree -d /mnt
+          echo "#########################################"
 
       - name: Build ISO
         uses: ./
