@@ -76,7 +76,7 @@ on:
         default: "xfce"
 
 jobs:
-  prepare-host:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Create a Welcome file
@@ -117,7 +117,7 @@ jobs:
   build:
     name: Build ISO ${{ github.event.client_payload.edition || 'Unknown' }}
     runs-on: ubuntu-latest
-    needs: [prepare-host]         # Espera o job "prepare-host" terminar
+    needs: [setup]         # Espera o job "setup" terminar
     container:
       image: talesam/community-build:1.3
       options: --privileged
@@ -139,6 +139,11 @@ jobs:
         with:
           #fetch-depth: 0    # Todo o histórico de commits seja baixado
           fetch-depth: 1 # Apenas o commit mais recente da branch será baixado
+
+      - name: Install alguns necessários pacotes
+        shell: bash
+        run: |
+          sudo pacman -Sy inetutils --quiet --noconfirm >/dev/null
 
       - name: Initial Debug
         run: |
