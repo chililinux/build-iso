@@ -182,7 +182,7 @@ jobs:
           echo "#########################################"
 
       - name: Build ISO
-        uses: ./
+        uses: ./actions/construir-iso/
         id: build
         with:
           # Parâmetros básicos da ISO
