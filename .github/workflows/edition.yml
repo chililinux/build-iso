@@ -92,6 +92,7 @@ jobs:
         run: |
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
+          sudo mkdir -p /mnt/lfs
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
@@ -111,7 +112,7 @@ jobs:
           echo "#########################################"
           df -hT
           echo "#########################################"
-          ls -la /mnt
+          ls -lah --color=auto /mnt
           echo "#########################################"
 
   build:
@@ -124,6 +125,7 @@ jobs:
       volumes:
         - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
         - /mnt/var_cache_manjaro_tools_iso:/var/cache/manjaro-tools/iso
+        - /mnt/lfs:/mnt/lfs
 
     steps:
       - name: Download artifact
@@ -144,6 +146,13 @@ jobs:
         shell: bash
         run: |
           sudo pacman -Sy inetutils --quiet --noconfirm
+
+      - name: Set up aliases
+        run: |
+          echo "alias ll='ls -lah --color=auto'" >> $HOME/.bashrc
+          echo "alias gs='git status'"           >> $HOME/.bashrc
+          # Carrega o .bashrc para aplicar os aliases na sessão atual
+          source $HOME/.bashrc
 
       - name: Initial Debug
         run: |
@@ -167,7 +176,7 @@ jobs:
           echo "#########################################"
           df -hT
           echo "#########################################"
-          ls -la /mnt
+          ll /mnt
 
       - name: Build ISO
         uses: ./
