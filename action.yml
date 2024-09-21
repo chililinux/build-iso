@@ -729,13 +729,12 @@ runs:
           echo "###################################################################"
 
           # Executar buildiso e capturar o código de saída
-          su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
           #if [[ "$DEBUG" == 'true' ]]; then
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
-            #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
+            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
           #else
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null; exit \$?" builduser
-            #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
+            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
           #fi
 
           BUILD_EXIT_CODE=$?
