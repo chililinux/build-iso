@@ -729,13 +729,15 @@ runs:
           echo "###################################################################"
 
           # Executar buildiso e capturar o código de saída
-          if [[ "$DEBUG" == 'true' ]]; then
+          su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
+          #if [[ "$DEBUG" == 'true' ]]; then
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
-            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
-          else
+            #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
+          #else
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null; exit \$?" builduser
-            sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
-          fi
+            #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
+          #fi
+
           BUILD_EXIT_CODE=$?
 
           # Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
