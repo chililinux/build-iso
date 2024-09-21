@@ -85,8 +85,8 @@ jobs:
 
       - name: Install dependencies on HOST
         run: |
-          apt-get update
-          apt-install sudo inetutils
+          sudo apt-get update
+          sudo apt-get install inetutils
 
       - name: Set up volume directory on HOST
         run: |
