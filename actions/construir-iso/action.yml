@@ -108,12 +108,18 @@ runs:
         } >> /etc/pacman.conf
 
         # atualizar e instalar pacotes adicionais
+        #  manjaro-tools \
+        #  manjaro-tools-iso \
         pacman -Syu --quiet --needed --noconfirm --overwrite \* \
+          git \
+          base-devel \
+          manjaro-chrootbuild \
+          manjaro-tools-iso-git \
+          manjaro-tools-yaml-git \
+          manjaro-tools-base-git \
           mktorrent \
           squashfs-tools \
           archiso \
-          manjaro-tools \
-          manjaro-tools-iso \
           calamares \
           calamares-tools \
           mkinitcpio \
