@@ -9,7 +9,7 @@ inputs:
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
-    default: "https://github.com/talesam/iso-profiles"
+    default: "https://github.com/chililinux/iso-profiles"
   iso_profiles_branch:
     description: "Branch of the ISO profiles repository (optional)"
     required: false
@@ -163,13 +163,13 @@ runs:
 
         # Configurar o ambiente para o usuário root
         mkdir -p /root/.config/manjaro-tools
-        echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /root/.makepkg.conf
+        echo 'PACKAGER="Community Package/ISO Build <vcatafesta@gmail.com>"' >> /root/.makepkg.conf
         echo "run_dir=$WORK_PATH/iso-profiles" > /root/.config/manjaro-tools/iso-profiles.conf
         git config --global --add safe.directory "$WORK_PATH/iso-profiles"
 
         # Configurar o ambiente para o usuário builduser
         sudo -u builduser bash << EOF
-        echo 'PACKAGER="Community Package/ISO Build <talesam@gmail.com>"' >> /home/builduser/.makepkg.conf
+        echo 'PACKAGER="Community Package/ISO Build <vcatafesta@gmail.com>"' >> /home/builduser/.makepkg.conf
         mkdir -p /home/builduser/.config/manjaro-tools || true
         echo "run_dir=$WORK_PATH/iso-profiles" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
         git config --global --add safe.directory "$WORK_PATH/iso-profiles" || true
