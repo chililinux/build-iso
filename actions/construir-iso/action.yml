@@ -188,6 +188,12 @@ runs:
         # clean '/var/cache/manjaro-tools/iso/' directory
         rm -rf /var/cache/manjaro-tools/iso/* || true
 
+    - name: Ajustar configurações de kernels.cfg para bigcommunity em iso-profiles
+      shell: bash
+      run: |
+        # Ajustar configurações de kernels.cfg para bigcommunity
+        find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i 's/misobasedir=manjaro/misobasedir=bigcommunity/g' {} + || true
+
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
       run: |
