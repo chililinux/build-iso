@@ -745,12 +745,12 @@ runs:
             #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
             #su - builduser -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?"
-            sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
+            sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
           else
             #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
             #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null; exit \$?" builduser
             #su - builduser -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
-            sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
+            sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
           fi
 
           BUILD_EXIT_CODE=$?
