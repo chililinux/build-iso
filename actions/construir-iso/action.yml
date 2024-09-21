@@ -159,8 +159,6 @@ runs:
     - name: Ajustar variáveis de ambiente
       shell: bash
       run: |
-        #WORK_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}"
-        #PROFILE_PATH="/__w/${{env.REPO_NAME}}/${{env.REPO_NAME}}/iso-profiles/community"
         WORK_PATH="/__w/build-iso/build-iso"
         WORK_PATH_ISO_PROFILES="/__w/build-iso/build-iso/iso-profiles"
         PROFILE_PATH="/__w/build-iso/build-iso/iso-profiles/community"
@@ -785,11 +783,8 @@ runs:
         }
 
         cleanup_and_move_files() {
-          #OUTPUT_ISO_PATH_NAME=$(find /var/cache/manjaro-tools/iso -type f -name "*.iso" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
-          #FILE_PKG=$(find /var/cache/manjaro-tools/iso -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
-          OUTPUT_ISO_PATH_NAME=$(find "$VAR_CACHE_MANJARO_TOOLS_ISO" -type f -name "*.iso" -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)
-          FILE_PKG=$(find "$VAR_CACHE_MANJARO_TOOLS_ISO" -type f -name "*-pkgs.txt" -printf '%T@ %p\n' | sort -nr | head -n 1 | cut -d' ' -f2-)
-
+          OUTPUT_ISO_PATH_NAME=$(find "$VAR_CACHE_MANJARO_TOOLS_ISO" -type f -name "*.iso" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
+          FILE_PKG=$(find "$VAR_CACHE_MANJARO_TOOLS_ISO" -type f -name "*-pkgs.txt" -exec stat -c '%Y %n' {} + | sort -nr | awk 'NR==1 {print $2}')
           echo "ISO_BASENAME=$ISO_BASENAME"                 >> "$GITHUB_ENV"  # Exporta ISO_BASENAME para outras etapas
           echo "OUTPUT_ISO_PATH_NAME=$OUTPUT_ISO_PATH_NAME" >> "$GITHUB_ENV"  # Exporta OUTPUT_ISO_PATH_NAME para outras etapas
 
