@@ -145,7 +145,7 @@ jobs:
       - name: Install alguns necessários pacotes
         shell: bash
         run: |
-          sudo pacman -Sy inetutils --quiet --noconfirm
+          sudo pacman -Sy inetutils tree --needed --quiet --noconfirm >/dev/null
 
       - name: Set up aliases
         run: |
