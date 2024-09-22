@@ -240,12 +240,12 @@ jobs:
       # Passo 2: Verifica que a ISO foi copiada com sucesso
       - name: Copiar e verificar ISO no workspace
         run: |
-        # Copia ISO gerada diretamente para o runner.workspace no host
-        cp -fv ${{ env.ISO_PATH }}       /workspace
-        cp -fv ${{ env.ISO_PATH }}.md5   /workspace
-        cp -fv ${{ env.ISO_PATH }}.pkgs  /workspace
-        # Verificar ISO copiada
-        ls -lah --color=auto ${{ runner.workspace }}
+          # Copia ISO gerada diretamente para o runner.workspace no host
+          cp -fv ${{ env.ISO_PATH }}       /workspace
+          cp -fv ${{ env.ISO_PATH }}.md5   /workspace
+          cp -fv ${{ env.ISO_PATH }}.pkgs  /workspace
+          # Verificar ISO copiada
+          ls -lah --color=auto ${{ runner.workspace }}
 
 #      - name: Upload ISO as artifact
 #        uses: actions/upload-artifact@v3
