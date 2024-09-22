@@ -236,16 +236,6 @@ jobs:
           echo "release_name=${release}" >> $GITHUB_OUTPUT
           echo "ISO prepared for release"
 
-      # Passo 2: Verifica que a ISO foi copiada com sucesso
-      - name: Copiar e verificar ISO no workspace
-        run: |
-          # Copia ISO gerada diretamente para o runner.workspace no host
-          cp -fv ${{ env.ISO_PATH }}       ${{ github.workspace }}/
-          cp -fv ${{ env.ISO_PATH }}.md5   ${{ github.workspace }}/
-          cp -fv ${{ env.ISO_PATH }}.pkgs  ${{ github.workspace }}/
-          # Verificar ISO copiada
-          ls -lah --color=auto ${{ github.workspace }}
-
       - name: Upload ISO as artifact
         uses: actions/upload-artifact@v3
         with:
