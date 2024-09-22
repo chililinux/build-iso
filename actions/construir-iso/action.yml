@@ -93,15 +93,15 @@ runs:
           echo "[community-testing]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/testing/\$arch"
-          echo
+          echo ''
           echo "[community-extra]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/extra/\$arch"
-          echo
+          echo ''
           echo "[chili-stable]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/stable/\$arch"
-          echo
+          echo ''
           echo "[chili-testing]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/testing/\$arch"
@@ -188,11 +188,13 @@ runs:
         # clean '/var/cache/manjaro-tools/iso/' directory
         rm -rf /var/cache/manjaro-tools/iso/* || true
 
-    - name: Ajustar configurações de kernels.cfg para bigcommunity em iso-profiles
+    - name: Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg para bigcommunity em iso-profiles
       shell: bash
       run: |
         # Ajustar configurações de kernels.cfg para bigcommunity
         find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i 's/misobasedir=manjaro/misobasedir=bigcommunity/g' {} + || true
+        find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} +
+        find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} +
 
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
@@ -646,6 +648,7 @@ runs:
           echo "[community-${community_branch}]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/${community_branch}/\$arch"
+          echo ''
           } >> "$config_file"
 
           if [[ "$community_branch" == "testing" ]]; then
@@ -653,6 +656,7 @@ runs:
             echo "[community-stable]"
             echo "SigLevel = PackageRequired"
             echo "Server = https://repo.communitybig.org/stable/\$arch"
+            echo ''
             } >> "$config_file"
           fi
 
@@ -661,6 +665,7 @@ runs:
           echo "[biglinux-${biglinux_branch}]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch"
+          echo ''
           } >> "$config_file"
 
           if [[ "$biglinux_branch" == "testing" ]]; then
@@ -668,10 +673,11 @@ runs:
             echo "[biglinux-testing]"
             echo "SigLevel = PackageRequired"
             echo "Server = https://repo.biglinux.com.br/testing/\$arch"
-            echo
+            echo ''
             echo "[biglinux-stable]"
             echo "SigLevel = PackageRequired"
             echo "Server = https://repo.biglinux.com.br/stable/\$arch"
+            echo ''
             } >> "$config_file"
           fi
 
@@ -679,14 +685,15 @@ runs:
           echo "[community-extra]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/extra/\$arch"
-          echo
+          echo ''
           echo "[chili-stable]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/stable/\$arch"
-          echo
+          echo ''
           echo "[chili-testing]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/testing/\$arch"
+          echo ''
           } >> "$config_file"
 
         }
