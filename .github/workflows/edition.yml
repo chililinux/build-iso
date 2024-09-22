@@ -247,24 +247,24 @@ jobs:
           # Verificar ISO copiada
           ls -lah --color=auto ${{ runner.workspace }}
 
-#      - name: Upload ISO as artifact
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: ${{ steps.prepare-iso.outputs.release_name }}
-#          path: |
-#            ${{ env.ISO_PATH }}
-#            ${{ env.ISO_PATH }}.md5
-#            ${{ env.ISO_PATH }}.pkgs
+      - name: Upload ISO as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.prepare-iso.outputs.release_name }}
+          path: |
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
 
-#      - name: Create Release
-#        if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' }}
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          files: |
-#            ${{ env.ISO_PATH }}
-#            ${{ env.ISO_PATH }}.md5
-#            ${{ env.ISO_PATH }}.pkgs
-#            ${{ steps.prepare-iso.outputs.release_name }}.z*
-#          tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
-#          name: ${{ steps.prepare-iso.outputs.release_name }}
-#          generate_release_notes: true
+      - name: Create Release
+        if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
+            ${{ steps.prepare-iso.outputs.release_name }}.z*
+          tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}
+          generate_release_notes: true
