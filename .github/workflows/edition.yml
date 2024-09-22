@@ -127,7 +127,6 @@ jobs:
         - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
         - /mnt/var_cache_manjaro_tools_iso:/var/cache/manjaro-tools/iso
         - /mnt/lfs:/mnt/lfs
-        - ${{ runner.workspace }}:/workspace
 
     steps:
       - name: Download artifact
@@ -241,11 +240,11 @@ jobs:
       - name: Copiar e verificar ISO no workspace
         run: |
           # Copia ISO gerada diretamente para o runner.workspace no host
-          cp -fv ${{ env.ISO_PATH }}       /workspace
-          cp -fv ${{ env.ISO_PATH }}.md5   /workspace
-          cp -fv ${{ env.ISO_PATH }}.pkgs  /workspace
+          cp -fv ${{ env.ISO_PATH }}       ${{ github.workspace }}/
+          cp -fv ${{ env.ISO_PATH }}.md5   ${{ github.workspace }}/
+          cp -fv ${{ env.ISO_PATH }}.pkgs  ${{ github.workspace }}/
           # Verificar ISO copiada
-          ls -lah --color=auto ${{ runner.workspace }}
+          ls -lah --color=auto ${{ github.workspace }}
 
       - name: Upload ISO as artifact
         uses: actions/upload-artifact@v3
