@@ -390,36 +390,6 @@ runs:
         chmod 660 /dev/sr0 || true
         chown root:root /dev/sr0 || true
 
-    - name: Apply Custom Profile Modifications
-      shell: bash
-      run: |
-        # Apply Custom Profile Modifications
-        EDITION="${{ inputs.edition }}"
-        ISO_PROFILE_DIR="iso-profiles/community/$EDITION"
-
-        # Apply edition-specific removals
-        for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
-          if [[ -f "$CUSTOM_PROFILE_DIR/$remove_file" ]]; then
-            target_file="$ISO_PROFILE_DIR/Packages-${remove_file%-remove}"
-            if [[ -f "$target_file" ]]; then
-              echo "Removing packages from $target_file"
-              while IFS= read -r package; do
-                sed -i "/^$package$/d" "$target_file"
-              done < "$CUSTOM_PROFILE_DIR/$remove_file"
-            else
-              echo "Warning: $target_file does not exist. Skipping removals."
-            fi
-          else
-            echo "Info: $remove_file not found in $CUSTOM_PROFILE_DIR. Skipping."
-          fi
-        done
-
-        # Execute special commands if they exist
-        if [[ -f "$CUSTOM_PROFILE_DIR/special-commands.sh" ]]; then
-          bash "$CUSTOM_PROFILE_DIR/special-commands.sh"
-        fi
-        # END Apply Custom Profile Modifications
-
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
       if: inputs.tmate == 'true'
@@ -444,6 +414,7 @@ runs:
         PATH_MANJARO_TOOLS: "/usr/share/manjaro-tools"
         VAR_CACHE_MANJARO_TOOLS: "/var/cache/manjaro-tools"
         VAR_CACHE_MANJARO_TOOLS_ISO: "/var/cache/manjaro-tools/iso"
+        PROFILE_PATH_EDITION: "$PROFILE_PATH/$EDITION"
       run: |
         # BUILD ISO Image
         # Check if iso-profiles directory exists before proceeding
@@ -514,6 +485,29 @@ runs:
               echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
               exit 1
             fi
+
+            # Apply Custom Profile Modifications
+            # Apply edition-specific removals
+            for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
+              if [[ -f "$PROFILE_PATH_EDITION/$remove_file" ]]; then
+                target_file="$PROFILE_PATH_EDITION/Packages-${remove_file%-remove}"
+                if [[ -f "$target_file" ]]; then
+                  echo "Removing packages from $target_file"
+                  while IFS= read -r package; do
+                    sed -i "/^$package$/d" "$target_file"
+                  done < "$PROFILE_PATH_EDITION/$remove_file"
+                else
+                  echo "Warning: $target_file does not exist. Skipping removals."
+                fi
+              else
+                echo "Info: $remove_file not found in $PROFILE_PATH_EDITION. Skipping."
+              fi
+            done
+            # Execute special commands if they exist
+            if [[ -f "$PROFILE_PATH_EDITION/special-commands.sh" ]]; then
+              bash "$PROFILE_PATH_EDITION/special-commands.sh"
+            fi
+            # END Apply Custom Profile Modifications
 
             # Configurar o nome da distribuição e ISO
             sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
