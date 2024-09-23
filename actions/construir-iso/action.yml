@@ -93,18 +93,19 @@ runs:
           echo "[community-testing]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/testing/\$arch"
-          echo ''
+          echo
           echo "[community-extra]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/extra/\$arch"
-          echo ''
+          echo
           echo "[chili-stable]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/stable/\$arch"
-          echo ''
+          echo
           echo "[chili-testing]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/testing/\$arch"
+          echo
         } >> /etc/pacman.conf
 
         # atualizar e instalar pacotes adicionais
@@ -143,11 +144,11 @@ runs:
 
         # Ajustar ambiente do builduser
         sudo -u builduser bash << EOF
-        cd $HOME
-        cp -Rpva /etc/skel/.bash* .
-        cp -Rpva /etc/skel/.ps* .
-        cp -Rpva /etc/skel/.dircolors* .
-        cp -Rpva /etc/skel/.git-prompt* .
+        cd /home/builduser/ || true
+        cp -Rpva /etc/skel/.bash* . || true
+        cp -Rpva /etc/skel/.ps* . || true
+        cp -Rpva /etc/skel/.dircolors* . || true
+        cp -Rpva /etc/skel/.git-prompt* . || true
         EOF
 
     - name: Ajuste nos hooks do mkinitcpio
@@ -159,6 +160,7 @@ runs:
     - name: Ajustar variáveis de ambiente
       shell: bash
       run: |
+        # Ajustar variáveis de ambiente
         WORK_PATH="/__w/build-iso/build-iso"
         WORK_PATH_ISO_PROFILES="/__w/build-iso/build-iso/iso-profiles"
         PROFILE_PATH="/__w/build-iso/build-iso/iso-profiles/community"
@@ -166,10 +168,10 @@ runs:
         echo "WORK_PATH_ISO_PROFILES=$WORK_PATH_ISO_PROFILES" >> $GITHUB_ENV  # Exporta para outras etapas
         echo "PROFILE_PATH=$PROFILE_PATH"                     >> $GITHUB_ENV  # Exporta para outras etapas
 
-    - name: Checkout iso-profiles
+    - name: Checkout iso-profiles and clean directories
       shell: bash
       run: |
-        # Cloning iso-profiles repository
+        # Checkout iso-profiles
         REPO="${{ inputs.iso_profiles_repo }}"
         echo "Repository: $REPO"
 
@@ -191,15 +193,15 @@ runs:
     - name: Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg para bigcommunity em iso-profiles
       shell: bash
       run: |
-        # Ajustar configurações de kernels.cfg para bigcommunity
+        # Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg para bigcommunity em iso-profiles
         find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i 's/misobasedir=manjaro/misobasedir=bigcommunity/g' {} + || true
-        find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} +
-        find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} +
+        find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} + || true
+        find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} + || true
 
     - name: Configurar o ambiente para o usuário root e builduser
       shell: bash
       run: |
-        # Configurar o ambiente para o usuário root
+        # Configurar o ambiente para o usuário root e builduser
         mkdir -p /root/.config/manjaro-tools
         echo 'PACKAGER="Community Package/ISO Build <vcatafesta@gmail.com>"' >> /root/.makepkg.conf
         echo "run_dir=$WORK_PATH_ISO_PROFILES" > /root/.config/manjaro-tools/iso-profiles.conf
@@ -212,17 +214,10 @@ runs:
         echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
         EOF
 
-    - name: Additional configurations specific to ISO building
+    - name: Configurar disable-fsync
       shell: bash
       run: |
-        # Configurações adicionais específicas para a construção de ISO
-        sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
-        sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
-
-    - name: Configure disable-fsync
-      shell: bash
-      run: |
-        # Configuring disable-fsync
+        # Configurar disable-fsync
         DISABLE_FSYNC_URL="https://raw.githubusercontent.com/biglinux/disable-fsync/main/disable-fsync/usr/lib/disable-fsync.so"
         DISABLE_FSYNC_FILE="/usr/lib/disable-fsync.so"
         PRELOAD_FILE="/etc/ld.so.preload"
@@ -230,14 +225,13 @@ runs:
         wget "$DISABLE_FSYNC_URL" -O "$DISABLE_FSYNC_FILE"
         SHA256SUM=$(curl -s "$DISABLE_FSYNC_URL" | sha256sum | awk '{print $1}')
         echo "${SHA256SUM} ${DISABLE_FSYNC_FILE}" | sha256sum --check || exit 1
-
         sh -c "echo '${DISABLE_FSYNC_FILE}' >> '${PRELOAD_FILE}'"
         ldconfig
 
     - name: Pull and setup Community keys
       shell: bash
       run: |
-        # Pulling and installing Community keys
+        # Pull and setup Community keys
         git clone https://github.com/biglinux/biglinux-key.git
         install -dm755 /etc/pacman.d/gnupg/
         install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
@@ -261,7 +255,7 @@ runs:
         VAR_CACHE_MANJARO_TOOLS: "/var/cache/manjaro-tools"
         VAR_CACHE_MANJARO_TOOLS_ISO: "/var/cache/manjaro-tools/iso"
       run: |
-        # Configuring repositories and build environment
+        # Configure repositories and build environment
         # Função para adicionar repositórios
         add_repository() {
           local arquivo_conf=$1
@@ -285,6 +279,7 @@ runs:
             echo '[biglinux-update-stable]'
             echo 'SigLevel = PackageRequired'
             echo 'Server = https://repo.biglinux.com.br/update-stable/$arch'
+            echo
             } >> "$arquivo_conf"
           fi
 
@@ -314,6 +309,7 @@ runs:
               echo '[community-extra]'
               echo 'SigLevel = PackageRequired'
               echo 'Server = https://repo.communitybig.org/extra/$arch'
+              echo
               } >> "$arquivo_conf"
               ;;
             "testing")
@@ -329,6 +325,7 @@ runs:
               echo '[community-extra]'
               echo 'SigLevel = PackageRequired'
               echo 'Server = https://repo.communitybig.org/extra/$arch'
+              echo
               } >> "$arquivo_conf"
               ;;
           esac
@@ -344,6 +341,7 @@ runs:
               echo '[biglinux-testing]'
               echo 'SigLevel = PackageRequired'
               echo 'Server = https://repo.biglinux.com.br/testing/$arch'
+              echo
               } >> "$arquivo_conf"
               ;;
             "testing")
@@ -355,6 +353,7 @@ runs:
               echo '[biglinux-stable]'
               echo 'SigLevel = PackageRequired'
               echo 'Server = https://repo.biglinux.com.br/stable/$arch'
+              echo
               } >> "$arquivo_conf"
               ;;
           esac
@@ -397,7 +396,6 @@ runs:
         # Apply Custom Profile Modifications
         EDITION="${{ inputs.edition }}"
         ISO_PROFILE_DIR="iso-profiles/community/$EDITION"
-        CUSTOM_PROFILE_DIR="iso-profiles/custom-profiles/$EDITION"
 
         # Apply edition-specific removals
         for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
@@ -448,21 +446,22 @@ runs:
         VAR_CACHE_MANJARO_TOOLS_ISO: "/var/cache/manjaro-tools/iso"
       run: |
         # BUILD ISO Image
-
-        # Denine path for directory
-
         # Check if iso-profiles directory exists before proceeding
+
         if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
-          echo "ERRO(L427): $WORK_PATH_ISO_PROFILES directory not found."
+          echo "ERRO(L459): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
           exit 1
         fi
-
-        # Verificando o diretório do perfil específico
-        ls -la "$PROFILE_PATH/$EDITION"
-        echo "Caminho completo do diretório do perfil: $PROFILE_PATH/$EDITION"
-
         # listando diretório iso-profiles no diretório atual
         ls -la "$PROFILE_PATH"
+
+        # Verificando o diretório do perfil específico
+        if [[ ! -d "$PROFILE_PATH/$EDITION" ]]; then
+          echo "ERRO(L459): perfil $PROFILE_PATH/$EDITION não encontrado!"
+          exit 1
+        fi
+        ls -la "$PROFILE_PATH/$EDITION"
+        echo "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
 
         add_big_cleanups() {
           # cleanups
@@ -497,37 +496,42 @@ runs:
         setup_manjaro_tools() {
             echo "Setting up Manjaro tools..."
 
+            # remover pasta para não ter duplicidade de perfil
+            rm -rf "$WORK_PATH_ISO_PROFILES"/custom-profiles
+
             # Criar e configurar diretórios
             mkdir -p "$VAR_CACHE_MANJARO_TOOLS_ISO"
             chmod 1777 "$VAR_CACHE_MANJARO_TOOLS_ISO"
 
             # Verificar se buildiso está disponível
             if ! command -v buildiso &> /dev/null; then
-                echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
-                exit 1
+              echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
+              exit 1
             fi
 
             # Verificar se o diretório do perfil existe
             if [ ! -d "$PROFILE_PATH/$EDITION" ]; then
-                echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
-                exit 1
+              echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
+              exit 1
             fi
 
             # Configurar o nome da distribuição e ISO
             sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
-            sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g' /usr/lib/manjaro-tools/util.sh
+            sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g'       /usr/lib/manjaro-tools/util.sh
 
             # Configurar a marca do BigCommunity
-            sed -i -e 's|dist_branding=.*|dist_branding="bigcommunity"|' /usr/lib/manjaro-tools/util.sh
+            sed -i -e 's|dist_branding=.*|dist_branding="bigcommunity"|'   /usr/lib/manjaro-tools/util.sh
 
             # Modificar o nome do arquivo ISO
-            sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|' /usr/lib/manjaro-tools/util-iso.sh
+            sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|'    /usr/lib/manjaro-tools/util-iso.sh
 
             # Desabilitar a verificação de versão do kernel
-            #sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
+            # ativada: seg 23 set 2024 01:28:25 -04
+            sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
             # Configurar o caminho do perfil ISO
-            sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
+            # sem efeito: seg 23 set 2024 01:28:25 -04
+            #sed -i "s|^iso_profile=.*|iso_profile=\"$PROFILE_PATH\"|" /etc/manjaro-tools/manjaro-tools.conf
 
             # Adicionar limpezas do Big
             add_big_cleanups
@@ -545,7 +549,7 @@ runs:
         configure_mesa() {
           if [[ "$KERNEL" =~ ^(latest|xanmod)$ ]]; then
             {
-            echo ""
+            echo ''
             echo "mesa-tkg-stable"
             echo "lib32-mesa-tkg-stable"
             } >> $PROFILE_PATH/$EDITION/Packages-Root
@@ -572,34 +576,33 @@ runs:
 
           # Limpar kernels anteriores de todos os Packages-*, mas manter linux-firmware
           for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
-              sed -i '/^linux[0-9]/d' "$pkg_file"
-              sed -i '/^linux-latest/d' "$pkg_file"
+            sed -i '/^linux[0-9]/d'   "$pkg_file"
+            sed -i '/^linux-latest/d' "$pkg_file"
           done
 
           # Definir KERNEL_NAME e adicionar linux-firmware se necessário
           if [[ "$KERNEL" == "-xanmod"* ]]; then
-              KERNEL_NAME="${KERNEL#-}"
-              # Adicionar linux-firmware ao Packages-Root
-              echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
+            KERNEL_NAME="${KERNEL#-}"
+            # Adicionar linux-firmware ao Packages-Root
+            echo "linux-firmware" >> "$PROFILE_PATH/$EDITION/Packages-Root"
           elif [[ "$KERNEL" == "latest" ]]; then
-              KERNEL_NAME="latest"
+            KERNEL_NAME="latest"
           else
-              KERNEL_NAME="$KERNEL"
+            KERNEL_NAME="$KERNEL"
           fi
 
           # Criar KERNEL_VERSION_DOT
           if [[ "$KERNEL_NAME" =~ ^[0-9]+$ ]]; then
-              if [[ ${#KERNEL_NAME} -eq 3 ]]; then
-                  KERNEL_VERSION_DOT="${KERNEL_NAME:0:1}.${KERNEL_NAME:1:2}"
-              elif [[ ${#KERNEL_NAME} -eq 2 ]]; then
-                  KERNEL_VERSION_DOT="${KERNEL_NAME:0:1}.${KERNEL_NAME:1:1}"
-              else
-                  KERNEL_VERSION_DOT="$KERNEL_NAME"
-              fi
-          else
+            if [[ ${#KERNEL_NAME} -eq 3 ]]; then
+              KERNEL_VERSION_DOT="${KERNEL_NAME:0:1}.${KERNEL_NAME:1:2}"
+            elif [[ ${#KERNEL_NAME} -eq 2 ]]; then
+              KERNEL_VERSION_DOT="${KERNEL_NAME:0:1}.${KERNEL_NAME:1:1}"
+            else
               KERNEL_VERSION_DOT="$KERNEL_NAME"
+            fi
+          else
+            KERNEL_VERSION_DOT="$KERNEL_NAME"
           fi
-
           echo "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
 
           # Modificar a função prepare_boot_extras em util-iso-boot.sh
@@ -625,16 +628,16 @@ runs:
 
           # Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*
           for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
-              sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
-              sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
-              sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
+            sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
+            sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
+            sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
           done
 
           echo "Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:"
           for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
-              echo "### $pkg_file ###"
-              cat "$pkg_file"
-              echo ""
+            echo "### $pkg_file ###"
+            cat "$pkg_file"
+            echo ''
           done
         }
 
@@ -648,7 +651,7 @@ runs:
           echo "[community-${community_branch}]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/${community_branch}/\$arch"
-          echo ''
+          echo
           } >> "$config_file"
 
           if [[ "$community_branch" == "testing" ]]; then
@@ -656,7 +659,7 @@ runs:
             echo "[community-stable]"
             echo "SigLevel = PackageRequired"
             echo "Server = https://repo.communitybig.org/stable/\$arch"
-            echo ''
+            echo
             } >> "$config_file"
           fi
 
@@ -665,7 +668,7 @@ runs:
           echo "[biglinux-${biglinux_branch}]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch"
-          echo ''
+          echo
           } >> "$config_file"
 
           if [[ "$biglinux_branch" == "testing" ]]; then
@@ -673,11 +676,11 @@ runs:
             echo "[biglinux-testing]"
             echo "SigLevel = PackageRequired"
             echo "Server = https://repo.biglinux.com.br/testing/\$arch"
-            echo ''
+            echo
             echo "[biglinux-stable]"
             echo "SigLevel = PackageRequired"
             echo "Server = https://repo.biglinux.com.br/stable/\$arch"
-            echo ''
+            echo
             } >> "$config_file"
           fi
 
@@ -685,15 +688,15 @@ runs:
           echo "[community-extra]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/extra/\$arch"
-          echo ''
+          echo
           echo "[chili-stable]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/stable/\$arch"
-          echo ''
+          echo
           echo "[chili-testing]"
           echo "SigLevel = Optional TrustAll"
           echo "Server = https://repo.chililinux.com/testing/\$arch"
-          echo ''
+          echo
           } >> "$config_file"
 
         }
@@ -704,13 +707,11 @@ runs:
 
           # Ensure the directory exists
           mkdir -p "$release_dir"
-
           {
           echo "BUILD_RELEASE=$RELEASE_TAG"
           echo "BUILD_BRANCH=$BIGBRANCH"
           echo "UNIX_TIMESTAMP=$(( $(date +%s) / 86400 ))"
           } >> "$release_file"
-
           echo "Build info written to $release_file"
         }
 
@@ -723,9 +724,9 @@ runs:
           sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION"/profile.conf
 
           case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
-            stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            stable/stable)            ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
             stable/testing|testing/*) ISO_BASENAME="${DISTRONAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
-            unstable/*) ISO_BASENAME="${DISTRONAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
+            unstable/*)               ISO_BASENAME="${DISTRONAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
           esac
         }
 
@@ -745,7 +746,7 @@ runs:
           echo "ISO_BASENAME             : $ISO_BASENAME"
           echo "WORK_PATH                : $WORK_PATH"
           echo "PROFILE_PATH             : $PROFILE_PATH"
-          echo "ISO profiles path        : $PROFILE_PATH/$EDITION"
+          echo "PROFILE_PATH/EDITION     : $PROFILE_PATH/$EDITION"
           echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
           echo "###################################################################"
           echo "DEBUG                    : $DEBUG"
@@ -755,17 +756,10 @@ runs:
 
           # Executar buildiso e capturar o código de saída
           if [[ "$DEBUG" == 'true' ]]; then
-            #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}"
-            #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?" builduser
-            #su - builduser -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$?"
             sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
           else
-            #sudo buildiso "${SCOPE:+-f}" -p "community/$EDITION" -b "$MANJAROBRANCH" -k "linux${KERNEL_NAME}" "${OFFICE:+-o}" > /dev/null
-            #su -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null; exit \$?" builduser
-            #su - builduser -c "buildiso ${SCOPE:+-f} -p community/$EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
             sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
           fi
-
           BUILD_EXIT_CODE=$?
 
           # Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
@@ -811,29 +805,25 @@ runs:
         }
 
         main() {
-          # Community Pre Config Build ISO"
+          # Community Pre Config Build ISO
           setup_manjaro_tools
           configure_mesa
-          # END Community Pre Config Build ISO"
 
           # Starting kernel configuration
           configure_kernel
-          # END Kernel configuration completed"
 
           # Starting repository configuration
           for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
             echo "Configuring $config"
             configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
           done
-          # END Repository configuration complete"
 
           set_build_info
           configure_iso_name
-          rm -rf iso-profiles/custom-profiles
 
           build_iso
           cleanup_and_move_files
-          ls -la
+          ls -lah --color=auto
         }
         main
 
