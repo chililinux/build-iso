@@ -54,7 +54,7 @@ msg() {
 #Step 1 - Setup BUILD - check_directories_and_path
 check_directories_and_path() {
 	if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
-		msg "ERRO(L459): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
+		msg "ERRO(L57): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
 		exit 1
 	fi
 	# listando diretório iso-profiles no diretório atual
@@ -62,7 +62,7 @@ check_directories_and_path() {
 
 	# Verificando o diretório do perfil específico
 	if [[ ! -d "$PROFILE_PATH_EDITION" ]]; then
-		msg "ERRO(L459): perfil $PROFILE_PATH_EDITION não encontrado!"
+		msg "ERRO(L65): perfil $PROFILE_PATH_EDITION não encontrado!"
 		exit 1
 	fi
 	ls -la "$PROFILE_PATH_EDITION"
@@ -591,6 +591,7 @@ build_iso() {
 	echo "WORK_PATH                : $WORK_PATH"
 	echo "WORK_PATH_ISO_PROFILES   : $WORK_PATH_ISO_PROFILES"
 	echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
+	echo "ISO_BASENAME             : $ISO_BASENAME"
 	echo "###################################################################"
 	echo "DEBUG                    : $DEBUG"
 	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf)" || true

@@ -278,8 +278,8 @@ runs:
         KERNEL: ${{ inputs.kernel }}
         OFFICE: ${{ inputs.office-chooser }}
         RELEASE_TAG: ${{ inputs.release_tag }}
-        PROFILE_PATH_EDITION: "$PROFILE_PATH/$EDITION"
       run: |
+        echo "PROFILE_PATH_EDITION=$PROFILE_PATH/$EDITION" >> $GITHUB_ENV
         # Carregando script e building ISO
         if [[ ! -e "$WORK_PATH/mkiso-bigcommunity" ]]; then
           echo "ERRO(L508): Script $WORK_PATH/mkiso-bigcommunity não encontrado ou tamanho zerado!"
