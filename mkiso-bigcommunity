@@ -463,7 +463,6 @@ configure_repos() {
 	local community_branch="$2"
 	local biglinux_branch="$3"
 
-	source "$WORK_PATH/functions.sh"
 	# Community repositories
 	{
 		echo "[community-${community_branch}]"
