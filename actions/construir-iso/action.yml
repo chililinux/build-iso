@@ -39,6 +39,7 @@ inputs:
   tmate:
     description: "Enable debugging with tmate"
     required: false
+    default: false
   office-chooser:
     description: "Include office suite"
     required: false
@@ -130,7 +131,7 @@ runs:
 
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
-      if: ${{ inputs.tmate == true }}
+      if: ${{ github.event.client_payload.tmate == true || inputs.tmate == true}}
       with:
         install-dependencies: false
         detached: true
