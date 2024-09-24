@@ -29,6 +29,27 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 #  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
+export TERM=${TERM:-xterm}
+export TERM=${TERM:-xterm-256color}
+tput sgr0 # reset colors
+bold=$(tput bold)
+reset=$(tput sgr0)
+black=$(tput setaf 0)
+red=$(tput bold)$(tput setaf 196)
+green=$(tput setaf 2)
+yellow=$(tput bold)$(tput setaf 3)
+blue=$(tput setaf 4)
+pink=$(tput setaf 5)
+cyan=$(tput setaf 6)
+white=$(tput setaf 7)
+orange=$(tput setaf 3)
+purple=$(tput setaf 125)
+violet=$(tput setaf 61)
+
+msg() {
+  local msg="$1"
+  echo "${cyan}running: ${yellow}${msg}${reset}"
+}
 
 #Step 1 - Setup BUILD - check_directories_and_path
 check_directories_and_path() {
@@ -617,7 +638,7 @@ make_iso() {
 
 	# Starting repository configuration
 	for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
-		echo "Configuring $config"
+		msg "Configuring $config"
 		configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
