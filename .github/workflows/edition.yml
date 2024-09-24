@@ -8,16 +8,16 @@ on:
     inputs:
       name:
         type: string
-        description: "Name for the ISO"
+        description: 'Name for the ISO'
         required: true
-        default: "bigcommunity"
+        default: 'bigcommunity'
       scope:
         type: choice
-        description: "Build scope"
+        description: 'Build scope'
         options:
           - full
           - minimal
-        default: "full"
+        default: 'full'
       office-chooser:
         type: boolean
         description: "Include office suite"
@@ -39,7 +39,7 @@ on:
           - latest
           - lts
           - oldLts
-        default: "lts"
+        default: lts
       manjaro_branch:
         type: choice
         description: "Manjaro branch"
@@ -47,21 +47,21 @@ on:
           - stable
           - testing
           - unstable
-        default: "stable"
+        default: stable
       community_branch:
         type: choice
         description: "Community branch"
         options:
           - stable
           - testing
-        default: "stable"
+        default: testing
       biglinux_branch:
         type: choice
         description: "BigLinux branch"
         options:
           - stable
           - testing
-        default: "stable"
+        default: testing
       edition:
         type: choice
         description: "Edition"
@@ -73,7 +73,7 @@ on:
           - kde
           - xfce
           - wmaker
-        default: "xfce"
+        default: xfce
 
 jobs:
   setup:

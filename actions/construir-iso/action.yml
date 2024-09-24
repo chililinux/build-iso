@@ -249,12 +249,11 @@ runs:
         pacman -Sy --quiet
         EOF
 
-        sudo pacman -S archlinux-keyring manjaro-keyring biglinux-keyring community-keyring chili-keyring ubuntu-keyring
+        sudo pacman -S archlinux-keyring manjaro-keyring biglinux-keyring community-keyring
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
         sudo pacman-key --populate biglinux
         sudo pacman-key --populate community
-        sudo pacman-key --populate chili
         pacman -Sy --quiet --noconfirm
 
     - name: Configure repositories and build environment
