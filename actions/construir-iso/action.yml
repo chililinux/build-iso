@@ -255,7 +255,8 @@ runs:
           echo "OFFICE=${{ inputs.office-chooser }}"
           echo "RELEASE_TAG=${{ inputs.release_tag }}"
         } >> "$GITHUB_ENV"
-        echo "PROFILE_PATH_EDITION=$PROFILE_PATH/$EDITION" >> "$GITHUB_ENV"
+        echo "PROFILE_PATH_EDITION=${PROFILE_PATH}/${EDITION}" >> "$GITHUB_ENV"
+        exit 1
 
     - name: Checkout iso-profiles and clean directories
       shell: bash
