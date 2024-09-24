@@ -39,7 +39,6 @@ inputs:
   tmate:
     description: "Enable debugging with tmate"
     required: false
-    default: "false"
   office-chooser:
     description: "Include office suite"
     required: false
@@ -297,7 +296,7 @@ runs:
           mkdir -p /home/builduser/.config/manjaro-tools || true
           cp -R /etc/manjaro-tools /home/builduser/.config
           echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-          EOF
+          'EOF'
         }
         configurar_manjaro_tools_para_usuario_builduser
 
