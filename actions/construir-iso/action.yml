@@ -614,19 +614,32 @@ runs:
         }
 
         configure_kernel() {
-          echo "Configurando kernel : $KERNEL"
+          echo "Configurando kernel: $KERNEL"
           case "$KERNEL" in
-            oldLts)
-              KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n2 | sed 's/\.//g' | tail -n1)
-              ;;
-            atualLts)
-              KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml | grep ": longterm" | sed 's/^.*<title>//' | sed 's/<\/title>.*$//' | cut -d ":" -f1 | rev | cut -d "." -f2,3 | rev | head -n1 | sed 's/\.//g')
-            latest)
-              KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD | awk -F= '/kernelver=/{print $2}')
-              ;;
-            xanmod*)
-              KERNEL="-${KERNEL}"
-              ;;
+          oldLts)
+            KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml |
+              grep ": longterm" |
+              sed -n 's/.*<title>\(.*\): longterm<\/title>.*/\1/p' |
+              rev | cut -d "." -f2,3 | rev |
+              sed 's/\.//g' | tail -n1)
+            ;;
+
+          atualLts)
+            KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml |
+              grep ": longterm" |
+              sed -n 's/.*<title>\(.*\): longterm<\/title>.*/\1/p' |
+              rev | cut -d "." -f2,3 | rev |
+              sed 's/\.//g' | head -n1)
+            ;;
+
+          latest)
+            KERNEL=$(curl -s https://raw.githubusercontent.com/biglinux/linux-latest/stable/PKGBUILD |
+              awk -F= '/kernelver=/{print $2}')
+            ;;
+
+          xanmod*)
+            KERNEL="-$KERNEL"
+            ;;
           esac
 
           # Limpar kernels anteriores de todos os Packages-*, mas manter linux-firmware
