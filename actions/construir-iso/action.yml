@@ -256,7 +256,6 @@ runs:
           echo "SCOPE=${{ inputs.scope }}"
           echo "OFFICE=${{ inputs.office-chooser }}"
         } >> "$GITHUB_ENV"
-        exit 1
 
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
       shell: bash
