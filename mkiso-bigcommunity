@@ -31,6 +31,7 @@
 ##############################################################################
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
+# Cores e estilos
 #tput sgr0 # reset colors
 #bold=$(tput bold)
 #reset=$(tput sgr0)
@@ -45,6 +46,43 @@ export TERM=${TERM:-xterm-256color}
 #orange=$(tput setaf 3)
 #purple=$(tput setaf 125)
 #violet=$(tput setaf 61)
+# Cores e estilos
+reset='\033[0m' # No Color
+red='\033[0;31m'
+green='\033[0;32m'
+yellow='\033[1;33m'
+blue='\033[0;34m'
+purple='\033[0;35m'
+cyan='\033[0;36m'
+bold='\033[1m'
+
+configure_vars() {
+  # Declare variáveis de ambiente
+  # somente ativar quando rodar manualmente, no github não é necessário
+  REPO=https://github.com/chililinux/iso-profiles
+  EDITION='xfce'
+  WORK_PATH="$HOME/__w/build-iso/build-iso"
+  WORK_PATH_ISO_PROFILES="$HOME/__w/build-iso/build-iso/iso-profiles"
+  PROFILE_PATH="$HOME/__w/build-iso/build-iso/iso-profiles/community"
+  PROFILE_PATH_EDITION="$HOME/__w/build-iso/build-iso/iso-profiles/community/$EDITION"
+  PATH_MANJARO_ISO_PROFILES='/usr/share/manjaro-tools/iso-profiles'
+  PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
+  VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
+  VAR_CACHE_MANJARO_TOOLS_ISO='/var/cache/manjaro-tools/iso'
+  DEBUG=true
+  DISTRONAME='bigcommunity'
+  MANJAROBRANCH='stable'
+  COMMUNITYBRANCH='testing'
+  BIGBRANCH='testing'
+  KERNEL='latest'
+  RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
+  SCOPE=  # ${{ inputs.scope }}
+  OFFICE= # ${{ inputs.office-chooser }}
+
+  mkdir -p "$WORK_PATH"
+  pushd "$WORK_PATH"
+}
+export -f configure_vars
 
 msg() {
 	local msg="$1"
@@ -68,12 +106,12 @@ checkout_iso-profiles_and_clean_directories() {
 
 	if [[ -d '/var/lib/manjaro-tools/buildiso/' ]]; then
 		msg 'clean /var/lib/manjaro-tools/buildiso/ directory'
-		rm -rf /var/lib/manjaro-tools/buildiso/* || true
+		sudo rm -rf /var/lib/manjaro-tools/buildiso/* || true
 	fi
 
 	if [[ -d '/var/cache/manjaro-tools/iso/' ]]; then
 		msg 'clean /var/cache/manjaro-tools/iso/ directory'
-		rm -rf /var/cache/manjaro-tools/iso/* || true
+		sudo rm -rf /var/cache/manjaro-tools/iso/* || true
 	fi
 }
 export -f checkout_iso-profiles_and_clean_directories
@@ -706,3 +744,6 @@ make_iso() {
 	cleanup_and_move_files
 	ls -lah
 }
+
+#configure_vars
+make_iso
