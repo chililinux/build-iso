@@ -326,13 +326,15 @@ setup_manjaro_tools() {
 	fi
 
 	# Configurar o nome da distribuição e ISO
-  sudo sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
-  sudo sed -i "s/^iso_name=.*/iso_name=bigcommunity/"    /usr/lib/manjaro-tools/util.sh
+  sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
+  sed -i "s/^iso_name=.*/iso_name=bigcommunity/"   /usr/lib/manjaro-tools/util.sh
 
 	# Configurar a marca do BigCommunity
-	sed -i -e 's/dist_branding=.*/dist_branding="bigcommunity"/' /usr/lib/manjaro-tools/util.sh
+	echo 'Configurar a marca do BigCommunity'
+	sed -i "s/dist_branding=.*/dist_branding=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
 	# Modificar o nome do arquivo ISO
+	echo 'Modificar o nome do arquivo ISO'
 	sed -i 's/_${profile}${_edition}_${dist_release//.}/-live/' /usr/lib/manjaro-tools/util-iso.sh
 
 	# Desabilitar a verificação de versão do kernel
