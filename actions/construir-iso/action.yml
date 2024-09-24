@@ -5,7 +5,7 @@ inputs:
   distroname:
     description: "Name for the ISO"
     required: true
-    default: 'bigcommunity'
+    default: "bigcommunity"
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
     required: false
