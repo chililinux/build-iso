@@ -231,30 +231,44 @@ runs:
     - name: Pull and setup keys
       shell: bash
       run: |
-        : <<-'EOF'
         # Pull and setup Community keys
         git clone https://github.com/biglinux/biglinux-key.git
         install -dm755 /etc/pacman.d/gnupg/
         install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
         rm -r biglinux-key
 
-        # Inicializar o chaveiro do pacman, se necessário
+        git clone https://github.com/communitybig/community-keyring.git
+        install -m0644 community-keyring/community.gpg /usr/share/pacman/keyrings/
+        install -m0644 community-keyring/community-trusted /usr/share/pacman/keyrings/
+        install -m0644 community-keyring/community-revoked /usr/share/pacman/keyrings/
+        rm -r community-keyring
+
+        git clone https://github.com/chililinux/chili-keyring.git
+        install -m0644 chili-keyring/chili.gpg /usr/share/pacman/keyrings/
+        install -m0644 chili-keyring/chili-trusted /usr/share/pacman/keyrings/
+        install -m0644 chili-keyring/chili-revoked /usr/share/pacman/keyrings/
+        rm -r chili-keyring
+
+        # Inicializar o chaveiro do pacman
         pacman-key --init
+        pacman-key --populate archlinux
+        pacman-key --populate biglinux
+        pacman-key --populate community
+        pacman-key --populate chili
 
         # Receber e assinar a chave do Community
-        pacman-key --recv-keys AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
-        pacman-key --lsign-key AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
+        #pacman-key --recv-keys AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
+        #pacman-key --lsign-key AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
 
         # Atualizar os bancos de dados do pacman
         pacman -Sy --quiet
-        EOF
 
-        sudo pacman -S archlinux-keyring manjaro-keyring biglinux-keyring community-keyring
-        sudo pacman-key --init
-        sudo pacman-key --populate archlinux
-        sudo pacman-key --populate biglinux
-        sudo pacman-key --populate community
-        pacman -Sy --quiet --noconfirm
+        #pacman -S biglinux-keyring community-keyring
+        #pacman-key --init
+        #pacman-key --populate archlinux
+        #pacman-key --populate biglinux
+        #pacman-key --populate community
+        #pacman -Sy --quiet --noconfirm
 
     - name: Configure repositories and build environment
       shell: bash
