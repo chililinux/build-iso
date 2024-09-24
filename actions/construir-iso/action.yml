@@ -469,7 +469,7 @@ runs:
         }
         configure_repositories_and_build_environment
 
-    - name: Build ISO Image "${{ github.event.client_payload.edition || inputs.edition || xfce }}"
+    - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
       shell: bash
       env:
         DEBUG: ${{ inputs.tmate }}
