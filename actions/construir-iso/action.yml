@@ -258,7 +258,7 @@ runs:
         # clean '/var/cache/manjaro-tools/iso/' directory
         rm -rf /var/cache/manjaro-tools/iso/* || true
 
-    - name: Step 1 - Setup - check_directories_and_path
+    - name: Step 1 - Setup BUILD - check_directories_and_path
       shell: bash
       run: |
         # Step 1 - Setup Environment
@@ -278,9 +278,10 @@ runs:
           ls -la "$PROFILE_PATH/$EDITION"
           echo "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
         }
+        # Executa a função de configuração
         check_directories_and_path
 
-    - name: Step 2 - Setup - configurar manjaro-tools para usuario builduser
+    - name: Step 2 - Setup BUILD - configurar_manjaro_tools_para_usuario_builduser
       shell: bash
       run: |
         configurar_manjaro_tools_para_usuario_builduser() {
@@ -297,17 +298,17 @@ runs:
           # Configurar o ambiente para o usuário builduser
           # Configurar o ambiente para o usuário builduser
           sudo -u builduser bash <<EOF
-echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >> /home/builduser/.makepkg.conf
-echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"'  >> /home/builduser/.makepkg.conf
-mkdir -p /home/builduser/.config/manjaro-tools || true
-cp -R /etc/manjaro-tools /home/builduser/.config
-echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-EOF
+          echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >> /home/builduser/.makepkg.conf
+          echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"'  >> /home/builduser/.makepkg.conf
+          mkdir -p /home/builduser/.config/manjaro-tools || true
+          cp -R /etc/manjaro-tools /home/builduser/.config
+          echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
+          EOF
         }
         # Executa a função de configuração
         configurar_manjaro_tools_para_usuario_builduser
 
-    - name: Step 3 - Setup - configure_repositories_and_build_environment
+    - name: Step 3 - Setup BUILD - configure_repositories_and_build_environment
       shell: bash
       run: |
         configure_repositories_and_build_environment() {
@@ -474,6 +475,7 @@ EOF
           cat "$PATH_MANJARO_TOOLS/pacman-default.conf"  || true
           cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
         }
+        # Executa a função de configuração
         configure_repositories_and_build_environment
 
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
