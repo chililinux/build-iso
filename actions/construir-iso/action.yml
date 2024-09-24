@@ -1,3 +1,6 @@
+# created: ter 24 set 2024 03:23:36 -04
+# altered: ter 24 set 2024 03:23:36 -04
+
 name: "Build BigCommunity ISO"
 description: "Builds a BigCommunity ISO image"
 
@@ -125,6 +128,7 @@ runs:
           zip \
           tree \
           duf \
+          shfmt \
           chili-nanorc \
           chili-bashrc \
           inetutils > /dev/null
@@ -196,7 +200,7 @@ runs:
       shell: bash
       run: |
         # Ajuste nos hooks do mkinitcpio (se ainda necessário)
-        sed -i -e 's|File|Path|' /usr/share/libalpm/hooks/*hook*
+        sed -i -e 's/File/Path/' /usr/share/libalpm/hooks/*hook*
 
     - name: Create mknod /dev/sr0
       shell: bash
@@ -475,13 +479,13 @@ runs:
           add_repository "$PATH_MANJARO_TOOLS/pacman-multilib.conf"
 
           # Desabilite a remoção do cache de pacotes
-          sed -i 's|path=$1/var/lib/pacman/sync|path=$1/usr/share/man|g' /usr/lib/manjaro-tools/util-iso-image.sh
+          sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
 
           # Configurações de compressão
           if [[ "${{ inputs.community_branch }}" != "stable" ]]; then
-            sed -i 's|-Xcompression-level 20|-Xcompression-level 6|g' /usr/lib/manjaro-tools/util-iso.sh
+            sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
           fi
-          sed -i 's|256K|1024K|g' /usr/lib/manjaro-tools/util-iso.sh
+          sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh
 
           # Imprima as configurações
           cat /etc/pacman.d/mirrorlist                   || true
@@ -590,14 +594,14 @@ runs:
           # END Apply Custom Profile Modifications
 
           # Configurar o nome da distribuição e ISO
-          sed -i 's|dist_name=\$(get_distname)|dist_name=BigCommunity|g' /usr/lib/manjaro-tools/util.sh
-          sed -i 's|iso_name=\$(get_osid)|iso_name=bigcommunity|g'       /usr/lib/manjaro-tools/util.sh
+          sed -i 's/dist_name=\$(get_distname)/dist_name=BigCommunity/g' /usr/lib/manjaro-tools/util.sh
+          sed -i 's/iso_name=\$(get_osid)/iso_name=bigcommunity/g' /usr/lib/manjaro-tools/util.sh
 
           # Configurar a marca do BigCommunity
-          sed -i -e 's|dist_branding=.*|dist_branding="bigcommunity"|'   /usr/lib/manjaro-tools/util.sh
+          sed -i -e 's/dist_branding=.*/dist_branding="bigcommunity"/' /usr/lib/manjaro-tools/util.sh
 
           # Modificar o nome do arquivo ISO
-          sed -i 's|_${profile}${_edition}_${dist_release//.}|-live|'    /usr/lib/manjaro-tools/util-iso.sh
+          sed -i 's/_${profile}${_edition}_${dist_release//.}/-live/' /usr/lib/manjaro-tools/util-iso.sh
 
           # Desabilitar a verificação de versão do kernel
           # ativada: seg 23 set 2024 01:28:25 -04
@@ -610,7 +614,7 @@ runs:
           sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
 
           # Habilitar plymouth e kms
-          sed -i "s|keyboard keymap|keyboard keymap kms plymouth|g" /usr/share/manjaro-tools/mkinitcpio.conf
+          sed -i 's/keyboard keymap/keyboard keymap kms plymouth/g' /usr/share/manjaro-tools/mkinitcpio.conf
 
           echo "Manjaro tools setup completed. Directory contents of $VAR_CACHE_MANJARO_TOOLS_ISO:"
           ls -la "$VAR_CACHE_MANJARO_TOOLS_ISO"
