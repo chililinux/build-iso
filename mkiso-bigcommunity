@@ -320,31 +320,28 @@ setup_manjaro_tools() {
 		fi
 	done
 
-	# Execute special commands if they exist
+	echo 'Execute special commands if they exist'
 	if [[ -f "$PROFILE_PATH_EDITION/special-commands.sh" ]]; then
 		bash "$PROFILE_PATH_EDITION/special-commands.sh"
 	fi
 
-	# Configurar o nome da distribuição e ISO
+	echo 'Configurar o nome da distribuição e ISO'
   sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
   sed -i "s/^iso_name=.*/iso_name=bigcommunity/"   /usr/lib/manjaro-tools/util.sh
 
-	# Configurar a marca do BigCommunity
 	echo 'Configurar a marca do BigCommunity'
 	sed -i "s/dist_branding=.*/dist_branding=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
-	# Modificar o nome do arquivo ISO
 	echo 'Modificar o nome do arquivo ISO'
-	sed -i 's/_${profile}${_edition}_${dist_release//.}/-live/' /usr/lib/manjaro-tools/util-iso.sh
+	sed -i "s/_${profile}${_edition}_${dist_release//.}/-live/" /usr/lib/manjaro-tools/util-iso.sh
 
-	# Desabilitar a verificação de versão do kernel
-	# ativada: seg 23 set 2024 01:28:25 -04
+	echo 'Desabilitar a verificação de versão do kernel'
 	sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
-	# Adicionar limpezas do Big
+	echo 'Adicionar limpezas do Big'
 	add_big_cleanups
 
-	# Adicionar root-overlay
+	echo 'Adicionar root-overlay'
 	sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
 
 	# Habilitar plymouth e kms
