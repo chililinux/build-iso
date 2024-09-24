@@ -279,6 +279,7 @@ runs:
           ls -la "$PROFILE_PATH/$EDITION"
           echo "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
         }
+        export -f check_directories_and_path
         ' >> "$WORK_PATH/functions.sh"
 
     - name: Step 2 - Setup BUILD - configurar_manjaro_tools_para_usuario_builduser
@@ -305,6 +306,7 @@ runs:
             echo 'run_dir=$WORK_PATH_ISO_PROFILES' > /home/builduser/.config/manjaro-tools/iso-profiles.conf
           "
         }
+        export -f configurar_manjaro_tools_para_usuario_builduser
         ' >> "$WORK_PATH/functions.sh"
 
     - name: Step 3 - Setup BUILD - configure_repositories_and_build_environment
@@ -315,7 +317,6 @@ runs:
           # Configure repositories and build environment
           # Função para adicionar repositórios
 
-          echo '
           add_biglinux-update-stable() {
            {
               echo '[biglinux-update-stable]'
@@ -484,6 +485,7 @@ runs:
           cat "$PATH_MANJARO_TOOLS/pacman-default.conf"  || true
           cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
         }
+        export -f configure_repositories_and_build_environment
         ' >> "$WORK_PATH/functions.sh"
 
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
