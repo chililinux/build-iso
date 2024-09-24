@@ -626,12 +626,11 @@ build_iso() {
 
 	verificar_iso_profiles_conf
 	# Executar buildiso e capturar o código de saída
-	#	if [[ "$DEBUG" == 'true' ]]; then
-	#		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
-	#	else
-	#		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
-	#	fi
-	sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
+	if $DEBUG; then
+		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
+	else
+		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
+	fi
 	BUILD_EXIT_CODE=$?
 
 	# Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
