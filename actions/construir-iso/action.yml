@@ -231,21 +231,23 @@ runs:
     - name: Pull and setup keys
       shell: bash
       run: |
-#        # Pull and setup Community keys
-#        git clone https://github.com/biglinux/biglinux-key.git
-#        install -dm755 /etc/pacman.d/gnupg/
-#        install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
-#        rm -r biglinux-key
-#
-#        # Inicializar o chaveiro do pacman, se necessário
-#        pacman-key --init
-#
-#        # Receber e assinar a chave do Community
-#        pacman-key --recv-keys AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
-#        pacman-key --lsign-key AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
-#
-#        # Atualizar os bancos de dados do pacman
-#        pacman -Sy --quiet
+        : <<-'EOF'
+        # Pull and setup Community keys
+        git clone https://github.com/biglinux/biglinux-key.git
+        install -dm755 /etc/pacman.d/gnupg/
+        install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
+        rm -r biglinux-key
+
+        # Inicializar o chaveiro do pacman, se necessário
+        pacman-key --init
+
+        # Receber e assinar a chave do Community
+        pacman-key --recv-keys AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
+        pacman-key --lsign-key AECEEE84E52BBFAA9F1C9DF01EA0CEEEB09B44A3
+
+        # Atualizar os bancos de dados do pacman
+        pacman -Sy --quiet
+        EOF
 
         sudo pacman -S archlinux-keyring manjaro-keyring biglinux-keyring community-keyring chili-keyring ubuntu-keyring
         sudo pacman-key --init
