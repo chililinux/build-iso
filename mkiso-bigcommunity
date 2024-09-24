@@ -48,7 +48,7 @@ export TERM=${TERM:-xterm-256color}
 
 msg() {
   local msg="$1"
-  echo "${cyan}running: =>${yellow}${msg}${reset}"
+  echo "=>${cyan}running: ${yellow}${msg}${reset}"
 }
 
 #Step 1 - Setup BUILD - check_directories_and_path
@@ -575,7 +575,7 @@ configure_iso_name() {
 export -f configure_iso_name
 
 build_iso() {
-	msg "########################## RESUMO #################################"
+	echo "########################## RESUMO #################################"
 	echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "EDITION                  : $EDITION"
@@ -586,18 +586,17 @@ build_iso() {
 	echo "KERNEL_NAME              : ${KERNEL_NAME}"
 	echo "SCOPE                    : $SCOPE"
 	echo "OFFICE                   : $OFFICE"
-	msg "###################################################################"
+	echo "###################################################################"
 	echo "ISO_BASENAME             : $ISO_BASENAME"
 	echo "WORK_PATH                : $WORK_PATH"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "WORK_PATH_ISO_PROFILES   : $WORK_PATH_ISO_PROFILES"
 	echo "PROFILE_PATH/EDITION     : $PROFILE_PATH/$EDITION"
 	echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
-	msg "###################################################################"
+	echo "###################################################################"
 	echo "DEBUG                    : $DEBUG"
-#	echo "ROOT_RUN_DIR             : $(</root/.config/manjaro-tools/iso-profiles.conf || true)"
-	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf || true)"
-	msg "###################################################################"
+	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf)" || true
+	echo "###################################################################"
 
   verificar_iso_profiles_conf
 	# Executar buildiso e capturar o código de saída
@@ -608,12 +607,6 @@ build_iso() {
 #	fi
 	sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
 	BUILD_EXIT_CODE=$?
-
-	# Se buildiso falhou, sair com o código de erro
-	if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
-		msg "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
-		exit $BUILD_EXIT_CODE
-	fi
 
 	# Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
 	# Checking kernel files in rootfs:"
@@ -634,6 +627,12 @@ build_iso() {
 
 	msg "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
 	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot
+
+	# Se buildiso falhou, sair com o código de erro
+	if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
+		msg "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
+		exit $BUILD_EXIT_CODE
+	fi
 }
 export -f build_iso
 
@@ -644,8 +643,8 @@ cleanup_and_move_files() {
 		echo "ISO_BASENAME=$ISO_BASENAME"
 		echo "OUTPUT_ISO_PATH_NAME=$OUTPUT_ISO_PATH_NAME"
 		echo "FILE_PKG=$FILE_PKG"
-		echo "iso_path=$WORK_PATH/$ISO_BASENAME"
-	} >>"$GITHUB_OUTPUT"
+	} >>"$GITHUB_ENV"
+  echo "iso_path=$WORK_PATH/$ISO_BASENAME" >>"$GITHUB_OUTPUT"
 
 	msg "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
 	msg "FILE_PKG            : $FILE_PKG"
