@@ -291,23 +291,17 @@ runs:
       run: |
         echo '
         configurar_manjaro_tools_para_usuario_builduser() {
-          # Configurar o ambiente para o usuário root
-          #mkdir -p /root/.config/manjaro-tools
-          #echo 'PACKAGER="Community Package/ISO Build <vcatafesta@gmail.com>"' >> /root/.makepkg.conf
-          #echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"'            >> /root/.makepkg.conf
-          #echo "run_dir=$WORK_PATH_ISO_PROFILES" > /root/.config/manjaro-tools/iso-profiles.conf
-
           if ! id "builduser" &>/dev/null; then
-            sudo useradd -m builduser
+            useradd -m builduser
           fi
 
           # Configurar o ambiente para o usuário builduser
           sudo -u builduser bash -c "
-            echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >> /home/builduser/.makepkg.conf
-            echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"'  >> /home/builduser/.makepkg.conf
+            echo '\''PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"'\'' >> /home/builduser/.makepkg.conf
+            echo '\''GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"' >> /home/builduser/.makepkg.conf
             mkdir -p /home/builduser/.config/manjaro-tools
             cp -R /etc/manjaro-tools /home/builduser/.config
-            echo 'run_dir=$WORK_PATH_ISO_PROFILES' > /home/builduser/.config/manjaro-tools/iso-profiles.conf
+            echo "run_dir=\$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
           "
         }
         export -f configurar_manjaro_tools_para_usuario_builduser
