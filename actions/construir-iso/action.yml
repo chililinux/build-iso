@@ -245,7 +245,6 @@ runs:
           echo "PATH_MANJARO_TOOLS=/usr/share/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS_ISO=/var/cache/manjaro-tools/iso"
-          echo "PROFILE_PATH_EDITION=$PROFILE_PATH/$EDITION"
           echo "DEBUG=${{ inputs.tmate }}"
           echo "DISTRONAME=${{ inputs.distroname || 'bigcommunity' }}"
           echo "MANJAROBRANCH=${{ inputs.manjaro_branch }}"
@@ -256,6 +255,7 @@ runs:
           echo "OFFICE=${{ inputs.office-chooser }}"
           echo "RELEASE_TAG=${{ inputs.release_tag }}"
         } >> "$GITHUB_ENV"
+        echo "PROFILE_PATH_EDITION=$PROFILE_PATH/$EDITION" >> "$GITHUB_ENV"
 
     - name: Checkout iso-profiles and clean directories
       shell: bash
