@@ -116,7 +116,7 @@ jobs:
           echo "#########################################"
 
   build:
-    name: Build ISO "${{ github.event.client_payload.edition || inputs.edition || 'xfce' }}"
+    name: Build ISO "${{ github.event.client_payload.edition || inputs.edition || xfce }}"
     runs-on: ubuntu-latest
     needs: [setup] # Espera o job "setup" terminar
     container:
