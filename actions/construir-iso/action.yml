@@ -240,11 +240,22 @@ runs:
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
           echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/community"
           echo "REPO=${{ inputs.iso_profiles_repo }}"
+          echo "EDITION=${{ inputs.edition }}"
           echo "PATH_MANJARO_ISO_PROFILES=/usr/share/manjaro-tools/iso-profiles"
           echo "PATH_MANJARO_TOOLS=/usr/share/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS_ISO=/var/cache/manjaro-tools/iso"
-        } >> $GITHUB_ENV
+          echo "PROFILE_PATH_EDITION=$PROFILE_PATH/$EDITION"
+          echo "DEBUG=${{ inputs.tmate }}"
+          echo "DISTRONAME=${{ inputs.distroname || 'bigcommunity' }}"
+          echo "MANJAROBRANCH=${{ inputs.manjaro_branch }}"
+          echo "COMMUNITYBRANCH=${{ inputs.community_branch }}"
+          echo "BIGBRANCH=${{ inputs.biglinux_branch }}"
+          echo "SCOPE=${{ inputs.scope }}"
+          echo "KERNEL=${{ inputs.kernel }}"
+          echo "OFFICE=${{ inputs.office-chooser }}"
+          echo "RELEASE_TAG=${{ inputs.release_tag }}"
+        } >> "$GITHUB_ENV"
 
     - name: Checkout iso-profiles and clean directories
       shell: bash
@@ -267,22 +278,10 @@ runs:
 
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
       shell: bash
-      env:
-        DEBUG: ${{ inputs.tmate }}
-        DISTRONAME: ${{ inputs.distroname || 'bigcommunity' }}
-        EDITION: ${{ inputs.edition }}
-        MANJAROBRANCH: ${{ inputs.manjaro_branch }}
-        COMMUNITYBRANCH: ${{ inputs.community_branch }}
-        BIGBRANCH: ${{ inputs.biglinux_branch }}
-        SCOPE: ${{ inputs.scope }}
-        KERNEL: ${{ inputs.kernel }}
-        OFFICE: ${{ inputs.office-chooser }}
-        RELEASE_TAG: ${{ inputs.release_tag }}
       run: |
-        echo "PROFILE_PATH_EDITION=$PROFILE_PATH/$EDITION" >> $GITHUB_ENV
         # Carregando script e building ISO
         if [[ ! -e "$WORK_PATH/mkiso-bigcommunity" ]]; then
-          echo "ERRO(L508): Script $WORK_PATH/mkiso-bigcommunity não encontrado ou tamanho zerado!"
+          echo "ERRO(L284): Script $WORK_PATH/mkiso-bigcommunity não encontrado ou tamanho zerado!"
           exit 1
         fi
         source "$WORK_PATH/mkiso-bigcommunity"
