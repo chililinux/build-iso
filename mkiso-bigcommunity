@@ -319,15 +319,15 @@ setup_manjaro_tools() {
 			echo "Info: $remove_file not found in $PROFILE_PATH_EDITION. Skipping."
 		fi
 	done
+
 	# Execute special commands if they exist
 	if [[ -f "$PROFILE_PATH_EDITION/special-commands.sh" ]]; then
 		bash "$PROFILE_PATH_EDITION/special-commands.sh"
 	fi
-	# END Apply Custom Profile Modifications
 
 	# Configurar o nome da distribuição e ISO
-	sed -i 's/dist_name=\$(get_distname)/dist_name=BigCommunity/g' /usr/lib/manjaro-tools/util.sh
-	sed -i 's/iso_name=\$(get_osid)/iso_name=bigcommunity/g' /usr/lib/manjaro-tools/util.sh
+  sudo sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
+  sudo sed -i "s/^iso_name=.*/iso_name=bigcommunity/"    /usr/lib/manjaro-tools/util.sh
 
 	# Configurar a marca do BigCommunity
 	sed -i -e 's/dist_branding=.*/dist_branding="bigcommunity"/' /usr/lib/manjaro-tools/util.sh
