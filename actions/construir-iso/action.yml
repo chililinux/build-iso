@@ -258,24 +258,10 @@ runs:
         # clean '/var/cache/manjaro-tools/iso/' directory
         rm -rf /var/cache/manjaro-tools/iso/* || true
 
-    - name: Build ISO Image ${{ inputs.edition }}
+    - name: Step 1 - Setup - check_directories_and_path
       shell: bash
-      env:
-        DEBUG: ${{ inputs.tmate }}
-        DISTRONAME: ${{ inputs.distroname || 'bigcommunity' }}
-        EDITION: ${{ inputs.edition }}
-        MANJAROBRANCH: ${{ inputs.manjaro_branch }}
-        COMMUNITYBRANCH: ${{ inputs.community_branch }}
-        BIGBRANCH: ${{ inputs.biglinux_branch }}
-        SCOPE: ${{ inputs.scope }}
-        KERNEL: ${{ inputs.kernel }}
-        OFFICE: ${{ inputs.office-chooser }}
-        RELEASE_TAG: ${{ inputs.release_tag }}
-        PROFILE_PATH_EDITION: "$PROFILE_PATH/$EDITION"
       run: |
-        # BUILD ISO Image
-        # Check if iso-profiles directory exists before proceeding
-
+        # Step 1 - Setup Environment
         check_directories_and_path() {
           if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
             echo "ERRO(L459): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
@@ -292,7 +278,11 @@ runs:
           ls -la "$PROFILE_PATH/$EDITION"
           echo "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
         }
+        check_directories_and_path
 
+    - name: Step 2 - Setup - configurar_manjaro_tools_para_usuario_builduser
+      shell: bash
+      run: |
         configurar_manjaro_tools_para_usuario_builduser() {
           # Configurar o ambiente para o usuário root
           #mkdir -p /root/.config/manjaro-tools
@@ -309,7 +299,11 @@ runs:
           echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
           EOF
         }
+        configurar_manjaro_tools_para_usuario_builduser
 
+    - name: Step 3 - Setup - configure_repositories_and_build_environment
+      shell: bash
+      run: |
         configure_repositories_and_build_environment() {
           # Configure repositories and build environment
           # Função para adicionar repositórios
@@ -474,6 +468,25 @@ runs:
           cat "$PATH_MANJARO_TOOLS/pacman-default.conf"  || true
           cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
         }
+        configure_repositories_and_build_environment
+
+    - name: Build ISO Image ${{ inputs.edition }}
+      shell: bash
+      env:
+        DEBUG: ${{ inputs.tmate }}
+        DISTRONAME: ${{ inputs.distroname || 'bigcommunity' }}
+        EDITION: ${{ inputs.edition }}
+        MANJAROBRANCH: ${{ inputs.manjaro_branch }}
+        COMMUNITYBRANCH: ${{ inputs.community_branch }}
+        BIGBRANCH: ${{ inputs.biglinux_branch }}
+        SCOPE: ${{ inputs.scope }}
+        KERNEL: ${{ inputs.kernel }}
+        OFFICE: ${{ inputs.office-chooser }}
+        RELEASE_TAG: ${{ inputs.release_tag }}
+        PROFILE_PATH_EDITION: "$PROFILE_PATH/$EDITION"
+      run: |
+        # BUILD ISO Image
+        # Check if iso-profiles directory exists before proceeding
 
         add_big_cleanups() {
           # cleanups
@@ -812,9 +825,9 @@ runs:
         }
 
         main() {
-          check_directories_and_path
-          configurar_manjaro_tools_para_usuario_builduser
-          configure_repositories_and_build_environment
+          #check_directories_and_path
+          #configurar_manjaro_tools_para_usuario_builduser
+          #configure_repositories_and_build_environment
 
           # Community Pre Config Build ISO
           setup_manjaro_tools
