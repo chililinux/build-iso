@@ -313,159 +313,160 @@ runs:
       shell: bash
       run: |
         echo '
+        add_biglinux-update-stable() {
+         {
+            echo '[biglinux-update-stable]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.biglinux.com.br/update-stable/$arch'
+            echo
+          }
+        }
+        export -f add_biglinux-update-stable
+
+        add_biglinux-stable() {
+          {
+            echo '[biglinux-stable]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.biglinux.com.br/stable/$arch'
+            echo
+          }
+        }
+        export -f add_biglinux-stable
+
+        add_biglinux-testing() {
+          {
+            echo '[biglinux-testing]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.biglinux.com.br/testing/$arch'
+            echo
+          }
+        }
+        export -f add_biglinux-testing
+
+        add_community-stable() {
+          {
+            echo '[community-stable]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.communitybig.org/stable/$arch'
+            echo
+          }
+        }
+        export -f add_community-stable
+
+        add_community-testing() {
+          {
+            echo '[community-testing]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.communitybig.org/testing/$arch'
+            echo
+          }
+        }
+        export -f add_community-testing
+
+        add_community-extra() {
+          {
+            echo '[community-extra]'
+            echo 'SigLevel = PackageRequired'
+            echo 'Server = https://repo.communitybig.org/extra/$arch'
+            echo
+          }
+        }
+        export -f add_community-extra
+
+        add_chili-stable() {
+          {
+            echo "[chili-stable]"
+            echo "SigLevel = Optional TrustAll"
+            echo "Server = https://repo.chililinux.com/stable/\$arch"
+            echo
+          }
+        }
+        export -f add_chili-stable
+
+        add_chili-testing() {
+          {
+            echo "[chili-testing]"
+            echo "SigLevel = Optional TrustAll"
+            echo "Server = https://repo.chililinux.com/testing/\$arch"
+            echo
+           }
+        }
+        export -f add_chili-testing
+
+        add_repository() {
+          arquivo_conf="$1"
+
+          # Adicione o repositório biglinux-keyring community-keyring
+          for key in biglinux-keyring community-keyring chili-keyring; do
+            if ! grep -q "$key" "$arquivo_conf"; then
+              sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
+            fi
+          done
+
+          # Adicione o repositório biglinux-update-stable
+          if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
+            #sed -i '/\[core\]/{x;/^$/!{x;H;};/^$/p;x;}' "$arquivo_conf"
+            sed -i -n '/\[core\]/{:a;N;/^\n/p;ba;}' "$arquivo_conf"
+            add_biglinux-update-stable
+          fi
+
+          # Configure os repositórios Manjaro
+          branch="${{ inputs.manjaro_branch }}"
+          servers=('irltoolkit.mm.fcix.net'
+                   'mirror.fcix.net'
+                   'opencolo.mm.fcix.net'
+                   'mirrors.ocf.berkeley.edu'
+                   'ridgewireless.mm.fcix.net'
+                   'codingflyboy.mm.fcix.net'
+                   'mirrors.sonic.net'
+                   'repo.ialab.dsu.edu'
+                   'volico.mm.fcix.net'
+                   'forksystems.mm.fcix.net'
+                   'mnvoip.mm.fcix.net'
+                   'coresite.mm.fcix.net'
+                   'uvermont.mm.fcix.net'
+                   'ohioix.mm.fcix.net'
+                   'southfront.mm.fcix.net'
+                   'nnenix.mm.fcix.net'
+                   'mirror.math.princeton.edu'
+                   'mirrors.gigenet.com'
+                   'ask4.mm.fcix.net'
+                  )
+          for server in "${servers[@]}"; do
+            echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" >> "$arquivo_conf"
+          done
+
+          # Configure os repositórios Community
+          case "${{ inputs.community_branch }}" in
+            "stable")
+              add_biglinux-update-stable >> "$arquivo_conf"
+              add_community-stable >> "$arquivo_conf"
+              add_community-testing >> "$arquivo_conf"
+              add_community-extra >> "$arquivo_conf"
+              ;;
+            "testing")
+              add_community-testing >> "$arquivo_conf"
+              add_community-stable >> "$arquivo_conf"
+              add_community-extra >> "$arquivo_conf"
+              ;;
+          esac
+
+          # Configure os repositórios BigLinux
+          case "${{ inputs.biglinux_branch }}" in
+            "stable")
+              add_biglinux-stable >> "$arquivo_conf"
+              add_biglinux-testing >> "$arquivo_conf"
+              ;;
+            "testing")
+              add_biglinux-testing >> "$arquivo_conf"
+              add_biglinux-stable >> "$arquivo_conf"
+              ;;
+          esac
+        }
+
         configure_repositories_and_build_environment() {
           # Configure repositories and build environment
           # Função para adicionar repositórios
-
-          add_biglinux-update-stable() {
-           {
-              echo '[biglinux-update-stable]'
-              echo 'SigLevel = PackageRequired'
-              echo 'Server = https://repo.biglinux.com.br/update-stable/$arch'
-              echo
-            }
-          }
-          export -f add_biglinux-update-stable
-
-          add_biglinux-stable() {
-            {
-              echo '[biglinux-stable]'
-              echo 'SigLevel = PackageRequired'
-              echo 'Server = https://repo.biglinux.com.br/stable/$arch'
-              echo
-            }
-          }
-          export -f add_biglinux-stable
-
-          add_biglinux-testing() {
-            {
-              echo '[biglinux-testing]'
-              echo 'SigLevel = PackageRequired'
-              echo 'Server = https://repo.biglinux.com.br/testing/$arch'
-              echo
-            }
-          }
-          export -f add_biglinux-testing
-
-          add_community-stable() {
-            {
-              echo '[community-stable]'
-              echo 'SigLevel = PackageRequired'
-              echo 'Server = https://repo.communitybig.org/stable/$arch'
-              echo
-            }
-          }
-          export -f add_community-stable
-
-          add_community-testing() {
-            {
-              echo '[community-testing]'
-              echo 'SigLevel = PackageRequired'
-              echo 'Server = https://repo.communitybig.org/testing/$arch'
-              echo
-            }
-          }
-          export -f add_community-testing
-
-          add_community-extra() {
-            {
-              echo '[community-extra]'
-              echo 'SigLevel = PackageRequired'
-              echo 'Server = https://repo.communitybig.org/extra/$arch'
-              echo
-            }
-          }
-          export -f add_community-extra
-
-          add_chili-stable() {
-            {
-              echo "[chili-stable]"
-              echo "SigLevel = Optional TrustAll"
-              echo "Server = https://repo.chililinux.com/stable/\$arch"
-              echo
-            }
-          }
-          export -f add_chili-stable
-
-          add_chili-testing() {
-            {
-              echo "[chili-testing]"
-              echo "SigLevel = Optional TrustAll"
-              echo "Server = https://repo.chililinux.com/testing/\$arch"
-              echo
-            }
-          }
-          export -f add_chili-testing
-
-          add_repository() {
-            arquivo_conf="$1"
-
-            # Adicione o repositório biglinux-keyring community-keyring
-            for key in biglinux-keyring community-keyring chili-keyring; do
-              if ! grep -q "$key" "$arquivo_conf"; then
-                sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
-              fi
-            done
-
-            # Adicione o repositório biglinux-update-stable
-            if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
-              sed -i '/\[core\]/{x;/^$/!{x;H;};/^$/p;x;}' "$arquivo_conf"
-              add_biglinux-update-stable
-            fi
-
-            # Configure os repositórios Manjaro
-            branch="${{ inputs.manjaro_branch }}"
-            servers=('irltoolkit.mm.fcix.net'
-                     'mirror.fcix.net'
-                     'opencolo.mm.fcix.net'
-                     'mirrors.ocf.berkeley.edu'
-                     'ridgewireless.mm.fcix.net'
-                     'codingflyboy.mm.fcix.net'
-                     'mirrors.sonic.net'
-                     'repo.ialab.dsu.edu'
-                     'volico.mm.fcix.net'
-                     'forksystems.mm.fcix.net'
-                     'mnvoip.mm.fcix.net'
-                     'coresite.mm.fcix.net'
-                     'uvermont.mm.fcix.net'
-                     'ohioix.mm.fcix.net'
-                     'southfront.mm.fcix.net'
-                     'nnenix.mm.fcix.net'
-                     'mirror.math.princeton.edu'
-                     'mirrors.gigenet.com'
-                     'ask4.mm.fcix.net'
-                    )
-            for server in "${servers[@]}"; do
-              echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" >> "$arquivo_conf"
-            done
-
-            # Configure os repositórios Community
-            case "${{ inputs.community_branch }}" in
-              "stable")
-                add_biglinux-update-stable >> "$arquivo_conf"
-                add_community-stable >> "$arquivo_conf"
-                add_community-testing >> "$arquivo_conf"
-                add_community-extra >> "$arquivo_conf"
-                ;;
-              "testing")
-                add_community-testing >> "$arquivo_conf"
-                add_community-stable >> "$arquivo_conf"
-                add_community-extra >> "$arquivo_conf"
-                ;;
-            esac
-
-            # Configure os repositórios BigLinux
-            case "${{ inputs.biglinux_branch }}" in
-              "stable")
-                add_biglinux-stable >> "$arquivo_conf"
-                add_biglinux-testing >> "$arquivo_conf"
-                ;;
-              "testing")
-                add_biglinux-testing >> "$arquivo_conf"
-                add_biglinux-stable >> "$arquivo_conf"
-                ;;
-            esac
-          }
 
           # Aplique as configurações
           add_repository "$PATH_MANJARO_TOOLS/pacman-default.conf"
