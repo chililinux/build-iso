@@ -61,12 +61,12 @@ check_directories_and_path() {
 	ls -la "$PROFILE_PATH"
 
 	# Verificando o diretório do perfil específico
-	if [[ ! -d "$PROFILE_PATH/$EDITION" ]]; then
-		msg "ERRO(L459): perfil $PROFILE_PATH/$EDITION não encontrado!"
+	if [[ ! -d "$PROFILE_PATH_EDITION" ]]; then
+		msg "ERRO(L459): perfil $PROFILE_PATH_EDITION não encontrado!"
 		exit 1
 	fi
-	ls -la "$PROFILE_PATH/$EDITION"
-	msg "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
+	ls -la "$PROFILE_PATH_EDITION"
+	msg "Caminho completo do perfil: $PROFILE_PATH_EDITION"
 }
 export -f check_directories_and_path
 
@@ -314,8 +314,8 @@ setup_manjaro_tools() {
 	fi
 
 	# Verificar se o diretório do perfil existe
-	if [ ! -d "$PROFILE_PATH/$EDITION" ]; then
-		msg "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
+	if [ ! -d "$PROFILE_PATH_EDITION" ]; then
+		msg "Error: Profile directory $PROFILE_PATH_EDITION does not exist."
 		exit 1
 	fi
 
@@ -380,8 +380,8 @@ configure_mesa() {
 			echo ''
 			echo "mesa-tkg-stable"
 			echo "lib32-mesa-tkg-stable"
-		} >>$PROFILE_PATH/$EDITION/Packages-Root
-		sed -i '/libva-mesa/d; /vulkan-swrast/d' $PROFILE_PATH/$EDITION/Packages-{Desktop,Mhwd}
+		} >>$PROFILE_PATH_EDITION/Packages-Root
+		sed -i '/libva-mesa/d; /vulkan-swrast/d' $PROFILE_PATH_EDITION/Packages-{Desktop,Mhwd}
 	fi
 }
 export -f configure_mesa
@@ -416,7 +416,7 @@ configure_kernel() {
 	esac
 
 	# Limpar kernels anteriores de todos os Packages-*, mas manter linux-firmware
-	for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
+	for pkg_file in "$PROFILE_PATH_EDITION"/Packages-*; do
 		sed -i '/^linux[0-9]/d' "$pkg_file"
 		sed -i '/^linux-latest/d' "$pkg_file"
 	done
@@ -425,7 +425,7 @@ configure_kernel() {
 	if [[ "$KERNEL" == "-xanmod"* ]]; then
 		KERNEL_NAME="${KERNEL#-}"
 		# Adicionar linux-firmware ao Packages-Root
-		echo "linux-firmware" >>"$PROFILE_PATH/$EDITION/Packages-Root"
+		echo "linux-firmware" >>"$PROFILE_PATH_EDITION/Packages-Root"
 	elif [[ "$KERNEL" == "latest" ]]; then
 		KERNEL_NAME="latest"
 	else
@@ -468,7 +468,7 @@ configure_kernel() {
 	msg "KERNEL_NAME set to: $KERNEL_NAME"
 
 	# Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*
-	for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
+	for pkg_file in "$PROFILE_PATH_EDITION"/Packages-*; do
 		sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
 		sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
 		sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
@@ -516,7 +516,7 @@ configure_repos() {
 export -f configure_repos
 
 set_build_info() {
-	local release_file="$PROFILE_PATH/$EDITION/root-overlay/etc/big-release"
+	local release_file="$PROFILE_PATH_EDITION/root-overlay/etc/big-release"
 	local release_dir=$(dirname "$release_file")
 
 	# Ensure the directory exists
@@ -564,7 +564,7 @@ configure_iso_name() {
 	msg "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
 
 	# Use $DISTRONAME aqui também, em vez de "bigcommunity"
-	sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION"/profile.conf
+	sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH_EDITION"/profile.conf
 
 	case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
 	stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -578,6 +578,7 @@ build_iso() {
 	echo "########################## RESUMO #################################"
 	echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
+	echo "PROFILE_PATH_EDITION     : $PROFILE_PATH_EDITION"
 	echo "EDITION                  : $EDITION"
 	echo "MANJAROBRANCH            : $MANJAROBRANCH"
 	echo "COMMUNITYBRANCH          : $COMMUNITYBRANCH"
@@ -587,11 +588,8 @@ build_iso() {
 	echo "SCOPE                    : $SCOPE"
 	echo "OFFICE                   : $OFFICE"
 	echo "###################################################################"
-	echo "ISO_BASENAME             : $ISO_BASENAME"
 	echo "WORK_PATH                : $WORK_PATH"
-	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "WORK_PATH_ISO_PROFILES   : $WORK_PATH_ISO_PROFILES"
-	echo "PROFILE_PATH/EDITION     : $PROFILE_PATH/$EDITION"
 	echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
 	echo "###################################################################"
 	echo "DEBUG                    : $DEBUG"
@@ -670,7 +668,7 @@ make_iso() {
 	# Starting repository configuration
 	for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
 		msg "Configuring $config"
-		configure_repos "$PROFILE_PATH/$EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
+		configure_repos "$$PROFILE_PATH_EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
 	set_build_info
