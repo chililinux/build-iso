@@ -55,7 +55,7 @@ configurar_manjaro_tools_para_usuario_builduser() {
 		useradd -m builduser
 	fi
 
-  # Configurar o ambiente para o usuário builduser
+  echo 'Configurar o ambiente para o usuário builduser'
   sudo -u builduser bash -c "
     echo 'PACKAGER=\"Vilmar Catafesta <vcatafesta@gmail.com>\"' >> /home/builduser/.makepkg.conf
     echo 'GPGKEY=\"A0D5A8312A83940ED8B04B0F4BAC871802E960F1\"' >> /home/builduser/.makepkg.conf
