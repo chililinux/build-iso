@@ -322,6 +322,7 @@ runs:
               echo
             }
           }
+          export -f add_biglinux-update-stable
 
           add_biglinux-stable() {
             {
@@ -331,6 +332,7 @@ runs:
               echo
             }
           }
+          export -f add_biglinux-stable
 
           add_biglinux-testing() {
             {
@@ -340,6 +342,7 @@ runs:
               echo
             }
           }
+          export -f add_biglinux-testing
 
           add_community-stable() {
             {
@@ -349,6 +352,7 @@ runs:
               echo
             }
           }
+          export -f add_community-stable
 
           add_community-testing() {
             {
@@ -358,6 +362,7 @@ runs:
               echo
             }
           }
+          export -f add_community-testing
 
           add_community-extra() {
             {
@@ -367,6 +372,7 @@ runs:
               echo
             }
           }
+          export -f add_community-extra
 
           add_chili-stable() {
             {
@@ -376,6 +382,7 @@ runs:
               echo
             }
           }
+          export -f add_chili-stable
 
           add_chili-testing() {
             {
@@ -385,6 +392,7 @@ runs:
               echo
             }
           }
+          export -f add_chili-testing
 
           add_repository() {
             arquivo_conf="$1"
