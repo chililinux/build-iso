@@ -565,23 +565,23 @@ build_iso() {
 
 	# Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
 	# Checking kernel files in rootfs:"
-	find /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot -name "vmlinuz*"
+	find /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot -name "vmlinuz*"
 
 	# Checking kernel files in iso/boot:"
-	find /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot -name "vmlinuz*"
+	find /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot -name "vmlinuz*"
 
 	if [ ! -f "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/vmlinuz*" ]; then
 		# Warning: Kernel file not found in iso/boot. Attempting manual copy
 		mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
-		cp -v /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
+		cp -v /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
 	fi
 
 	# Exibir conteúdo de diretórios relevantes para diagnóstico
 	echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
-	ls -la /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot
+	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot
 
 	echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
-	ls -la /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot
+	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot
 }
 export -f build_iso
 
@@ -606,7 +606,7 @@ export -f cleanup_and_move_files
 
 make_iso() {
 	check_directories_and_path
-	configurar_manjaro_tools_para_usuario_builduser
+  configurar_manjaro_tools_para_usuario_builduser
 	configure_repositories_and_build_environment
 
 	# Community Pre Config Build ISO
