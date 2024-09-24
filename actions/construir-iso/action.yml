@@ -211,7 +211,7 @@ runs:
         chmod 660 /dev/sr0 || true
         chown root:root /dev/sr0 || true
 
-    - name: Ajustar ambiente users: builduser e root (perfumaria)
+    - name: Ajustar ambiente users builduser e root (perfumaria)
       shell: bash
       run: |
         # Ajustar ambiente dos users builduser e root (perfumaria)
