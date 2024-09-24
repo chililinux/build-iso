@@ -282,7 +282,7 @@ configure_repositories_and_build_environment() {
 	sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
 
 	# Configurações de compressão
-	if [[ "$$COMMUNITYBRANCH" != "stable" ]]; then
+	if [[ "$COMMUNITYBRANCH" != "stable" ]]; then
 		sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
 	fi
 	sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh
@@ -697,7 +697,7 @@ make_iso() {
 	# Starting repository configuration
 	for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
 		msg "Configuring $config"
-		configure_repos "$$PROFILE_PATH_EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
+		configure_repos "$PROFILE_PATH_EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
 	set_build_info
