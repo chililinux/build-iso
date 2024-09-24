@@ -405,7 +405,6 @@ runs:
 
           # Adicione o repositório biglinux-update-stable
           if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
-            #sed -i '/\[core\]/{x;/^$/!{x;H;};/^$/p;x;}' "$arquivo_conf"
             sed -i -n '/\[core\]/{:a;N;/^\n/p;ba;}' "$arquivo_conf"
             add_biglinux-update-stable
           fi
