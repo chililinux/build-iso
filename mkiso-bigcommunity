@@ -605,7 +605,7 @@ cleanup_and_move_files() {
 }
 export -f cleanup_and_move_files
 
-main() {
+make_iso() {
 	check_directories_and_path
 	configurar_manjaro_tools_para_usuario_builduser
 	configure_repositories_and_build_environment
@@ -630,5 +630,3 @@ main() {
 	cleanup_and_move_files
 	ls -lah
 }
-
-main "$@"

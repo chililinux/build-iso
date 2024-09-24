@@ -504,8 +504,13 @@ runs:
         RELEASE_TAG: ${{ inputs.release_tag }}
         PROFILE_PATH_EDITION: "$PROFILE_PATH/$EDITION"
       run: |
+        # Carregando script e building ISO
+        if [[ ! -s "$WORK_PATH/mkiso-bigcommunity" ]]; then
+          echo "ERRO(L508): Script $WORK_PATH/mkiso-bigcommunity não encontrado ou tamanho zerado!"
+          exit 1
+        fi
         source "$WORK_PATH/mkiso-bigcommunity"
-        main
+        make_iso
 
     - name: Set ISO path
       shell: bash
