@@ -86,6 +86,7 @@ jobs:
       - name: Install dependencies on HOST
         run: |
           #sudo apt-get update
+          sudo apt-get autoremove
           sudo apt-get install -y inetutils-tools
 
       - name: Set up volume directory on HOST
