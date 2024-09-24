@@ -236,11 +236,12 @@ runs:
       run: |
         # Declarar variáveis de ambiente
         {
+          echo "REPO=${{ inputs.iso_profiles_repo }}"
+          echo "EDITION=${{ inputs.edition }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
           echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/community"
-          echo "REPO=${{ inputs.iso_profiles_repo }}"
-          echo "EDITION=${{ inputs.edition }}"
+          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/community/${{ inputs.edition }}"
           echo "PATH_MANJARO_ISO_PROFILES=/usr/share/manjaro-tools/iso-profiles"
           echo "PATH_MANJARO_TOOLS=/usr/share/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"
@@ -255,7 +256,6 @@ runs:
           echo "OFFICE=${{ inputs.office-chooser }}"
           echo "RELEASE_TAG=${{ inputs.release_tag }}"
         } >> "$GITHUB_ENV"
-        echo "PROFILE_PATH_EDITION=${PROFILE_PATH}/${EDITION}" >> "$GITHUB_ENV"
         exit 1
 
     - name: Checkout iso-profiles and clean directories
