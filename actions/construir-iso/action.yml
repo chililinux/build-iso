@@ -211,7 +211,7 @@ runs:
         chmod 660 /dev/sr0 || true
         chown root:root /dev/sr0 || true
 
-    - name: Ajustar ambiente dos users builduser e root (perfumaria)
+    - name: Ajustar ambiente users: builduser e root (perfumaria)
       shell: bash
       run: |
         # Ajustar ambiente dos users builduser e root (perfumaria)
@@ -231,10 +231,10 @@ runs:
         cp -Rpva /etc/skel/.git-prompt* . || true
         EOF
 
-    - name: Declarar variáveis de ambiente
+    - name: Declare variáveis de ambiente
       shell: bash
       run: |
-        # Declarar variáveis de ambiente
+        # Declare variáveis de ambiente
         {
           echo "REPO=${{ inputs.iso_profiles_repo }}"
           echo "EDITION=${{ inputs.edition }}"
@@ -251,31 +251,12 @@ runs:
           echo "MANJAROBRANCH=${{ inputs.manjaro_branch }}"
           echo "COMMUNITYBRANCH=${{ inputs.community_branch }}"
           echo "BIGBRANCH=${{ inputs.biglinux_branch }}"
-          echo "SCOPE=${{ inputs.scope }}"
           echo "KERNEL=${{ inputs.kernel }}"
-          echo "OFFICE=${{ inputs.office-chooser }}"
           echo "RELEASE_TAG=${{ inputs.release_tag }}"
+          echo "SCOPE=${{ inputs.scope }}"
+          echo "OFFICE=${{ inputs.office-chooser }}"
         } >> "$GITHUB_ENV"
         exit 1
-
-    - name: Checkout iso-profiles and clean directories
-      shell: bash
-      run: |
-        # Checkout iso-profiles
-        if ! git clone --depth 1 "$REPO" "$WORK_PATH_ISO_PROFILES"; then
-          echo "Falha ao clonar o repositorio $REPO em $WORK_PATH_ISO_PROFILES"
-          exit 1
-        fi
-        # ativando 'git config --global --add safe.directory'
-        git config --global --add safe.directory "$WORK_PATH_ISO_PROFILES" || true
-
-        # clean '/__t/' directory
-        rm -rf /__t/* || true
-
-        # clean '/var/lib/manjaro-tools/buildiso/' directory
-        rm -rf /var/lib/manjaro-tools/buildiso/* || true
-        # clean '/var/cache/manjaro-tools/iso/' directory
-        rm -rf /var/cache/manjaro-tools/iso/* || true
 
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
       shell: bash

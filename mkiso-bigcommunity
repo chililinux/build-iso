@@ -47,9 +47,36 @@ export TERM=${TERM:-xterm-256color}
 #violet=$(tput setaf 61)
 
 msg() {
-  local msg="$1"
-  echo "=>${cyan}running: ${yellow}${msg}${reset}"
+	local msg="$1"
+	echo "=>${cyan}running: ${yellow}${msg}${reset}"
 }
+
+#Step 0 - Setup BUILD - Checkout iso-profiles and clean directories
+checkout_iso-profiles_and_clean_directories() {
+	msg 'Checkout iso-profiles'
+	if ! git clone --depth 1 "$REPO" "$WORK_PATH_ISO_PROFILES"; then
+		msg "ERRO: Falha ao clonar o repositorio $REPO em $WORK_PATH_ISO_PROFILES"
+		exit 1
+	fi
+	msg 'ativando git config --global --add safe.directory'
+	git config --global --add safe.directory "$WORK_PATH_ISO_PROFILES" || true
+
+	if [[ -d '/__t/' ]]; then
+		msg 'clean '/__t/' directory'
+		rm -rf /__t/* || true
+	fi
+
+	if [[ -d '/var/lib/manjaro-tools/buildiso/' ]]; then
+		msg 'clean /var/lib/manjaro-tools/buildiso/ directory'
+		rm -rf /var/lib/manjaro-tools/buildiso/* || true
+	fi
+
+	if [[ -d '/var/cache/manjaro-tools/iso/' ]]; then
+		msg 'clean /var/cache/manjaro-tools/iso/ directory'
+		rm -rf /var/cache/manjaro-tools/iso/* || true
+	fi
+}
+export -f checkout_iso-profiles_and_clean_directories
 
 #Step 1 - Setup BUILD - check_directories_and_path
 check_directories_and_path() {
@@ -76,15 +103,15 @@ configurar_manjaro_tools_para_usuario_builduser() {
 		useradd -m builduser
 	fi
 
-  msg 'Configurar o ambiente para o usuário builduser como root'
-  echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >> /home/builduser/.makepkg.conf
-  echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"' >> /home/builduser/.makepkg.conf
-  mkdir -p /home/builduser/.config/manjaro-tools
-  cp -R /etc/manjaro-tools /home/builduser/.config
-  echo "run_dir=$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
+	msg 'Configurar o ambiente para o usuário builduser como root'
+	echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >>/home/builduser/.makepkg.conf
+	echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"' >>/home/builduser/.makepkg.conf
+	mkdir -p /home/builduser/.config/manjaro-tools
+	cp -R /etc/manjaro-tools /home/builduser/.config
+	echo "run_dir=$WORK_PATH_ISO_PROFILES" >/home/builduser/.config/manjaro-tools/iso-profiles.conf
 
-  msg 'Ajustar permissões para todo o diretório do usuário builduser'
-  chown -R builduser:builduser /home/builduser
+	msg 'Ajustar permissões para todo o diretório do usuário builduser'
+	chown -R builduser:builduser /home/builduser
 }
 export -f configurar_manjaro_tools_para_usuario_builduser
 
@@ -348,14 +375,14 @@ setup_manjaro_tools() {
 	fi
 
 	msg 'Configurar o nome da distribuição e ISO'
-  sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
-  sed -i "s/^iso_name=.*/iso_name=bigcommunity/"   /usr/lib/manjaro-tools/util.sh
+	sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
+	sed -i "s/^iso_name=.*/iso_name=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
 	msg 'Configurar a marca do BigCommunity'
 	sed -i "s/dist_branding=.*/dist_branding=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
 	msg 'Modificar o nome do arquivo ISO'
-	sed -i "s/_${profile}${_edition}_${dist_release//.}/-live/" /usr/lib/manjaro-tools/util-iso.sh
+	sed -i "s/_${profile}${_edition}_${dist_release//./}/-live/" /usr/lib/manjaro-tools/util-iso.sh
 
 	msg 'Desabilitar a verificação de versão do kernel'
 	sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
@@ -531,30 +558,30 @@ set_build_info() {
 export -f set_build_info
 
 verificar_iso_profiles_conf() {
-  local config_file="/home/builduser/.config/manjaro-tools/iso-profiles.conf"
+	local config_file="/home/builduser/.config/manjaro-tools/iso-profiles.conf"
 
-  # Verifica se o arquivo existe
-  if [[ -f "$config_file" ]]; then
-    msg "O arquivo $config_file existe."
+	# Verifica se o arquivo existe
+	if [[ -f "$config_file" ]]; then
+		msg "O arquivo $config_file existe."
 
-    # Verifica se o arquivo contém a linha com 'run_dir='
-    local run_dir_value
-    run_dir_value=$(grep "^run_dir=" "$config_file" | cut -d'=' -f2)
+		# Verifica se o arquivo contém a linha com 'run_dir='
+		local run_dir_value
+		run_dir_value=$(grep "^run_dir=" "$config_file" | cut -d'=' -f2)
 
-    if [[ -n "$run_dir_value" ]]; then
-      if [[ "$run_dir_value" == "/"* ]]; then
-        msg "A linha 'run_dir=' está presente e o valor é: $run_dir_value"
-      else
-        msg "A linha 'run_dir=' está presente, mas o valor parece incompleto."
-        exit 1
-      fi
-    else
-      msg "A linha 'run_dir=' está presente, mas não contém um valor."
-      exit 1
-    fi
-  else
-    msg "O arquivo $config_file não existe."
-  fi
+		if [[ -n "$run_dir_value" ]]; then
+			if [[ "$run_dir_value" == "/"* ]]; then
+				msg "A linha 'run_dir=' está presente e o valor é: $run_dir_value"
+			else
+				msg "A linha 'run_dir=' está presente, mas o valor parece incompleto."
+				exit 1
+			fi
+		else
+			msg "A linha 'run_dir=' está presente, mas não contém um valor."
+			exit 1
+		fi
+	else
+		msg "O arquivo $config_file não existe."
+	fi
 }
 export -f verificar_iso_profiles_conf
 
@@ -597,13 +624,13 @@ build_iso() {
 	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf)" || true
 	echo "###################################################################"
 
-  verificar_iso_profiles_conf
+	verificar_iso_profiles_conf
 	# Executar buildiso e capturar o código de saída
-#	if [[ "$DEBUG" == 'true' ]]; then
-#		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
-#	else
-#		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
-#	fi
+	#	if [[ "$DEBUG" == 'true' ]]; then
+	#		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
+	#	else
+	#		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
+	#	fi
 	sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
 	BUILD_EXIT_CODE=$?
 
@@ -643,20 +670,21 @@ cleanup_and_move_files() {
 		echo "OUTPUT_ISO_PATH_NAME=$OUTPUT_ISO_PATH_NAME"
 		echo "FILE_PKG=$FILE_PKG"
 	} >>"$GITHUB_ENV"
-  echo "iso_path=$WORK_PATH/$ISO_BASENAME" >>"$GITHUB_OUTPUT"
+	echo "iso_path=$WORK_PATH/$ISO_BASENAME" >>"$GITHUB_OUTPUT"
 
 	msg "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
 	msg "FILE_PKG            : $FILE_PKG"
 	msg "ISO_BASENAME        : $ISO_BASENAME"
 
 	mv -f "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || msg "Failed to move ISO file"
-	mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs"      || msg "Failed to move pkgs file"
+	mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || msg "Failed to move pkgs file"
 }
 export -f cleanup_and_move_files
 
 make_iso() {
+	checkout_iso-profiles_and_clean_directories
 	check_directories_and_path
-  configurar_manjaro_tools_para_usuario_builduser
+	configurar_manjaro_tools_para_usuario_builduser
 	configure_repositories_and_build_environment
 
 	# Community Pre Config Build ISO
