@@ -6,7 +6,7 @@ on:
       - "ISO-*"
   workflow_dispatch:
     inputs:
-      name:
+      distroname:
         type: string
         description: 'Name for the ISO'
         required: true
@@ -187,7 +187,7 @@ jobs:
         id: build
         with:
           # Parâmetros básicos da ISO
-          name: ${{ github.event.client_payload.name || inputs.name }}
+          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'bigcommunity' }}
           edition: ${{ github.event.client_payload.edition || inputs.edition }}
           release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
           kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
@@ -200,7 +200,7 @@ jobs:
           biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
 
           # Depuração
-          tmate: ${{ github.event.client_payload.tmate || 'false' }}
+          tmate: ${{ inputs.tmate != false && inputs.tmate || github.event.client_payload.tmate || false }}
 
           # Tokens e segredos
           github_token: ${{ secrets.TOKEN_RELEASE }}
