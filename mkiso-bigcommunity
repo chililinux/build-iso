@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 # shellcheck shell=bash disable=SC1091,SC2039,SC2166
 #
-#  t
-#  Created: 2024/09/24 - 04:07
-#  Altered: 2024/09/24 - 04:07
+#  mkiso-bigcommunity
+#  Created: 2024/09/24 - 04:26
+#  Altered: 2024/09/24 - 04:26
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -31,7 +31,7 @@
 ##############################################################################
 #export LANGUAGE=pt_BR
 export TEXTDOMAINDIR=/usr/share/locale
-export TEXTDOMAIN=t
+export TEXTDOMAIN=mkiso-bigcommunity
 
 # Definir a variável de controle para restaurar a formatação original
 reset=$(tput sgr0)
@@ -75,27 +75,9 @@ declare APP="${0##*/}"
 declare _VERSION_="1.0.0-20240924"
 declare distro="$(uname -n)"
 declare DEPENDENCIES=(tput)
-source /usr/share/fetch/core.sh
 
 MostraErro() {
-	echo "erro: ${red}$1${reset} => comando: ${cyan}'$2'${reset} => result=${yellow}$3${reset}"
+  echo "erro: ${red}$1${reset} => comando: ${cyan}'$2'${reset} => result=${yellow}$3${reset}"
 }
 trap 'MostraErro "$APP[$FUNCNAME][$LINENO]" "$BASH_COMMAND" "$?"; exit 1' ERR
 
-cat <<'EOF' >>"$PWD/functions.sh"
-configurar_manjaro_tools_para_usuario_builduser() {
-  if ! id "builduser" &>/dev/null; then
-    useradd -m builduser
-  fi
-
-  # Configurar o ambiente para o usuário builduser
-  sudo -u builduser bash -c '
-    echo "PACKAGER=\"Vilmar Catafesta <vcatafesta@gmail.com>\"" >> /home/builduser/.makepkg.conf
-    echo "GPGKEY=\"A0D5A8312A83940ED8B04B0F4BAC871802E960F1\"" >> /home/builduser/.makepkg.conf
-    mkdir -p /home/builduser/.config/manjaro-tools
-    cp -R /etc/manjaro-tools /home/builduser/.config
-    echo "run_dir=\$WORK_PATH_ISO_PROFILES" > /home/builduser/.config/manjaro-tools/iso-profiles.conf
-  '
-}
-export -f configurar_manjaro_tools_para_usuario_builduser
-EOF
