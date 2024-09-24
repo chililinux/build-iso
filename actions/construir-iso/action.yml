@@ -262,6 +262,7 @@ runs:
       shell: bash
       run: |
         # Step 1 - Setup Environment
+        echo '
         check_directories_and_path() {
           if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
             echo "ERRO(L459): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
@@ -278,12 +279,12 @@ runs:
           ls -la "$PROFILE_PATH/$EDITION"
           echo "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
         }
-        # Executa a função de configuração
-        check_directories_and_path
+        ' >> "$WORK_PATH/functions.sh"
 
     - name: Step 2 - Setup BUILD - configurar_manjaro_tools_para_usuario_builduser
       shell: bash
       run: |
+        echo '
         configurar_manjaro_tools_para_usuario_builduser() {
           # Configurar o ambiente para o usuário root
           #mkdir -p /root/.config/manjaro-tools
@@ -304,12 +305,12 @@ runs:
             echo 'run_dir=$WORK_PATH_ISO_PROFILES' > /home/builduser/.config/manjaro-tools/iso-profiles.conf
           "
         }
-        # Executa a função de configuração
-        configurar_manjaro_tools_para_usuario_builduser
+        ' >> "$WORK_PATH/functions.sh"
 
     - name: Step 3 - Setup BUILD - configure_repositories_and_build_environment
       shell: bash
       run: |
+        echo '
         configure_repositories_and_build_environment() {
           # Configure repositories and build environment
           # Função para adicionar repositórios
@@ -394,9 +395,7 @@ runs:
             }
           }
           export -f add_chili-testing
-          ' > "$WORK_PATH/functions.sh"
 
-          source "$WORK_PATH/functions.sh"
           add_repository() {
             arquivo_conf="$1"
 
@@ -485,8 +484,7 @@ runs:
           cat "$PATH_MANJARO_TOOLS/pacman-default.conf"  || true
           cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
         }
-        # Executa a função de configuração
-        configure_repositories_and_build_environment
+        ' >> "$WORK_PATH/functions.sh"
 
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
       shell: bash
@@ -857,9 +855,11 @@ runs:
         }
 
         main() {
-          #check_directories_and_path
-          #configurar_manjaro_tools_para_usuario_builduser
-          #configure_repositories_and_build_environment
+          # Executa a função de configuração
+          source "$WORK_PATH/functions.sh"
+          check_directories_and_path
+          configurar_manjaro_tools_para_usuario_builduser
+          configure_repositories_and_build_environment
 
           # Community Pre Config Build ISO
           setup_manjaro_tools
