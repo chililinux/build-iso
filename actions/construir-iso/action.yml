@@ -129,6 +129,7 @@ runs:
           tree \
           duf \
           shfmt \
+          ncurses \
           chili-nanorc \
           chili-bashrc \
           inetutils > /dev/null

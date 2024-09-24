@@ -31,20 +31,20 @@
 ##############################################################################
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
-#tput sgr0 # reset colors
-#bold=$(tput bold)
-#reset=$(tput sgr0)
-#black=$(tput setaf 0)
-#red=$(tput bold)$(tput setaf 196)
-#green=$(tput setaf 2)
-#yellow=$(tput bold)$(tput setaf 3)
-#blue=$(tput setaf 4)
-#pink=$(tput setaf 5)
-#cyan=$(tput setaf 6)
-#white=$(tput setaf 7)
-#orange=$(tput setaf 3)
-#purple=$(tput setaf 125)
-#violet=$(tput setaf 61)
+tput sgr0 # reset colors
+bold=$(tput bold)
+reset=$(tput sgr0)
+black=$(tput setaf 0)
+red=$(tput bold)$(tput setaf 196)
+green=$(tput setaf 2)
+yellow=$(tput bold)$(tput setaf 3)
+blue=$(tput setaf 4)
+pink=$(tput setaf 5)
+cyan=$(tput setaf 6)
+white=$(tput setaf 7)
+orange=$(tput setaf 3)
+purple=$(tput setaf 125)
+violet=$(tput setaf 61)
 
 msg() {
   local msg="$1"
