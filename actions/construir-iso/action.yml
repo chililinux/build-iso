@@ -403,10 +403,13 @@ runs:
             fi
           done
 
-          # Adicione o repositório biglinux-update-stable
+          # Verifica se o repositório já está presente
           if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
-            sed -i -n '/\[core\]/{:a;N;/^\n/p;ba;}' "$arquivo_conf"
-            add_biglinux-update-stable
+            # Inserir o repositório biglinux-update-stable antes da seção [core]
+            sed -i "/\[core\]/i \
+          [biglinux-update-stable]\
+          \nSigLevel = PackageRequired\
+          \nServer = https://repo.biglinux.com.br/update-stable/\$arch\n" "$arquivo_conf"
           fi
 
           # Configure os repositórios Manjaro
