@@ -801,8 +801,8 @@ runs:
           echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
           echo "###################################################################"
           echo "DEBUG                    : $DEBUG"
-          echo "ROOT_RUN_DIR             : $(< /root/.config/manjaro-tools/iso-profiles.conf)"
-          echo "BUILDUSER_RUN_DIR        : $(< /home/builduser/.config/manjaro-tools/iso-profiles.conf)"
+          echo "ROOT_RUN_DIR             : $(< /root/.config/manjaro-tools/iso-profiles.conf || true)"
+          echo "BUILDUSER_RUN_DIR        : $(< /home/builduser/.config/manjaro-tools/iso-profiles.conf || true)"
           echo "###################################################################"
 
           # Executar buildiso e capturar o código de saída
