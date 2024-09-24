@@ -314,6 +314,7 @@ runs:
           # Configure repositories and build environment
           # Função para adicionar repositórios
 
+          echo '
           add_biglinux-update-stable() {
            {
               echo '[biglinux-update-stable]'
@@ -393,7 +394,9 @@ runs:
             }
           }
           export -f add_chili-testing
+          ' > "$WORK_PATH/functions.sh"
 
+          source "$WORK_PATH/functions.sh"
           add_repository() {
             arquivo_conf="$1"
 
@@ -719,6 +722,7 @@ runs:
           local community_branch="$2"
           local biglinux_branch="$3"
 
+          source "$WORK_PATH/functions.sh"
           # Community repositories
           {
             echo "[community-${community_branch}]"
