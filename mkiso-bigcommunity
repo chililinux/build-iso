@@ -530,6 +530,34 @@ set_build_info() {
 }
 export -f set_build_info
 
+verificar_iso_profiles_conf() {
+  local config_file="/home/builduser/.config/manjaro-tools/iso-profiles.conf"
+
+  # Verifica se o arquivo existe
+  if [[ -f "$config_file" ]]; then
+    msg "O arquivo $config_file existe."
+
+    # Verifica se o arquivo contém a linha com 'run_dir='
+    local run_dir_value
+    run_dir_value=$(grep "^run_dir=" "$config_file" | cut -d'=' -f2)
+
+    if [[ -n "$run_dir_value" ]]; then
+      if [[ "$run_dir_value" == "/"* ]]; then
+        msg "A linha 'run_dir=' está presente e o valor é: $run_dir_value"
+      else
+        msg "A linha 'run_dir=' está presente, mas o valor parece incompleto."
+        exit 1
+      fi
+    else
+      msg "A linha 'run_dir=' está presente, mas não contém um valor."
+      exit 1
+    fi
+  else
+    msg "O arquivo $config_file não existe."
+  fi
+}
+export -f verificar_iso_profiles_conf
+
 configure_iso_name() {
 	msg "Debug: DISTRONAME=$DISTRONAME"
 	msg "Debug: MANJAROBRANCH=$MANJAROBRANCH"
@@ -562,6 +590,7 @@ build_iso() {
 	echo "ISO_BASENAME             : $ISO_BASENAME"
 	echo "WORK_PATH                : $WORK_PATH"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
+	echo "WORK_PATH_ISO_PROFILES   : $WORK_PATH_ISO_PROFILES"
 	echo "PROFILE_PATH/EDITION     : $PROFILE_PATH/$EDITION"
 	echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
 	msg "###################################################################"
@@ -570,6 +599,7 @@ build_iso() {
 	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf || true)"
 	msg "###################################################################"
 
+  verificar_iso_profiles_conf
 	# Executar buildiso e capturar o código de saída
 	if [[ "$DEBUG" == 'true' ]]; then
 		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
