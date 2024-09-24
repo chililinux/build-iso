@@ -48,13 +48,13 @@ violet=$(tput setaf 61)
 
 msg() {
   local msg="$1"
-  echo "${cyan}running: ${yellow}${msg}${reset}"
+  echo "${cyan}running: =>${yellow}${msg}${reset}"
 }
 
 #Step 1 - Setup BUILD - check_directories_and_path
 check_directories_and_path() {
 	if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
-		echo "ERRO(L459): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
+		msg "ERRO(L459): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
 		exit 1
 	fi
 	# listando diretório iso-profiles no diretório atual
@@ -62,11 +62,11 @@ check_directories_and_path() {
 
 	# Verificando o diretório do perfil específico
 	if [[ ! -d "$PROFILE_PATH/$EDITION" ]]; then
-		echo "ERRO(L459): perfil $PROFILE_PATH/$EDITION não encontrado!"
+		msg "ERRO(L459): perfil $PROFILE_PATH/$EDITION não encontrado!"
 		exit 1
 	fi
 	ls -la "$PROFILE_PATH/$EDITION"
-	echo "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
+	msg "Caminho completo do perfil: $PROFILE_PATH/$EDITION"
 }
 export -f check_directories_and_path
 
@@ -76,7 +76,7 @@ configurar_manjaro_tools_para_usuario_builduser() {
 		useradd -m builduser
 	fi
 
-  echo 'Configurar o ambiente para o usuário builduser'
+  msg 'Configurar o ambiente para o usuário builduser'
   sudo -u builduser bash -c "
     echo 'PACKAGER=\"Vilmar Catafesta <vcatafesta@gmail.com>\"' >> /home/builduser/.makepkg.conf
     echo 'GPGKEY=\"A0D5A8312A83940ED8B04B0F4BAC871802E960F1\"' >> /home/builduser/.makepkg.conf
@@ -297,7 +297,7 @@ EOF
 export -f add_big_cleanups
 
 setup_manjaro_tools() {
-	echo "Setting up Manjaro tools..."
+	msg "Setting up Manjaro tools..."
 
 	# remover pasta para não ter duplicidade de perfil
 	rm -rf "$WORK_PATH_ISO_PROFILES"/custom-profiles
@@ -308,13 +308,13 @@ setup_manjaro_tools() {
 
 	# Verificar se buildiso está disponível
 	if ! command -v buildiso &>/dev/null; then
-		echo "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
+		msg "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
 		exit 1
 	fi
 
 	# Verificar se o diretório do perfil existe
 	if [ ! -d "$PROFILE_PATH/$EDITION" ]; then
-		echo "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
+		msg "Error: Profile directory $PROFILE_PATH/$EDITION does not exist."
 		exit 1
 	fi
 
@@ -329,46 +329,46 @@ setup_manjaro_tools() {
 		if [[ -f "$PROFILE_PATH_EDITION/$remove_file" ]]; then
 			target_file="$PROFILE_PATH_EDITION/Packages-${remove_file%-remove}"
 			if [[ -f "$target_file" ]]; then
-				echo "Removing packages from $target_file"
+				msg "Removing packages from $target_file"
 				while IFS= read -r package; do
 					sed -i "/^$package$/d" "$target_file"
 				done <"$PROFILE_PATH_EDITION/$remove_file"
 			else
-				echo "Warning: $target_file does not exist. Skipping removals."
+				msg "Warning: $target_file does not exist. Skipping removals."
 			fi
 		else
-			echo "Info: $remove_file not found in $PROFILE_PATH_EDITION. Skipping."
+			msg "Info: $remove_file not found in $PROFILE_PATH_EDITION. Skipping."
 		fi
 	done
 
-	echo 'Execute special commands if they exist'
+	msg 'Execute special commands if they exist'
 	if [[ -f "$PROFILE_PATH_EDITION/special-commands.sh" ]]; then
 		bash "$PROFILE_PATH_EDITION/special-commands.sh"
 	fi
 
-	echo 'Configurar o nome da distribuição e ISO'
+	msg 'Configurar o nome da distribuição e ISO'
   sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
   sed -i "s/^iso_name=.*/iso_name=bigcommunity/"   /usr/lib/manjaro-tools/util.sh
 
-	echo 'Configurar a marca do BigCommunity'
+	msg 'Configurar a marca do BigCommunity'
 	sed -i "s/dist_branding=.*/dist_branding=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
-	echo 'Modificar o nome do arquivo ISO'
+	msg 'Modificar o nome do arquivo ISO'
 	sed -i "s/_${profile}${_edition}_${dist_release//.}/-live/" /usr/lib/manjaro-tools/util-iso.sh
 
-	echo 'Desabilitar a verificação de versão do kernel'
+	msg 'Desabilitar a verificação de versão do kernel'
 	sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
-	echo 'Adicionar limpezas do Big'
+	msg 'Adicionar limpezas do Big'
 	add_big_cleanups
 
-	echo 'Adicionar root-overlay'
+	msg 'Adicionar root-overlay'
 	sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
 
 	# Habilitar plymouth e kms
 	sed -i 's/keyboard keymap/keyboard keymap kms plymouth/g' /usr/share/manjaro-tools/mkinitcpio.conf
 
-	echo "Manjaro tools setup completed. Directory contents of $VAR_CACHE_MANJARO_TOOLS_ISO:"
+	msg "Manjaro tools setup completed. Directory contents of $VAR_CACHE_MANJARO_TOOLS_ISO:"
 	ls -la "$VAR_CACHE_MANJARO_TOOLS_ISO"
 }
 export -f setup_manjaro_tools
@@ -443,7 +443,7 @@ configure_kernel() {
 	else
 		KERNEL_VERSION_DOT="$KERNEL_NAME"
 	fi
-	echo "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
+	msg "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
 
 	# Modificar a função prepare_boot_extras em util-iso-boot.sh
 	sed -i "/prepare_boot_extras()/,/^}/c\\
@@ -464,15 +464,15 @@ configure_kernel() {
       fi\\
   }" /usr/lib/manjaro-tools/util-iso-boot.sh
 
-	echo "KERNEL_NAME set to: $KERNEL_NAME"
+	msg "KERNEL_NAME set to: $KERNEL_NAME"
 
 	# Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*
 	for pkg_file in "$PROFILE_PATH/$EDITION"/Packages-*; do
 		sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
 		sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
 		sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
-		echo "Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:"
-		echo "### $pkg_file ###"
+		msg "Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:"
+		msg "### $pkg_file ###"
 		cat "$pkg_file" || true
 		echo ''
 	done
@@ -525,14 +525,14 @@ set_build_info() {
 		echo "BUILD_BRANCH=$BIGBRANCH"
 		echo "UNIX_TIMESTAMP=$(($(date +%s) / 86400))"
 	} >>"$release_file"
-	echo "Build info written to $release_file"
+	msg "Build info written to $release_file"
 }
 export -f set_build_info
 
 configure_iso_name() {
-	echo "Debug: DISTRONAME=$DISTRONAME"
-	echo "Debug: MANJAROBRANCH=$MANJAROBRANCH"
-	echo "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
+	msg "Debug: DISTRONAME=$DISTRONAME"
+	msg "Debug: MANJAROBRANCH=$MANJAROBRANCH"
+	msg "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
 
 	# Use $DISTRONAME aqui também, em vez de "bigcommunity"
 	sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH/$EDITION"/profile.conf
@@ -546,7 +546,7 @@ configure_iso_name() {
 export -f configure_iso_name
 
 build_iso() {
-	echo "########################## RESUMO #################################"
+	msg "########################## RESUMO #################################"
 	echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "EDITION                  : $EDITION"
@@ -557,17 +557,17 @@ build_iso() {
 	echo "KERNEL_NAME              : ${KERNEL_NAME}"
 	echo "SCOPE                    : $SCOPE"
 	echo "OFFICE                   : $OFFICE"
-	echo "###################################################################"
+	msg "###################################################################"
 	echo "ISO_BASENAME             : $ISO_BASENAME"
 	echo "WORK_PATH                : $WORK_PATH"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "PROFILE_PATH/EDITION     : $PROFILE_PATH/$EDITION"
 	echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
-	echo "###################################################################"
+	msg "###################################################################"
 	echo "DEBUG                    : $DEBUG"
 #	echo "ROOT_RUN_DIR             : $(</root/.config/manjaro-tools/iso-profiles.conf || true)"
 	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf || true)"
-	echo "###################################################################"
+	msg "###################################################################"
 
 	# Executar buildiso e capturar o código de saída
 	if [[ "$DEBUG" == 'true' ]]; then
@@ -579,7 +579,7 @@ build_iso() {
 
 	# Se buildiso falhou, sair com o código de erro
 	if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
-		echo "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
+		msg "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
 		exit $BUILD_EXIT_CODE
 	fi
 
@@ -597,10 +597,10 @@ build_iso() {
 	fi
 
 	# Exibir conteúdo de diretórios relevantes para diagnóstico
-	echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
+	msg "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
 	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot
 
-	echo "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
+	msg "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
 	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot
 }
 export -f build_iso
@@ -615,12 +615,12 @@ cleanup_and_move_files() {
 		echo "iso_path=$WORK_PATH/$ISO_BASENAME"
 	} >>"$GITHUB_OUTPUT"
 
-	echo "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
-	echo "FILE_PKG            : $FILE_PKG"
-	echo "ISO_BASENAME        : $ISO_BASENAME"
+	msg "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
+	msg "FILE_PKG            : $FILE_PKG"
+	msg "ISO_BASENAME        : $ISO_BASENAME"
 
-	mv -f "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || echo "Failed to move ISO file"
-	mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || echo "Failed to move pkgs file"
+	mv -f "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || msg "Failed to move ISO file"
+	mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs"      || msg "Failed to move pkgs file"
 }
 export -f cleanup_and_move_files
 
