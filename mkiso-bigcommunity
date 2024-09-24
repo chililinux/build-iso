@@ -167,7 +167,7 @@ add_repository() {
   fi
 
   # Configure os repositórios Manjaro
-  branch="${{ inputs.manjaro_branch }}"
+  branch="$MANJAROBRANCH"
   servers=('irltoolkit.mm.fcix.net'
           'mirror.fcix.net'
           'opencolo.mm.fcix.net'
