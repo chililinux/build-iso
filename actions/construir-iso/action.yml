@@ -6,8 +6,13 @@ description: "Builds a BigCommunity ISO image"
 
 inputs:
   distroname:
-    description: "Name for the ISO"
+    type: choice
+    description: "Distroname for the ISO"
     required: true
+    options:
+      - bigcommunity
+      - biglinux
+      - chililinux
     default: "bigcommunity"
   iso_profiles_repo:
     description: "ISO profiles repository to clone"
@@ -129,6 +134,7 @@ runs:
           tree \
           duf \
           shfmt \
+          cdrkit \
           ncurses \
           chili-nanorc \
           chili-bashrc \

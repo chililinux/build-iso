@@ -7,9 +7,13 @@ on:
   workflow_dispatch:
     inputs:
       distroname:
-        type: string
-        description: 'Name for the ISO'
+        type: choice
+        description: 'Distroname for the ISO'
         required: true
+        options:
+          - bigcommunity
+          - biglinux
+          - chililinux
         default: 'bigcommunity'
       scope:
         type: choice
