@@ -31,7 +31,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o manjaro buildiso"
-declare VERSION="1.0.1" # Versão do script
+declare VERSION="1.0.8" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -39,10 +39,41 @@ declare IS_AUTO=false
 configure_vars() {
 	# Declare variáveis de ambiente
 	# somente ativar quando rodar manualmente, no github não é necessário
+	REPO_PATH="$PWD"
 	USERNAME="$USER"
 	HOME_FOLDER="/home/$USERNAME"
-	REPO='https://github.com/chililinux/iso-profiles'
-	EDITION='cinnamon'
+
+	get_repo() {
+		create_menu \
+			'Escolha uma repositório iso-profiles:' \
+			'https://github.com/chililinux/iso-profiles' \
+			'https://github.com/talesam/iso-profiles' \
+			'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' \
+			'Sair'
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		REPO="${MENU_RESULT}"
+	}
+
+	get_edition() {
+		create_menu \
+			"Escolha uma EDICÃO/DE para a ISO:" \
+			"cinnamon" \
+			"cosmic" \
+			"deepin" \
+			"gnome" \
+			"kde" \
+			"xfce" \
+			"wmaker" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		EDITION="${MENU_RESULT}"
+	}
+	get_edition
+	get_repo
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community"
@@ -51,15 +82,110 @@ configure_vars() {
 	PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
 	VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
 	VAR_CACHE_MANJARO_TOOLS_ISO='/var/cache/manjaro-tools/iso'
-	DEBUG=false
-	DISTRONAME='chililinux'
-	MANJAROBRANCH='stable'
-	COMMUNITYBRANCH='testing'
-	BIGBRANCH='testing'
-	KERNEL='lts'
+	get_distroname() {
+		create_menu \
+			"Escolha nome da distribuição:" \
+			"bigcommunity" \
+			"biglinux" \
+			"chililinux" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		DISTRONAME="${MENU_RESULT}"
+	}
+  get_distroname
+	get_debug() {
+		create_menu \
+			"Escolha uma opcao para DEBUG:" \
+			"true" \
+			"false" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		DEBUG="${MENU_RESULT}"
+	}
+	get_debug
+	get_manjarobranch() {
+		create_menu \
+			"Escolha uma opcao para Branch do Manjaro:" \
+			"stable" \
+			"testing" \
+			"unstable" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		MANJAROBRANCH="${MENU_RESULT}"
+	}
+	get_manjarobranch
+	get_communitybranch() {
+		create_menu \
+			"Escolha uma opcao para Branch do BigCommunity:" \
+			"stable" \
+			"testing" \
+			"unstable" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		COMMUNITYBRANCH="${MENU_RESULT}"
+	}
+	get_communitybranch
+	get_bigbranch() {
+		create_menu \
+			"Escolha uma opcao para Branch do BigLinux:" \
+			"stable" \
+			"testing" \
+			"unstable" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		BIGBRANCH="${MENU_RESULT}"
+	}
+	get_bigbranch
+	get_kernel() {
+		create_menu \
+			"Escolha a versao KERNEL:" \
+			"latest" \
+			"lts" \
+			"oldlts" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		KERNEL="${MENU_RESULT}"
+	}
+	get_kernel
 	RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
-	SCOPE='full' # minimal or full
-	OFFICE=true  # include office suite
+	get_scope() {
+		create_menu \
+			"Escolha o ESCOPO:" \
+			"full" \
+			"minimal" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		SCOPE="${MENU_RESULT}"
+	}
+	get_scope
+	get_office() {
+		create_menu \
+			"Incluir swite office:" \
+			"true" \
+			"false" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		OFFICE="${MENU_RESULT}"
+	}
+	get_office
+
+  exit 1
 
 	mkdir -p "$WORK_PATH" &>/dev/null
 	pushd "$WORK_PATH" &>/dev/null || false
@@ -97,6 +223,15 @@ set_varcolors() {
 	light_magenta=$(tput setaf 13)
 	light_cyan=$(tput setaf 14)
 	bright_white=$(tput setaf 15)
+	: "${COL_NC='\e[0m'}" # No Color
+	: "${COL_LIGHT_GREEN='\e[1;32m'}"
+	: "${COL_LIGHT_RED='\e[1;31m'}"
+	: "${DONE="${COL_LIGHT_GREEN} done!${COL_NC}"}"
+	: "${OVER="\\r\\033[K"}"
+	: "${DOTPREFIX="  ${black}::${reset} "}"
+	: "${TICK="${white}[${green}✓${rst}${white}]${rst}"}"
+	: "${CROSS="${white}[${red}✗${rst}${white}]${rst}"}"
+	: "${INFO="${white}[${gray}i${rst}${white}]${rst}"}"
 }
 
 unset_varcolors() {
@@ -104,6 +239,39 @@ unset_varcolors() {
 	unset bold underline nounderline revers
 	unset black red green yellow blue pink cyan white gray orange purple violet
 	unset light_red light_green light_blue light_magent light_cyan bright_white
+	: "${COL_NC='\e[0m'}" # No Color
+	: "${COL_LIGHT_GREEN='\e[1;32m'}"
+	: "${COL_LIGHT_RED='\e[1;31m'}"
+	: "${DONE="${COL_LIGHT_GREEN} done!${COL_NC}"}"
+	: "${OVER="\\r\\033[K"}"
+	: "${DOTPREFIX="  ${black}::${reset} "}"
+	: "${TICK="${white}[${green}✓${rst}${white}]${rst}"}"
+	: "${CROSS="${white}[${red}✗${rst}${white}]${rst}"}"
+	: "${INFO="${white}[${gray}i${rst}${white}]${rst}"}"
+}
+
+p_log() {
+	local color="$1"
+	local message="$2"
+	local died="$3"
+
+	[[ -z "$died" ]] && died=false
+	# echo -e "${color}=> ${message}${reset}"
+	if $died; then
+		printf "${CROSS} => ${color}%s\n\033[m" "$message"
+	else
+		printf "${TICK} => ${color}%s\n\033[m" "$message"
+	fi
+	# Remover códigos de escape ANSI do log
+	#clean_log=$(sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\(B//g' <<<"$message")
+	#echo "[$(date '+%Y-%m-%d %H:%M:%S')] ${clean_log}" >>"${LOG_FILE}"
+}
+
+die() {
+	local color="$1"
+	local message="$2"
+	p_log "$color" "$message" true
+	exit 1
 }
 
 funcao_A() { return; }
@@ -187,27 +355,22 @@ create_menu() {
 
 	while true; do
 		tput clear # Limpa a tela
-		echo '---------------------------------------------------------------------------------'
-		echo -e "Organization  : ${cyan}$ORGANIZATION${reset}"
-		echo -e "Repo Workflow : ${cyan}$REPO${reset}"
-		echo -e "Local Path    : ${cyan}$REPO_PATH${reset}"
-		echo '---------------------------------------------------------------------------------'
-		echo -e "${BLUE}${BOLD}$title${NC}\n"
+		replicate '-'
+		msg_info "USERNAME      : ${cyan}$USERNAME ${reset}"
+		msg_info "HOME_FOLDER   : ${cyan}$HOME_FOLDER ${reset}"
+		msg_info "EDITION       : ${cyan}$EDITION ${reset}"
+		msg_info "REPO          : ${cyan}$REPO ${reset}"
+		msg_info "DISTRONAME    : ${cyan}$DISTRONAME ${reset}"
+		msg_info "DEBUG         : ${cyan}$DEBUG ${reset}"
+		replicate '-'
+		echo -e "${blue}${bold}$title${reset}\n"
 
 		for i in "${!options[@]}"; do
 			if [[ "$i" -eq $selected ]]; then
 				if [[ "${options[$i]}" =~ ^(Sair|Voltar)$ ]]; then
-					if [[ "$ORGANIZATION" =~ ^(chililinux|vcatafesta)$ ]]; then
-						echo -e "${red}${bold}${reverse}> ${options[$i]}${reset}"
-					else
-						echo -e "${red}${bold}> ${options[$i]}${reset}"
-					fi
+  				echo -e "${red}${bold}> ${reverse}${options[$i]}${reset}"
 				else
-					if [[ "$ORGANIZATION" =~ ^(chililinux|vcatafesta)$ ]]; then
-						echo -e "${green}${bold}${reverse}> ${options[$i]}${reset}"
-					else
-						echo -e "${green}${bold}> ${options[$i]}${reset}"
-					fi
+					echo -e "${green}${bold}> ${reverse}${options[$i]}${reset}"
 				fi
 			else
 				if [[ "${options[$i]}" =~ ^(Sair|Voltar)$ ]]; then
@@ -239,17 +402,17 @@ create_menu() {
 }
 
 sh_time_elapsed() {
-  local end_time=$(date +%s)                # Obtém o tempo de término em segundos desde a época Unix
-  local duration=$((end_time - start_time)) # Calcula a duração em segundos
-  local hours=$((duration / 3600))
-  local minutes=$(((duration % 3600) / 60))
-  local seconds=$((duration % 60))
+	local end_time=$(date +%s)                # Obtém o tempo de término em segundos desde a época Unix
+	local duration=$((end_time - start_time)) # Calcula a duração em segundos
+	local hours=$((duration / 3600))
+	local minutes=$(((duration % 3600) / 60))
+	local seconds=$((duration % 60))
 
-  # Formatar os valores para terem sempre dois dígitos
-  hours=$(printf "%02d" $hours)
-  minutes=$(printf "%02d" $minutes)
-  seconds=$(printf "%02d" $seconds)
-  echo "$hours:$minutes:$seconds"
+	# Formatar os valores para terem sempre dois dígitos
+	hours=$(printf "%02d" $hours)
+	minutes=$(printf "%02d" $minutes)
+	seconds=$(printf "%02d" $seconds)
+	echo "$hours:$minutes:$seconds"
 }
 
 ##########################################################################################################################
@@ -431,23 +594,23 @@ export -f add_chili-testing
 add_repository() {
 	arquivo_conf="$1"
 
-	msg "Adicione o repositório biglinux-keyring community-keyring"
 	for key in biglinux-keyring community-keyring chili-keyring; do
+		msg "Checa e senão, adiciona repositório '$key' no arquivo $arquivo_conf"
 		if ! grep -q "$key" "$arquivo_conf"; then
 			sudo sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
 		fi
 	done
 
-	msg "Verifica se o repositório já está presente"
+	msg "Checando se repositório 'biglinux-update-stable' está presente no arquivo $arquivo_conf, senão adiciona"
 	if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
-		# Inserir o repositório biglinux-update-stable antes da seção [core]
+		msg_info 'Inserindo o repositório [biglinux-update-stable] antes da seção [core]'
 		sudo sed -i "/\[core\]/i \
 		  [biglinux-update-stable]\
 		  \nSigLevel = PackageRequired\
 		  \nServer = https://repo.biglinux.com.br/update-stable/\$arch\n" "$arquivo_conf"
 	fi
 
-	msg "Configure os repositórios Manjaro"
+	msg "Configurando repositórios do Manjaro"
 	branch="$MANJAROBRANCH"
 	servers=('irltoolkit.mm.fcix.net'
 		'mirror.fcix.net'
@@ -470,11 +633,12 @@ add_repository() {
 		'ask4.mm.fcix.net'
 	)
 	for server in "${servers[@]}"; do
+		msg_info "Incluindo $server no arquivo $arquivo_conf"
 		echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" | sudo tee -a "$arquivo_conf" >/dev/null
 	done
 	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
-	# Configure os repositórios Community
+	msg 'Configurando repositórios do Community'
 	case "$COMMUNITYBRANCH" in
 	"stable")
 		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
@@ -489,7 +653,7 @@ add_repository() {
 		;;
 	esac
 
-	# Configure os repositórios BigLinux
+	msg 'Configurando repositórios do BigLinux'
 	case "$BIGBRANCH" in
 	"stable")
 		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
@@ -504,14 +668,12 @@ add_repository() {
 export -f add_repository
 
 configure_repositories_and_build_environment() {
-	# Configure repositories and build environment
-	# Função para adicionar repositórios
-
-	# Aplique as configurações
+	msg 'Configurar repositórios e criar ambiente'
+	msg 'Aplicando as configurações'
 	add_repository "$PATH_MANJARO_TOOLS/pacman-default.conf"
 	add_repository "$PATH_MANJARO_TOOLS/pacman-multilib.conf"
 
-	msg "Altere o path da remoção do cache de pacotes para remover /usr/share/man"
+	msg 'Alterando o path da remoção do cache de pacotes para remover /usr/share/man'
 	msg_info "sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh"
 	sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
 
@@ -595,7 +757,7 @@ setup_manjaro_tools() {
 
 	msg 'Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg em iso-profiles'
 	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i "s/misobasedir=[^ ]*/misobasedir=${DISTRONAME,,}/g" {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i "s/misolabel=[^ ]*/misolabel=${DISTRONAME^^}_LIVE/g" {} + || true
+	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i "s/misolabel=[^ ]*/misolabel=${VOL_ID}/g" {} + || true
 	find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
 	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
 
@@ -617,7 +779,7 @@ setup_manjaro_tools() {
 		fi
 	done
 
-	msg 'Execute special commands if they exist'
+	msg 'Execute comandos especiais, se existirem'
 	if [[ -f "$PROFILE_PATH_EDITION/special-commands.sh" ]]; then
 		bash "$PROFILE_PATH_EDITION/special-commands.sh"
 	fi
@@ -645,7 +807,7 @@ setup_manjaro_tools() {
 	msg 'Adicionar root-overlay'
 	sudo sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
 
-	# Habilitar plymouth e kms
+	msg 'Habilitar plymouth e kms'
 	sudo sed -i 's/keyboard keymap/keyboard keymap kms plymouth/g' /usr/share/manjaro-tools/mkinitcpio.conf
 
 	msg "Manjaro tools setup completed."
@@ -702,6 +864,7 @@ configure_kernel() {
 
 	msg 'Limpar kernels anteriores de todos os Packages-*, mas manter linux-firmware'
 	for pkg_file in "$PROFILE_PATH_EDITION"/Packages-*; do
+		msg_info "Processando $pkg_file"
 		sed -i '/^linux[0-9]/d' "$pkg_file"
 		sed -i '/^linux-latest/d' "$pkg_file"
 	done
@@ -709,7 +872,7 @@ configure_kernel() {
 	msg 'Definir KERNEL_NAME e adicionar linux-firmware se necessário'
 	if [[ "$KERNEL" == "-xanmod"* ]]; then
 		KERNEL_NAME="${KERNEL#-}"
-		# Adicionar linux-firmware ao Packages-Root
+		msg_info "Adicionar linux-firmware ao $PROFILE_PATH_EDITION/Packages-Root"
 		echo "linux-firmware" >>"$PROFILE_PATH_EDITION/Packages-Root"
 	elif [[ "$KERNEL" == "latest" ]]; then
 		KERNEL_NAME="latest"
@@ -729,7 +892,7 @@ configure_kernel() {
 	else
 		KERNEL_VERSION_DOT="$KERNEL_NAME"
 	fi
-	msg "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
+	msg_info "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
 
 	msg 'Modificar a função prepare_boot_extras em util-iso-boot.sh'
 	sudo sed -i "/prepare_boot_extras()/,/^}/c\\
@@ -749,17 +912,18 @@ configure_kernel() {
           ls -l \$1/boot/\\
       fi\\
   }" /usr/lib/manjaro-tools/util-iso-boot.sh
-	msg "KERNEL_NAME set to: $KERNEL_NAME"
+	msg_info "KERNEL_NAME set to: $KERNEL_NAME"
 
 	msg 'Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*'
 	for pkg_file in "$PROFILE_PATH_EDITION"/Packages-*; do
+		msg_info "Processando $pkg_file"
 		sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
 		sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
 		sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
 		if $DEBUG; then
 			msg 'Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:'
 			replicate '#'
-			msg "### $pkg_file ###"
+			msg_info "### $pkg_file ###"
 			cat "$pkg_file" || true
 			replicate '#'
 		fi
@@ -771,7 +935,10 @@ configure_repos() {
 	local config_file="$1"
 	local community_branch="$2"
 	local biglinux_branch="$3"
+	local config_dir=$(dirname "$config_file")
 
+	# Ensure the directory exists
+	mkdir -p "$config_dir"
 	# Community repositories
 	{
 		echo "[community-${community_branch}]"
@@ -813,7 +980,7 @@ set_build_info() {
 		echo "BUILD_BRANCH=$BIGBRANCH"
 		echo "UNIX_TIMESTAMP=$(($(date +%s) / 86400))"
 	} >>"$release_file"
-	msg "Build info written to $release_file"
+	msg_info "Build info written to $release_file"
 }
 export -f set_build_info
 
@@ -850,18 +1017,20 @@ configure_iso_name() {
 	msg_info "Debug: DISTRONAME=$DISTRONAME"
 	msg_info "Debug: MANJAROBRANCH=$MANJAROBRANCH"
 	msg_info "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
-	msg_info "Debug: ISO_LABEL=${DISTRONAME^^}_LIVE"
+	msg_info "Debug: ISO_LABEL=${VOL_ID}"
 
-	msg "Use $DISTRONAME para o label"
+	msg 'Configurando nome da ISO'
+	msg_info "Usando ${VOL_ID} para o LABEL/VOL_ID da ISO"
 	#sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/"   "$PROFILE_PATH_EDITION"/profile.conf
-	sed -i "s/label=.*/label=${DISTRONAME^^}_LIVE/" "$PROFILE_PATH_EDITION"/profile.conf
-	sudo sed -i "s/iso_label=.*/iso_label=${DISTRONAME^^}_LIVE/" "/usr/lib/manjaro-tools/util-iso.sh"
+	sed -i "s/label=.*/label=${VOL_ID}/" "$PROFILE_PATH_EDITION"/profile.conf
+	sudo sed -i "s/iso_label=.*/iso_label=${VOL_ID}/" "/usr/lib/manjaro-tools/util-iso.sh"
 
 	case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
 	stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 	stable/testing | testing/*) ISO_BASENAME="${DISTRONAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 	unstable/*) ISO_BASENAME="${DISTRONAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 	esac
+	msg_info "ISO_BASENAME set to: $ISO_BASENAME"
 }
 export -f configure_iso_name
 
@@ -895,11 +1064,11 @@ build_iso() {
 	if $DEBUG; then
 		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
 	else
-    LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	fi
 	BUILD_EXIT_CODE=$?
 
-	msg 'Testa se buildiso falhou, e caso sair com o código de erro'
+	msg 'Testando se buildiso falhou, e caso sair com o código de erro'
 	if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
 		msg_warning "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
 		exit $BUILD_EXIT_CODE
@@ -945,11 +1114,11 @@ cleanup_and_move_files() {
 	sudo mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || msg_warning "ERRO: Falha ao mover PKGS $FILE_PKG"
 
 	replicate '#'
-	msg "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
-	msg "FILE_PKG            : $FILE_PKG"
-	msg "ISO_BASENAME        : $ISO_BASENAME"
-	msg "NEW LOCAL ISO FILE  : $WORK_PATH/$ISO_BASENAME"
-	msg "NEW LOCAL ISO PKGS  : $WORK_PATH/${ISO_BASENAME}.pkgs"
+	msg_info "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
+	msg_info "FILE_PKG            : $FILE_PKG"
+	msg_info "ISO_BASENAME        : $ISO_BASENAME"
+	msg_info "NEW PATH ISO FILE   : $WORK_PATH/$ISO_BASENAME"
+	msg_info "NEW PATH ISO PKGS   : $WORK_PATH/${ISO_BASENAME}.pkgs"
 	replicate '#'
 }
 export -f cleanup_and_move_files
@@ -968,11 +1137,12 @@ sh_install_manjaro_build_packages() {
 }
 
 make_iso() {
-  local start_datetime
-  local end_datetime
+	local start_datetime
+	local end_datetime
+	declare -g VOL_ID="${DISTRONAME^^}_LIVE_${EDITION}"
 
-  start_time=$(date +%s) # Obtém o tempo de início em segundos desde a época Unix
-  start_datetime=$(date)
+	start_time=$(date +%s) # Obtém o tempo de início em segundos desde a época Unix
+	start_datetime=$(date)
 
 	msg_info "with username $USERNAME"
 	sh_install_manjaro_build_packages
@@ -988,7 +1158,7 @@ make_iso() {
 
 	# Starting repository configuration
 	for fileconfig in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
-		msg "Configuring $config"
+		msg_info "Configuring $fileconfig"
 		configure_repos "$PROFILE_PATH_EDITION/$fileconfig" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
@@ -999,11 +1169,12 @@ make_iso() {
 	if $DEBUG; then
 		ls -lah
 	fi
-  end_datetime=$(date)
-  msg_info "$APP - Construção finalizada com sucesso"
-  msg_info "Start Date time  : $start_datetime"
-  msg_info "Finish Date Time : $end_datetime"
-  msg_info "Time elapsed     : ${red}$(sh_time_elapsed)"
+	end_datetime=$(date)
+	msg_info "$APP - Construção ISO ${ISO_BASENAME} finalizada com sucesso"
+	msg_info "Start Date time  : $start_datetime"
+	msg_info "Finish Date Time : $end_datetime"
+	msg_info "Time elapsed     : ${red}$(sh_time_elapsed)"
+	exit 0
 }
 
 ## start script
