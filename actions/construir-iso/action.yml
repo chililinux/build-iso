@@ -267,8 +267,10 @@ runs:
           echo "ERRO(L284): Script $WORK_PATH/mkiso-bigcommunity não encontrado ou tamanho zerado!"
           exit 1
         fi
-        source "$WORK_PATH/mkiso-bigcommunity"
-        make_iso
+        pushd "$WORK_PATH" || true
+        #source "$WORK_PATH/mkiso-bigcommunity"
+        #make_iso
+        ./mkiso-bigcommunity --automatic
 
     - name: Set ISO path
       shell: bash
