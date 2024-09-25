@@ -39,10 +39,10 @@ declare IS_AUTO=false
 configure_vars() {
 	# Declare variáveis de ambiente
 	# somente ativar quando rodar manualmente, no github não é necessário
-  USERNAME="$USER"
+	USERNAME="$USER"
 	HOME_FOLDER="/home/$USERNAME"
 	REPO='https://github.com/chililinux/iso-profiles'
-	EDITION='xfce'
+	EDITION='gnome'
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community"
@@ -58,8 +58,8 @@ configure_vars() {
 	BIGBRANCH='testing'
 	KERNEL='latest'
 	RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
-	SCOPE='full'  # minimal or full
-	OFFICE=true   # include office suite
+	SCOPE='full' # minimal or full
+	OFFICE=true  # include office suite
 
 	mkdir -p "$WORK_PATH" &>/dev/null
 	pushd "$WORK_PATH" &>/dev/null || false
@@ -174,6 +174,71 @@ sh_usage() {
 		  -h|--help                      ${cyan} # Mostra este Help ${reset}
 	EOF
 }
+
+create_menu() {
+	local title=$1
+	shift
+	#	local options=("$@" "Sair")
+	local options=("$@")
+	local selected=0
+	local key
+
+	tput civis # Esconde o cursor
+
+	while true; do
+		tput clear # Limpa a tela
+		echo '---------------------------------------------------------------------------------'
+		echo -e "Organization  : ${cyan}$ORGANIZATION${reset}"
+		echo -e "Repo Workflow : ${cyan}$REPO${reset}"
+		echo -e "Local Path    : ${cyan}$REPO_PATH${reset}"
+		echo '---------------------------------------------------------------------------------'
+		echo -e "${BLUE}${BOLD}$title${NC}\n"
+
+		for i in "${!options[@]}"; do
+			if [[ "$i" -eq $selected ]]; then
+				if [[ "${options[$i]}" =~ ^(Sair|Voltar)$ ]]; then
+					if [[ "$ORGANIZATION" =~ ^(chililinux|vcatafesta)$ ]]; then
+						echo -e "${red}${bold}${reverse}> ${options[$i]}${reset}"
+					else
+						echo -e "${red}${bold}> ${options[$i]}${reset}"
+					fi
+				else
+					if [[ "$ORGANIZATION" =~ ^(chililinux|vcatafesta)$ ]]; then
+						echo -e "${green}${bold}${reverse}> ${options[$i]}${reset}"
+					else
+						echo -e "${green}${bold}> ${options[$i]}${reset}"
+					fi
+				fi
+			else
+				if [[ "${options[$i]}" =~ ^(Sair|Voltar)$ ]]; then
+					echo -e "${red}  ${options[$i]}${reset}"
+				else
+					echo "  ${options[$i]}"
+				fi
+			fi
+		done
+
+		read -rsn1 key
+		case "$key" in
+		A)
+			((selected--))
+			[ $selected -lt 0 ] && selected=$((${#options[@]} - 1))
+			;;
+		B)
+			((selected++))
+			[ $selected -eq ${#options[@]} ] && selected=0
+			;;
+		'') break ;;
+		esac
+	done
+
+	tput cnorm # Mostra o cursor novamente
+	echo -e "\nVocê selecionou: ${green}${bold}${options[$selected]}${reset}"
+	MENU_RESULT=${options[$selected]}
+	#	return $((selected+1))
+}
+
+##########################################################################################################################
 
 #Step 0 - Setup BUILD - Checkout iso-profiles and clean directories
 checkout_iso-profiles_and_clean_directories() {
@@ -514,11 +579,11 @@ setup_manjaro_tools() {
 		exit 1
 	fi
 
-  msg 'Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg em iso-profiles'
-	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg"  -exec sed -i "s/misobasedir=[^ ]*/misobasedir=${DISTRONAME,,}/g" {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg"  -exec sed -i "s/misolabel=[^ ]*/misolabel=${DISTRONAME^^}_LIVE/g" {} + || true
+	msg 'Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg em iso-profiles'
+	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i "s/misobasedir=[^ ]*/misobasedir=${DISTRONAME,,}/g" {} + || true
+	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i "s/misolabel=[^ ]*/misolabel=${DISTRONAME^^}_LIVE/g" {} + || true
 	find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg"     -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
+	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
 
 	# Apply Custom Profile Modifications
 	# Apply edition-specific removals
@@ -543,9 +608,9 @@ setup_manjaro_tools() {
 		bash "$PROFILE_PATH_EDITION/special-commands.sh"
 	fi
 
-  msg 'Configurar o nome da distribuição e ISO'
-  sudo sed -i "s/dist_name=.*/dist_name=${DISTRONAME,,}/" /usr/lib/manjaro-tools/util.sh
-  sudo sed -i "s/iso_name=.*/iso_name=${DISTRONAME,,}/" /usr/lib/manjaro-tools/util.sh
+	msg 'Configurar o nome da distribuição e ISO'
+	sudo sed -i "s/dist_name=.*/dist_name=${DISTRONAME,,}/" /usr/lib/manjaro-tools/util.sh
+	sudo sed -i "s/iso_name=.*/iso_name=${DISTRONAME,,}/" /usr/lib/manjaro-tools/util.sh
 
 	msg 'Configurar a marca da distribuição'
 	sudo sed -i "s/dist_branding=.*/dist_branding=${DISTRONAME,,}/" /usr/lib/manjaro-tools/util.sh
@@ -554,7 +619,7 @@ setup_manjaro_tools() {
 	sudo sed -i "s/_${profile}${_edition}_${dist_release//./}/-live/" /usr/lib/manjaro-tools/util-iso.sh
 
 	msg 'Configurar profile'
-	sudo sed -i "s|profile=.*|profile=\"$EDITION\"|"                       /usr/lib/manjaro-tools/util-iso.sh
+	sudo sed -i "s|profile=.*|profile=\"$EDITION\"|" /usr/lib/manjaro-tools/util-iso.sh
 	sudo sed -i "s|profile_dir=.*|profile_dir=\"$PROFILE_PATH/$EDITION\"|" /usr/lib/manjaro-tools/util-iso.sh
 
 	msg 'Desabilitar a verificação de versão do kernel'
@@ -775,7 +840,7 @@ configure_iso_name() {
 
 	msg "Use $DISTRONAME para o label"
 	#sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/"   "$PROFILE_PATH_EDITION"/profile.conf
-	sed -i "s/label=.*/label=${DISTRONAME^^}_LIVE/"              "$PROFILE_PATH_EDITION"/profile.conf
+	sed -i "s/label=.*/label=${DISTRONAME^^}_LIVE/" "$PROFILE_PATH_EDITION"/profile.conf
 	sudo sed -i "s/iso_label=.*/iso_label=${DISTRONAME^^}_LIVE/" "/usr/lib/manjaro-tools/util-iso.sh"
 
 	case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
@@ -825,16 +890,16 @@ build_iso() {
 	fi
 	msg_info "buildiso command exit code $BUILD_EXIT_CODE"
 
-#	msg 'Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso'
-#	msg_info 'Checking kernel files in rootfs:'
-#	find /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot -name "vmlinuz*"
-#
-#	msg 'Checking kernel files in iso/boot:'
-#	if ! find /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot -name "vmlinuz*"; then
-#		# Warning: Kernel file not found in iso/boot. Attempting manual copy
-#		sudo mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
-#		sudo cp -v /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
-#	fi
+	#	msg 'Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso'
+	#	msg_info 'Checking kernel files in rootfs:'
+	#	find /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot -name "vmlinuz*"
+	#
+	#	msg 'Checking kernel files in iso/boot:'
+	#	if ! find /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot -name "vmlinuz*"; then
+	#		# Warning: Kernel file not found in iso/boot. Attempting manual copy
+	#		sudo mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
+	#		sudo cp -v /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
+	#	fi
 
 	if $DEBUG; then
 		msg 'Exibir conteúdo de diretórios relevantes para diagnóstico'
@@ -859,17 +924,17 @@ cleanup_and_move_files() {
 	} >>"$GITHUB_ENV"
 	echo "iso_path=$WORK_PATH/$ISO_BASENAME" >>"$GITHUB_OUTPUT"
 
-  msg "Movendo ISO e PKGS para $WORK_PATH"
+	msg "Movendo ISO e PKGS para $WORK_PATH"
 	sudo mv -f "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || msg_warning "ERRO: Falha ao mover ISO $OUTPUT_ISO_PATH_NAME"
 	sudo mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || msg_warning "ERRO: Falha ao mover PKGS $FILE_PKG"
 
-  replicate '#'
+	replicate '#'
 	msg "OUTPUT_ISO_PATH_NAME: $OUTPUT_ISO_PATH_NAME"
 	msg "FILE_PKG            : $FILE_PKG"
 	msg "ISO_BASENAME        : $ISO_BASENAME"
 	msg "NEW LOCAL ISO FILE  : $WORK_PATH/$ISO_BASENAME"
 	msg "NEW LOCAL ISO PKGS  : $WORK_PATH/${ISO_BASENAME}.pkgs"
-  replicate '#'
+	replicate '#'
 }
 export -f cleanup_and_move_files
 
@@ -916,7 +981,7 @@ make_iso() {
 
 ## start script
 if test $# -lt 1; then
-  set_varcolors
+	set_varcolors
 	sh_usage
 	exit $(($# ? 0 : 1))
 fi
@@ -944,8 +1009,8 @@ for arg in "$@"; do
 		configure_vars
 		make_iso
 	else
-    set_varcolors
-	  sh_usage
-  	exit $(($# ? 0 : 1))
+		set_varcolors
+		sh_usage
+		exit $(($# ? 0 : 1))
 	fi
 done
