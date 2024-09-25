@@ -31,7 +31,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o manjaro buildiso"
-declare VERSION="1.0.8" # Versão do script
+declare VERSION="1.1.3" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -184,8 +184,6 @@ configure_vars() {
 		OFFICE="${MENU_RESULT}"
 	}
 	get_office
-
-  exit 1
 
 	mkdir -p "$WORK_PATH" &>/dev/null
 	pushd "$WORK_PATH" &>/dev/null || false
@@ -1139,7 +1137,7 @@ sh_install_manjaro_build_packages() {
 make_iso() {
 	local start_datetime
 	local end_datetime
-	declare -g VOL_ID="${DISTRONAME^^}_LIVE_${EDITION}"
+	declare -g VOL_ID="${DISTRONAME^^}_LIVE_${EDITION^^}"
 
 	start_time=$(date +%s) # Obtém o tempo de início em segundos desde a época Unix
 	start_datetime=$(date)
