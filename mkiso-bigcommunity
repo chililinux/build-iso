@@ -856,6 +856,7 @@ build_iso() {
 	echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "PROFILE_PATH_EDITION     : $PROFILE_PATH_EDITION"
+	echo "DISTRONAME               : $DISTRONAME"
 	echo "EDITION                  : $EDITION"
 	echo "MANJAROBRANCH            : $MANJAROBRANCH"
 	echo "COMMUNITYBRANCH          : $COMMUNITYBRANCH"
