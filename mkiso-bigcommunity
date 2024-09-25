@@ -56,7 +56,7 @@ configure_vars() {
 	MANJAROBRANCH='stable'
 	COMMUNITYBRANCH='testing'
 	BIGBRANCH='testing'
-	KERNEL='latest'
+	KERNEL='lts'
 	RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
 	SCOPE='full' # minimal or full
 	OFFICE=true  # include office suite
@@ -876,11 +876,12 @@ build_iso() {
 	replicate "#"
 
 	verificar_iso_profiles_conf
-	# Executar buildiso e capturar o código de saída
+	msg "Executar buildiso e capturar o código de saída"
+	msg_info 'LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"'
 	if $DEBUG; then
 		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
 	else
-		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
+    LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	fi
 	BUILD_EXIT_CODE=$?
 
@@ -953,7 +954,7 @@ sh_install_manjaro_build_packages() {
 }
 
 make_iso() {
-	msg "with username $USERNAME"
+	msg_info "with username $USERNAME"
 	sh_install_manjaro_build_packages
 	checkout_iso-profiles_and_clean_directories
 	check_directories_and_path
