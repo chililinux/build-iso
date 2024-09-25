@@ -29,127 +29,227 @@
 #  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 #  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
+declare APP="${0##*/}"
+declare APPDESC="Wrapper bash para o manjaro buildiso"
+declare VERSION="0.0.1" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
-# Cores e estilos
-#tput sgr0 # reset colors
-#bold=$(tput bold)
-#reset=$(tput sgr0)
-#black=$(tput setaf 0)
-#red=$(tput bold)$(tput setaf 196)
-#green=$(tput setaf 2)
-#yellow=$(tput bold)$(tput setaf 3)
-#blue=$(tput setaf 4)
-#pink=$(tput setaf 5)
-#cyan=$(tput setaf 6)
-#white=$(tput setaf 7)
-#orange=$(tput setaf 3)
-#purple=$(tput setaf 125)
-#violet=$(tput setaf 61)
-# Cores e estilos
-reset='\033[0m' # No Color
-red='\033[0;31m'
-green='\033[0;32m'
-yellow='\033[1;33m'
-blue='\033[0;34m'
-purple='\033[0;35m'
-cyan='\033[0;36m'
-bold='\033[1m'
 
 configure_vars() {
-  # Declare variáveis de ambiente
-  # somente ativar quando rodar manualmente, no github não é necessário
-  REPO=https://github.com/chililinux/iso-profiles
-  EDITION='xfce'
-  WORK_PATH="$HOME/__w/build-iso/build-iso"
-  WORK_PATH_ISO_PROFILES="$HOME/__w/build-iso/build-iso/iso-profiles"
-  PROFILE_PATH="$HOME/__w/build-iso/build-iso/iso-profiles/community"
-  PROFILE_PATH_EDITION="$HOME/__w/build-iso/build-iso/iso-profiles/community/$EDITION"
-  PATH_MANJARO_ISO_PROFILES='/usr/share/manjaro-tools/iso-profiles'
-  PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
-  VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
-  VAR_CACHE_MANJARO_TOOLS_ISO='/var/cache/manjaro-tools/iso'
-  DEBUG=true
-  DISTRONAME='bigcommunity'
-  MANJAROBRANCH='stable'
-  COMMUNITYBRANCH='testing'
-  BIGBRANCH='testing'
-  KERNEL='latest'
-  RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
-  SCOPE=  # ${{ inputs.scope }}
-  OFFICE= # ${{ inputs.office-chooser }}
+	# Declare variáveis de ambiente
+	# somente ativar quando rodar manualmente, no github não é necessário
+  USERNAME="$USER"
+	HOME_FOLDER="/home/$USERNAME"
+	REPO='https://github.com/talesam/iso-profiles'
+	EDITION='xfce'
+	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
+	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
+	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community"
+	PROFILE_PATH_EDITION="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community/$EDITION"
+	PATH_MANJARO_ISO_PROFILES='/usr/share/manjaro-tools/iso-profiles'
+	PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
+	VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
+	VAR_CACHE_MANJARO_TOOLS_ISO='/var/cache/manjaro-tools/iso'
+	DEBUG=false
+	DISTRONAME='bigcommunity'
+	MANJAROBRANCH='stable'
+	COMMUNITYBRANCH='testing'
+	BIGBRANCH='testing'
+	KERNEL='latest'
+	RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
+	SCOPE='full'  # minimal or full
+	OFFICE=true   # include office suite
 
-  mkdir -p "$WORK_PATH"
-  pushd "$WORK_PATH"
+	mkdir -p "$WORK_PATH" &>/dev/null
+	pushd "$WORK_PATH" &>/dev/null || false
 }
 export -f configure_vars
+
+set_varcolors() {
+	# Definir a variável de controle para restaurar a formatação original
+	reset=$(tput sgr0)
+
+	# Definir os estilos de texto como variáveis
+	bold=$(tput bold)
+	underline=$(tput smul)   # Início do sublinhado
+	nounderline=$(tput rmul) # Fim do sublinhado
+	reverse=$(tput rev)      # Inverte as cores de fundo e texto
+
+	# Definir as cores ANSI como variáveis
+	black=$(tput bold)$(tput setaf 0)
+	red=$(tput bold)$(tput setaf 196)
+	green=$(tput bold)$(tput setaf 2)
+	yellow=$(tput bold)$(tput setaf 3)
+	blue=$(tput setaf 4)
+	pink=$(tput setaf 5)
+	magenta=$(tput setaf 5)
+	cyan=$(tput setaf 6)
+	white=$(tput setaf 7)
+	gray=$(tput setaf 8)
+	orange=$(tput setaf 202)
+	purple=$(tput setaf 125)
+	violet=$(tput setaf 61)
+	light_red=$(tput setaf 9)
+	light_green=$(tput setaf 10)
+	light_yellow=$(tput setaf 11)
+	light_blue=$(tput setaf 12)
+	light_magenta=$(tput setaf 13)
+	light_cyan=$(tput setaf 14)
+	bright_white=$(tput setaf 15)
+}
+
+unset_varcolors() {
+	unset reset
+	unset bold underline nounderline revers
+	unset black red green yellow blue pink cyan white gray orange purple violet
+	unset light_red light_green light_blue light_magent light_cyan bright_white
+}
 
 msg() {
 	local msg="$1"
 	echo "=>${cyan}running: ${yellow}${msg}${reset}"
 }
 
+msg_info() {
+	local msg="$1"
+	echo "=>${yellow}info   : ${cyan}${msg}${reset}"
+}
+
+msg_warning() {
+	local msg="$1"
+	echo "=>${red}warning: ${orange}${msg}${reset}"
+}
+
+replicate() {
+	local char=${1:-'#'}
+	local nsize=${2:-$(tput cols)}
+	local line
+	printf -v line "%*s" "$nsize" && echo "${line// /$char}"
+}
+export -f replicate
+
+sh_version() {
+	cat <<-EOL
+		${bold}${cyan}${0##*/} v${VERSION}${reset}
+		${APPDESC}
+		${bold}${black}Copyright (C) 2024-2024 ${reset}BigCommunity Team${black}
+
+		Este é um software livre: você é livre para alterá-lo e redistribuí-lo.
+		O $APP é disponibilizado para você sob a ${yellow}Licença MIT${black}, e
+		inclui software de código aberto sob uma variedade de outras licenças.
+		Você pode ler instruções sobre como baixar e criar para você mesmo
+		o código fonte específico usado para criar esta cópia.
+		${red}Este programa vem com absolutamente NENHUMA garantia.
+		${reset}
+	EOL
+}
+
+# Função para exibir informações de ajuda
+sh_usage() {
+	cat <<-EOF
+		${reset}${APP} v${VERSION} - ${APPDESC}${reset}
+		${red}Uso: ${reset}$APP ${cyan}[opções]${reset}
+
+		${cyan}Opções:${reset}
+		  -o|--org|--organization ${orange}<name> ${cyan} # Configura organização de trabalho no Github ${yellow}(default: communitybig)${reset}
+		  -a|--auto|automatic            ${cyan} # Construir pacote do AUR ${yellow}obrigátorio nome do pacote para construir ${reset}
+		  -m|--manual|standalone         ${cyan} # Construir pacote do AUR ${yellow}obrigátorio nome do pacote para construir ${reset}
+		  -n|--nocolor                   ${cyan} # Suprime a impressão de cores ${reset}
+		  -V|--version                   ${cyan} # Imprime a versão do aplicativo ${reset}
+		  -h|--help                      ${cyan} # Mostra este Help ${reset}
+	EOF
+}
+
 #Step 0 - Setup BUILD - Checkout iso-profiles and clean directories
 checkout_iso-profiles_and_clean_directories() {
-	msg 'Checkout iso-profiles'
-	if ! git clone --depth 1 "$REPO" "$WORK_PATH_ISO_PROFILES"; then
+	msg "Diretório atual: $PWD"
+
+	if [[ -d "$WORK_PATH_ISO_PROFILES" ]]; then
+		msg 'Mova perfis iso-profiles antigos para novo diretório'
+		mv -f $WORK_PATH_ISO_PROFILES $HOME_FOLDER/iso-profiles."$(date "+%Y%m%d_%H:%M:%S")"
+	fi
+
+	msg "Fazendo checkout do repositório: $REPO"
+	if ! git clone --depth 1 "$REPO" "$WORK_PATH_ISO_PROFILES" &>/dev/null; then
 		msg "ERRO: Falha ao clonar o repositorio $REPO em $WORK_PATH_ISO_PROFILES"
 		exit 1
 	fi
-	msg 'ativando git config --global --add safe.directory'
+	msg "ativando git config --global --add safe.directory into $WORK_PATH_ISO_PROFILES"
 	git config --global --add safe.directory "$WORK_PATH_ISO_PROFILES" || true
+}
+export -f checkout_iso-profiles_and_clean_directories
 
+cleaning_working_directories() {
 	if [[ -d '/__t/' ]]; then
-		msg 'clean '/__t/' directory'
+		msg 'Limpando diretório: /__t/'
 		rm -rf /__t/* || true
 	fi
 
+	if [[ -d '/usr/share/manjaro-tools/' ]]; then
+		msg 'Limpando diretório: /usr/share/manjaro-tools/*'
+		sudo rm -rf /usr/share/manjaro-tools/* || true
+	fi
+
+	if [[ -d '/usr/lib/manjaro-tools/' ]]; then
+		msg 'Limpando diretório: /usr/lib/manjaro-tools/*'
+		sudo rm -rf /usr/lib/manjaro-tools/* || true
+	fi
+
 	if [[ -d '/var/lib/manjaro-tools/buildiso/' ]]; then
-		msg 'clean /var/lib/manjaro-tools/buildiso/ directory'
+		msg 'Limpando diretório: /var/lib/manjaro-tools/buildiso/*'
 		sudo rm -rf /var/lib/manjaro-tools/buildiso/* || true
 	fi
 
 	if [[ -d '/var/cache/manjaro-tools/iso/' ]]; then
-		msg 'clean /var/cache/manjaro-tools/iso/ directory'
+		msg 'Limpando diretorio: /var/cache/manjaro-tools/iso/*'
 		sudo rm -rf /var/cache/manjaro-tools/iso/* || true
 	fi
 }
-export -f checkout_iso-profiles_and_clean_directories
 
 #Step 1 - Setup BUILD - check_directories_and_path
 check_directories_and_path() {
 	if [[ ! -d "$WORK_PATH_ISO_PROFILES" ]]; then
-		msg "ERRO(L57): Diretorio $WORK_PATH_ISO_PROFILES não encontrado!"
+		msg "ERRO($LINENO): Diretório $WORK_PATH_ISO_PROFILES não localizado!"
 		exit 1
 	fi
-	# listando diretório iso-profiles no diretório atual
-	ls -la "$PROFILE_PATH"
+	if $DEBUG; then
+		# listando diretório iso-profiles no diretório atual
+		replicate "#"
+		msg_info "conteúdo path: $PROFILE_PATH"
+		ls -la "$PROFILE_PATH"
+		replicate "#"
+	fi
 
 	# Verificando o diretório do perfil específico
 	if [[ ! -d "$PROFILE_PATH_EDITION" ]]; then
-		msg "ERRO(L65): perfil $PROFILE_PATH_EDITION não encontrado!"
+		msg_info "ERRO($LINENO): perfil $PROFILE_PATH_EDITION não encontrado!"
 		exit 1
 	fi
-	ls -la "$PROFILE_PATH_EDITION"
-	msg "Caminho completo do perfil: $PROFILE_PATH_EDITION"
+	if $DEBUG; then
+		replicate "#"
+		msg_info "contéudo path: $PROFILE_PATH_EDITION"
+		ls -la "$PROFILE_PATH_EDITION"
+		replicate "#"
+		msg_info "Caminho completo do perfil: $PROFILE_PATH_EDITION"
+	fi
 }
 export -f check_directories_and_path
 
-#Step 2 - Setup BUILD - configurar manjaro-tools para usuario builduser
+#Step 2 - Setup BUILD - configurar manjaro-tools para o usuario atual
 configurar_manjaro_tools_para_usuario_builduser() {
-	if ! id "builduser" &>/dev/null; then
-		useradd -m builduser
-	fi
+	#	if ! id "builduser" &>/dev/null; then
+	#		useradd -m builduser
+	#	fi
 
-	msg 'Configurar o ambiente para o usuário builduser como root'
-	echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >>/home/builduser/.makepkg.conf
-	echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"' >>/home/builduser/.makepkg.conf
-	mkdir -p /home/builduser/.config/manjaro-tools
-	cp -R /etc/manjaro-tools /home/builduser/.config
-	echo "run_dir=$WORK_PATH_ISO_PROFILES" >/home/builduser/.config/manjaro-tools/iso-profiles.conf
+	msg "Configurando permissôes de ambiente do usuário atual ($USERNAME)"
+	echo 'PACKAGER="Vilmar Catafesta <vcatafesta@gmail.com>"' >>"$HOME_FOLDER"/.makepkg.conf
+	echo 'GPGKEY="A0D5A8312A83940ED8B04B0F4BAC871802E960F1"' >>"$HOME_FOLDER"/.makepkg.conf
+	mkdir -p "$HOME_FOLDER"/.config/manjaro-tools
+	cp -R /etc/manjaro-tools "$HOME_FOLDER"/.config
+	echo "run_dir=$WORK_PATH_ISO_PROFILES" >"$HOME_FOLDER"/.config/manjaro-tools/iso-profiles.conf
 
-	msg 'Ajustar permissões para todo o diretório do usuário builduser'
-	chown -R builduser:builduser /home/builduser
+	msg "Ajustando permissões do usuário ($USERNAME) para o diretório de trabalho"
+	chown -R $USERNAME:$USERNAME "$WORK_PATH"
 }
 export -f configurar_manjaro_tools_para_usuario_builduser
 
@@ -237,23 +337,23 @@ export -f add_chili-testing
 add_repository() {
 	arquivo_conf="$1"
 
-	# Adicione o repositório biglinux-keyring community-keyring
+	msg "Adicione o repositório biglinux-keyring community-keyring"
 	for key in biglinux-keyring community-keyring chili-keyring; do
 		if ! grep -q "$key" "$arquivo_conf"; then
-			sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
+			sudo sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
 		fi
 	done
 
-	# Verifica se o repositório já está presente
+	msg "Verifica se o repositório já está presente"
 	if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
 		# Inserir o repositório biglinux-update-stable antes da seção [core]
-		sed -i "/\[core\]/i \
-  [biglinux-update-stable]\
-  \nSigLevel = PackageRequired\
-  \nServer = https://repo.biglinux.com.br/update-stable/\$arch\n" "$arquivo_conf"
+		sudo sed -i "/\[core\]/i \
+		  [biglinux-update-stable]\
+		  \nSigLevel = PackageRequired\
+		  \nServer = https://repo.biglinux.com.br/update-stable/\$arch\n" "$arquivo_conf"
 	fi
 
-	# Configure os repositórios Manjaro
+	msg "Configure os repositórios Manjaro"
 	branch="$MANJAROBRANCH"
 	servers=('irltoolkit.mm.fcix.net'
 		'mirror.fcix.net'
@@ -276,33 +376,34 @@ add_repository() {
 		'ask4.mm.fcix.net'
 	)
 	for server in "${servers[@]}"; do
-		echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" >>"$arquivo_conf"
+		echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" | sudo tee -a "$arquivo_conf" >/dev/null
 	done
+	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
 	# Configure os repositórios Community
 	case "$COMMUNITYBRANCH" in
 	"stable")
-		add_biglinux-update-stable >>"$arquivo_conf"
-		add_community-stable >>"$arquivo_conf"
-		add_community-testing >>"$arquivo_conf"
-		add_community-extra >>"$arquivo_conf"
+		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
 		;;
 	"testing")
-		add_community-testing >>"$arquivo_conf"
-		add_community-stable >>"$arquivo_conf"
-		add_community-extra >>"$arquivo_conf"
+		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
 		;;
 	esac
 
 	# Configure os repositórios BigLinux
 	case "$BIGBRANCH" in
 	"stable")
-		add_biglinux-stable >>"$arquivo_conf"
-		add_biglinux-testing >>"$arquivo_conf"
+		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_biglinux-testing | sudo tee -a "$arquivo_conf" >/dev/null
 		;;
 	"testing")
-		add_biglinux-testing >>"$arquivo_conf"
-		add_biglinux-stable >>"$arquivo_conf"
+		add_biglinux-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
 		;;
 	esac
 }
@@ -316,19 +417,30 @@ configure_repositories_and_build_environment() {
 	add_repository "$PATH_MANJARO_TOOLS/pacman-default.conf"
 	add_repository "$PATH_MANJARO_TOOLS/pacman-multilib.conf"
 
-	# Desabilite a remoção do cache de pacotes
-	sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
+	msg "Altere o path da remoção do cache de pacotes para remover /usr/share/man"
+	msg_info "sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh"
+	sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
 
-	# Configurações de compressão
+	msg 'Configurando compressão'
 	if [[ "$COMMUNITYBRANCH" != "stable" ]]; then
-		sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
+		msg_info "sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh"
+		sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
 	fi
-	sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh
+	msg_info "sudo sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh"
+	sudo sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh
 
-	# Imprima as configurações
-	cat /etc/pacman.d/mirrorlist || true
-	cat "$PATH_MANJARO_TOOLS/pacman-default.conf" || true
-	cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
+	if $DEBUG; then
+		replicate "#"
+		msg_info "cat /etc/pacman.d/mirrorlist"
+		cat /etc/pacman.d/mirrorlist || true
+		replicate "#"
+		msg_info "cat $PATH_MANJARO_TOOLS/pacman-default.conf"
+		cat "$PATH_MANJARO_TOOLS/pacman-default.conf" || true
+		replicate "#"
+		msg_info "cat $PATH_MANJARO_TOOLS/pacman-multilib.conf"
+		cat "$PATH_MANJARO_TOOLS/pacman-multilib.conf" || true
+		replicate "#"
+	fi
 }
 export -f configure_repositories_and_build_environment
 
@@ -336,28 +448,28 @@ add_big_cleanups() {
 	# cleanups
 	local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
 
-	tee -a "$cleanup_script" >/dev/null <<'EOF'
-  # Big cleanups
-  local path="$1"
+	sudo tee -a "$cleanup_script" >/dev/null <<'EOF'
+		  # Big cleanups
+		  local path="$1"
 
-  # Remove documentation
-  rm -rf "$path/usr/share/doc"/* 2> /dev/null
+		  # Remove documentation
+		  rm -rf "$path/usr/share/doc"/* 2> /dev/null
 
-  # Remove man pages
-  rm -rf "$path/usr/share/man"/* 2> /dev/null
+		  # Remove man pages
+		  rm -rf "$path/usr/share/man"/* 2> /dev/null
 
-  # Clean LibreOffice configs
-  local libreoffice_path="$path/usr/lib/libreoffice/share/config"
-  if [[ -d "$libreoffice_path" ]]; then
-    rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
-    rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
-  fi
+		  # Clean LibreOffice configs
+		  local libreoffice_path="$path/usr/lib/libreoffice/share/config"
+		  if [[ -d "$libreoffice_path" ]]; then
+		    rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
+		    rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
+		  fi
 
-  # Clean wallpapers
-  local wallpapers_path="$path/usr/share/wallpapers"
-  if [[ -d "$wallpapers_path" ]]; then
-    rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
-  fi
+		  # Clean wallpapers
+		  local wallpapers_path="$path/usr/share/wallpapers"
+		  if [[ -d "$wallpapers_path" ]]; then
+		    rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
+		  fi
 EOF
 }
 export -f add_big_cleanups
@@ -365,29 +477,33 @@ export -f add_big_cleanups
 setup_manjaro_tools() {
 	msg "Setting up Manjaro tools..."
 
-	# remover pasta para não ter duplicidade de perfil
+	msg 'remover pasta para não ter duplicidade de perfil'
+	msg_info "rm -rf "$WORK_PATH_ISO_PROFILES"/custom-profiles"
 	rm -rf "$WORK_PATH_ISO_PROFILES"/custom-profiles
 
-	# Criar e configurar diretórios
-	mkdir -p "$VAR_CACHE_MANJARO_TOOLS_ISO"
-	chmod 1777 "$VAR_CACHE_MANJARO_TOOLS_ISO"
+	msg "Criar e configurar diretórios"
+	msg_info "sudo mkdir -p $VAR_CACHE_MANJARO_TOOLS_ISO"
+	sudo mkdir -p "$VAR_CACHE_MANJARO_TOOLS_ISO"
+	msg_info "sudo chmod 1777 $VAR_CACHE_MANJARO_TOOLS_ISO"
+	sudo chmod 1777 "$VAR_CACHE_MANJARO_TOOLS_ISO"
 
-	# Verificar se buildiso está disponível
+	msg "Verificar se buildiso está disponível"
 	if ! command -v buildiso &>/dev/null; then
-		msg "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
+		msg_warning "Error: buildiso command not found. Please ensure manjaro-tools-iso is installed correctly."
 		exit 1
 	fi
 
 	# Verificar se o diretório do perfil existe
-	if [ ! -d "$PROFILE_PATH_EDITION" ]; then
-		msg "Error: Profile directory $PROFILE_PATH_EDITION does not exist."
+	if [[ ! -d "$PROFILE_PATH_EDITION" ]]; then
+		msg_warning "Error: Profile directory $PROFILE_PATH_EDITION does not exist."
 		exit 1
 	fi
 
-	# Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg para bigcommunity em iso-profiles
-	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i 's/misobasedir=manjaro/misobasedir=bigcommunity/g' {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i 's#/boot/grub/themes/manjaro-live/theme.txt#/boot/grub/themes/bigcommunity-live/theme.txt#g' {} + || true
+  msg 'Ajustar configurações do kernels.cfg, grub.cfg e variable.cfg para bigcommunity em iso-profiles'
+	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg"  -exec sed -i "s/misobasedir=[^ ]*/misobasedir=${DISTRONAME}/g" {} + || true
+	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg"  -exec sed -i "s/misolabel=[^ ]*/misolabel=${DISTRONAME^^}LIVE/g" {} + || true
+	find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME}-live/theme.txt#g" {} + || true
+	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg"     -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME}-live/theme.txt#g" {} + || true
 
 	# Apply Custom Profile Modifications
 	# Apply edition-specific removals
@@ -400,10 +516,10 @@ setup_manjaro_tools() {
 					sed -i "/^$package$/d" "$target_file"
 				done <"$PROFILE_PATH_EDITION/$remove_file"
 			else
-				msg "Warning: $target_file does not exist. Skipping removals."
+				msg_warning "$target_file does not exist. Skipping removals."
 			fi
 		else
-			msg "Info: $remove_file not found in $PROFILE_PATH_EDITION. Skipping."
+			msg_warning "$remove_file not found in $PROFILE_PATH_EDITION. Skipping."
 		fi
 	done
 
@@ -413,33 +529,43 @@ setup_manjaro_tools() {
 	fi
 
 	msg 'Configurar o nome da distribuição e ISO'
-	sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
-	sed -i "s/^iso_name=.*/iso_name=bigcommunity/" /usr/lib/manjaro-tools/util.sh
+	sudo sed -i "s/^dist_name=.*/dist_name=BigCommunity/" /usr/lib/manjaro-tools/util.sh
+	sudo sed -i "s/^iso_name=.*/iso_name=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
-	msg 'Configurar a marca do BigCommunity'
-	sed -i "s/dist_branding=.*/dist_branding=bigcommunity/" /usr/lib/manjaro-tools/util.sh
+	msg 'Configurar a marca da distribuição'
+	sudo sed -i "s/dist_branding=.*/dist_branding=bigcommunity/" /usr/lib/manjaro-tools/util.sh
 
 	msg 'Modificar o nome do arquivo ISO'
-	sed -i "s/_${profile}${_edition}_${dist_release//./}/-live/" /usr/lib/manjaro-tools/util-iso.sh
+	sudo sed -i "s/_${profile}${_edition}_${dist_release//./}/-live/" /usr/lib/manjaro-tools/util-iso.sh
+
+	msg 'Configurar profile'
+	sudo sed -i "s|profile=.*|profile=\"$EDITION\"|" /usr/lib/manjaro-tools/util-iso.sh
+	sudo sed -i "s|profile_dir=.*|profile_dir=\"$PROFILE_PATH/$EDITION\"|" /usr/lib/manjaro-tools/util-iso.sh
 
 	msg 'Desabilitar a verificação de versão do kernel'
-	sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
+	sudo sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
 	msg 'Adicionar limpezas do Big'
 	add_big_cleanups
 
 	msg 'Adicionar root-overlay'
-	sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
+	sudo sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
 
 	# Habilitar plymouth e kms
-	sed -i 's/keyboard keymap/keyboard keymap kms plymouth/g' /usr/share/manjaro-tools/mkinitcpio.conf
+	sudo sed -i 's/keyboard keymap/keyboard keymap kms plymouth/g' /usr/share/manjaro-tools/mkinitcpio.conf
 
-	msg "Manjaro tools setup completed. Directory contents of $VAR_CACHE_MANJARO_TOOLS_ISO:"
-	ls -la "$VAR_CACHE_MANJARO_TOOLS_ISO"
+	msg "Manjaro tools setup completed."
+	if $DEBUG; then
+		replicate '#'
+		msg "Directory contents of $VAR_CACHE_MANJARO_TOOLS_ISO:"
+		ls -la "$VAR_CACHE_MANJARO_TOOLS_ISO"
+		replicate '#'
+	fi
 }
 export -f setup_manjaro_tools
 
 configure_mesa() {
+	msg 'configurando mesa'
 	if [[ "$KERNEL" =~ ^(latest|xanmod)$ ]]; then
 		{
 			echo ''
@@ -452,7 +578,7 @@ configure_mesa() {
 export -f configure_mesa
 
 configure_kernel() {
-	echo "Configurando kernel: $KERNEL"
+	msg "Configurando kernel: $KERNEL"
 	case "$KERNEL" in
 	oldLts)
 		KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml |
@@ -462,7 +588,7 @@ configure_kernel() {
 			sed 's/\.//g' | tail -n1)
 		;;
 
-	atualLts)
+	lts)
 		KERNEL=$(curl -s https://www.kernel.org/feeds/kdist.xml |
 			grep ": longterm" |
 			sed -n 's/.*<title>\(.*\): longterm<\/title>.*/\1/p' |
@@ -480,13 +606,13 @@ configure_kernel() {
 		;;
 	esac
 
-	# Limpar kernels anteriores de todos os Packages-*, mas manter linux-firmware
+	msg 'Limpar kernels anteriores de todos os Packages-*, mas manter linux-firmware'
 	for pkg_file in "$PROFILE_PATH_EDITION"/Packages-*; do
 		sed -i '/^linux[0-9]/d' "$pkg_file"
 		sed -i '/^linux-latest/d' "$pkg_file"
 	done
 
-	# Definir KERNEL_NAME e adicionar linux-firmware se necessário
+	msg 'Definir KERNEL_NAME e adicionar linux-firmware se necessário'
 	if [[ "$KERNEL" == "-xanmod"* ]]; then
 		KERNEL_NAME="${KERNEL#-}"
 		# Adicionar linux-firmware ao Packages-Root
@@ -497,7 +623,7 @@ configure_kernel() {
 		KERNEL_NAME="$KERNEL"
 	fi
 
-	# Criar KERNEL_VERSION_DOT
+	msg 'Criar KERNEL_VERSION_DOT'
 	if [[ "$KERNEL_NAME" =~ ^[0-9]+$ ]]; then
 		if [[ ${#KERNEL_NAME} -eq 3 ]]; then
 			KERNEL_VERSION_DOT="${KERNEL_NAME:0:1}.${KERNEL_NAME:1:2}"
@@ -511,8 +637,8 @@ configure_kernel() {
 	fi
 	msg "KERNEL_VERSION_DOT set to: $KERNEL_VERSION_DOT"
 
-	# Modificar a função prepare_boot_extras em util-iso-boot.sh
-	sed -i "/prepare_boot_extras()/,/^}/c\\
+	msg 'Modificar a função prepare_boot_extras em util-iso-boot.sh'
+	sudo sed -i "/prepare_boot_extras()/,/^}/c\\
   prepare_boot_extras(){\\
       mkdir -p \"\$2\"\\
       cp \$1/boot/amd-ucode.img \$2/amd_ucode.img\\
@@ -529,18 +655,20 @@ configure_kernel() {
           ls -l \$1/boot/\\
       fi\\
   }" /usr/lib/manjaro-tools/util-iso-boot.sh
-
 	msg "KERNEL_NAME set to: $KERNEL_NAME"
 
-	# Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*
+	msg 'Substituir KERNEL pelos pacotes de kernel específicos em todos os Packages-*'
 	for pkg_file in "$PROFILE_PATH_EDITION"/Packages-*; do
 		sed -i "s/^KERNEL\b/linux${KERNEL_NAME}/g" "$pkg_file"
 		sed -i "s/^KERNEL-headers\b/linux${KERNEL_NAME}-headers/g" "$pkg_file"
 		sed -i "s/^KERNEL-\(.*\)/linux${KERNEL_NAME}-\1/g" "$pkg_file"
-		msg "Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:"
-		msg "### $pkg_file ###"
-		cat "$pkg_file" || true
-		echo ''
+		if $DEBUG; then
+			msg 'Conteúdo dos arquivos Packages após a limpeza e substituição do kernel:'
+			replicate '#'
+			msg "### $pkg_file ###"
+			cat "$pkg_file" || true
+			replicate '#'
+		fi
 	done
 }
 export -f configure_kernel
@@ -559,7 +687,7 @@ configure_repos() {
 	} >>"$config_file"
 
 	if [[ "$community_branch" == "testing" ]]; then
-		add_community-stable >>"$config_file"
+		add_community-stable | sudo tee -a "$config_file" >/dev/null
 	fi
 
 	# BigLinux repositories
@@ -571,12 +699,12 @@ configure_repos() {
 	} >>"$config_file"
 
 	if [[ "$biglinux_branch" == "testing" ]]; then
-		add_biglinux-testing >>"$config_file"
-		add_biglinux-stable >>"$config_file"
+		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
+		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
 	fi
-	add_community-extra >>"$config_file"
-	add_chili-stable >>"$config_file"
-	add_chili-testing >>"$config_file"
+	add_community-extra | sudo tee -a "$config_file" >/dev/null
+	add_chili-stable | sudo tee -a "$config_file" >/dev/null
+	add_chili-testing | sudo tee -a "$config_file" >/dev/null
 }
 export -f configure_repos
 
@@ -596,11 +724,11 @@ set_build_info() {
 export -f set_build_info
 
 verificar_iso_profiles_conf() {
-	local config_file="/home/builduser/.config/manjaro-tools/iso-profiles.conf"
+	local config_file="$HOME_FOLDER/.config/manjaro-tools/iso-profiles.conf"
 
 	# Verifica se o arquivo existe
 	if [[ -f "$config_file" ]]; then
-		msg "O arquivo $config_file existe."
+		msg_info "O arquivo $config_file existe."
 
 		# Verifica se o arquivo contém a linha com 'run_dir='
 		local run_dir_value
@@ -608,28 +736,30 @@ verificar_iso_profiles_conf() {
 
 		if [[ -n "$run_dir_value" ]]; then
 			if [[ "$run_dir_value" == "/"* ]]; then
-				msg "A linha 'run_dir=' está presente e o valor é: $run_dir_value"
+				msg_info "A linha 'run_dir=' está presente e o valor é: $run_dir_value"
 			else
-				msg "A linha 'run_dir=' está presente, mas o valor parece incompleto."
+				msg_warning "A linha 'run_dir=' está presente, mas o valor parece incompleto."
 				exit 1
 			fi
 		else
-			msg "A linha 'run_dir=' está presente, mas não contém um valor."
+			msg_warning "A linha 'run_dir=' está presente, mas não contém um valor."
 			exit 1
 		fi
 	else
-		msg "O arquivo $config_file não existe."
+		msg_warning "O arquivo $config_file não existe."
+		exit 1
 	fi
 }
 export -f verificar_iso_profiles_conf
 
 configure_iso_name() {
-	msg "Debug: DISTRONAME=$DISTRONAME"
-	msg "Debug: MANJAROBRANCH=$MANJAROBRANCH"
-	msg "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
+	msg_info "Debug: DISTRONAME=$DISTRONAME"
+	msg_info "Debug: MANJAROBRANCH=$MANJAROBRANCH"
+	msg_info "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
 
-	# Use $DISTRONAME aqui também, em vez de "bigcommunity"
-	sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH_EDITION"/profile.conf
+	msg "Use $DISTRONAME para o label"
+	#sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/" "$PROFILE_PATH_EDITION"/profile.conf
+	sed -i "s/label=.*/label=${DISTRONAME^^}LIVE/" "$PROFILE_PATH_EDITION"/profile.conf
 
 	case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
 	stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -652,49 +782,52 @@ build_iso() {
 	echo "KERNEL_NAME              : ${KERNEL_NAME}"
 	echo "SCOPE                    : $SCOPE"
 	echo "OFFICE                   : $OFFICE"
-	echo "###################################################################"
+	replicate "#"
 	echo "WORK_PATH                : $WORK_PATH"
 	echo "WORK_PATH_ISO_PROFILES   : $WORK_PATH_ISO_PROFILES"
 	echo "PATH_MANJARO_ISO_PROFILES: $PATH_MANJARO_ISO_PROFILES"
 	echo "ISO_BASENAME             : $ISO_BASENAME"
-	echo "###################################################################"
+	replicate "#"
 	echo "DEBUG                    : $DEBUG"
-	echo "BUILDUSER_RUN_DIR        : $(</home/builduser/.config/manjaro-tools/iso-profiles.conf)" || true
-	echo "###################################################################"
+	echo "BUILDUSER_RUN_DIR        : $(</$HOME_FOLDER/.config/manjaro-tools/iso-profiles.conf)" || true
+	replicate "#"
 
 	verificar_iso_profiles_conf
 	# Executar buildiso e capturar o código de saída
 	if $DEBUG; then
-		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
 	else
-		sudo -u builduser bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o}; exit \$? > /dev/null"
 	fi
 	BUILD_EXIT_CODE=$?
 
-	# Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso
-	# Checking kernel files in rootfs:"
+	msg 'Testa se buildiso falhou, e caso sair com o código de erro'
+	if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
+		msg_warning "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
+		exit $BUILD_EXIT_CODE
+	fi
+	msg_info "buildiso command exit code $BUILD_EXIT_CODE"
+
+	msg 'Verificar arquivos de kernel e tentar cópia manual, independentemente do resultado do buildiso'
+	msg_info 'Checking kernel files in rootfs:'
 	find /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot -name "vmlinuz*"
 
-	# Checking kernel files in iso/boot:"
-	find /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot -name "vmlinuz*"
-
-	if [ ! -f "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/vmlinuz*" ]; then
+	msg 'Checking kernel files in iso/boot:'
+	if ! find /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot -name "vmlinuz*"; then
 		# Warning: Kernel file not found in iso/boot. Attempting manual copy
-		mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
-		cp -v /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
+		sudo mkdir -p "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot"
+		sudo cp -v /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot/vmlinuz* "/var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot/" || echo "Manual copy failed"
 	fi
 
-	# Exibir conteúdo de diretórios relevantes para diagnóstico
-	msg "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
-	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot
-
-	msg "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
-	ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot
-
-	# Se buildiso falhou, sair com o código de erro
-	if [[ $BUILD_EXIT_CODE -ne 0 ]]; then
-		msg "ERROR: buildiso command failed with exit code $BUILD_EXIT_CODE"
-		exit $BUILD_EXIT_CODE
+	if $DEBUG; then
+		msg 'Exibir conteúdo de diretórios relevantes para diagnóstico'
+		replicate '#'
+		msg_info "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/x86_64/rootfs/boot:"
+		ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/x86_64/rootfs/boot
+		replicate '#'
+		msg_info "Contents of /var/lib/manjaro-tools/buildiso/${EDITION}/iso/boot:"
+		ls -la /var/lib/manjaro-tools/buildiso/"${EDITION}"/iso/boot
+		replicate '#'
 	fi
 }
 export -f build_iso
@@ -713,37 +846,99 @@ cleanup_and_move_files() {
 	msg "FILE_PKG            : $FILE_PKG"
 	msg "ISO_BASENAME        : $ISO_BASENAME"
 
-	mv -f "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || msg "Failed to move ISO file"
-	mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || msg "Failed to move pkgs file"
+	sudo mv -f "$OUTPUT_ISO_PATH_NAME" "$WORK_PATH/$ISO_BASENAME" || msg "Failed to move ISO file"
+	sudo mv -f "$FILE_PKG" "$WORK_PATH/${ISO_BASENAME}.pkgs" || msg "Failed to move pkgs file"
 }
 export -f cleanup_and_move_files
 
+funcao_A() { return; }
+funcao_B() { return; }
+funcao_C() { return; }
+
+switch_to_root() {
+	# Verifica se o usuário não é root
+	if [ "$EUID" -ne 0 ]; then
+		echo "Elevando privilégios para root..."
+		sudo bash -c "$(declare -f funcao_A); $(declare -f funcao_B); $(declare -f funcao_C); funcao_A"
+	else
+		funcao_A
+	fi
+}
+
+sh_install_manjaro_build_packages() {
+	cleaning_working_directories
+	msg 'Install the manjaro-tools-packages required'
+	sudo pacman -Sy --quiet --noconfirm \
+		git \
+		base-devel \
+		manjaro-chrootbuild \
+		manjaro-tools-iso-git \
+		manjaro-tools-yaml-git \
+		manjaro-tools-base-git &>/dev/null
+}
+
 make_iso() {
+	msg "with username $USERNAME"
+	sh_install_manjaro_build_packages
 	checkout_iso-profiles_and_clean_directories
 	check_directories_and_path
 	configurar_manjaro_tools_para_usuario_builduser
 	configure_repositories_and_build_environment
-
 	# Community Pre Config Build ISO
 	setup_manjaro_tools
 	configure_mesa
-
 	# Starting kernel configuration
 	configure_kernel
 
 	# Starting repository configuration
-	for config in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
+	for fileconfig in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
 		msg "Configuring $config"
-		configure_repos "$PROFILE_PATH_EDITION/$config" "$COMMUNITYBRANCH" "$BIGBRANCH"
+		configure_repos "$PROFILE_PATH_EDITION/$fileconfig" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
 	set_build_info
 	configure_iso_name
-
 	build_iso
 	cleanup_and_move_files
-	ls -lah
+	if $DEBUG; then
+		ls -lah
+	fi
 }
 
-#configure_vars
-make_iso
+IS_AUTO=false
+
+#if ! id "builduser" &>/dev/null; then
+#  id
+#  echo $EUID
+#fi
+
+if test $# -lt 2; then
+  set_varcolors
+	sh_usage
+	exit $(($# ? 0 : 1))
+fi
+
+# Loop através de todos os parâmetros ($@)
+for arg in "$@"; do
+	if [[ "$arg" = @(-n|--nocolor) ]]; then
+		nocolor=true
+		[[ "$nocolor" == "true" ]] && unset_varcolors
+	elif [[ "$arg" = @(-V|--version) ]]; then
+		set_varcolors
+		sh_version
+		exit $(($# ? 0 : 1))
+	elif [[ "$arg" = @(-h|--help) ]]; then
+		set_varcolors
+		sh_usage
+		exit $(($# ? 0 : 1))
+	elif [[ "$arg" = @(-a|--auto|--automatic) ]]; then
+		unset_varcolors
+		IS_AUTO=true
+		make_iso
+	elif [[ "$arg" = @(-m|--manual|--standalone) ]]; then
+		set_varcolors
+		IS_AUTO=false
+		configure_vars
+		make_iso
+	fi
+done

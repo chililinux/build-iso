@@ -236,6 +236,8 @@ runs:
       run: |
         # Declare variáveis de ambiente
         {
+          echo "USERNAME=builduser"
+          echo "HOME_FOLDER=/home/builduser"
           echo "REPO=${{ inputs.iso_profiles_repo }}"
           echo "EDITION=${{ inputs.edition }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
