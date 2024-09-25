@@ -912,7 +912,7 @@ IS_AUTO=false
 #  echo $EUID
 #fi
 
-if test $# -lt 2; then
+if test $# -lt 1; then
   set_varcolors
 	sh_usage
 	exit $(($# ? 0 : 1))
@@ -940,5 +940,9 @@ for arg in "$@"; do
 		IS_AUTO=false
 		configure_vars
 		make_iso
+	else
+    set_varcolors
+	  sh_usage
+  	exit $(($# ? 0 : 1))
 	fi
 done
