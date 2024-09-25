@@ -31,7 +31,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o manjaro buildiso"
-declare VERSION="1.0.0" # Versão do script
+declare VERSION="1.0.1" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -42,7 +42,7 @@ configure_vars() {
 	USERNAME="$USER"
 	HOME_FOLDER="/home/$USERNAME"
 	REPO='https://github.com/chililinux/iso-profiles'
-	EDITION='gnome'
+	EDITION='cinnamon'
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community"
@@ -236,6 +236,20 @@ create_menu() {
 	echo -e "\nVocê selecionou: ${green}${bold}${options[$selected]}${reset}"
 	MENU_RESULT=${options[$selected]}
 	#	return $((selected+1))
+}
+
+sh_time_elapsed() {
+  local end_time=$(date +%s)                # Obtém o tempo de término em segundos desde a época Unix
+  local duration=$((end_time - start_time)) # Calcula a duração em segundos
+  local hours=$((duration / 3600))
+  local minutes=$(((duration % 3600) / 60))
+  local seconds=$((duration % 60))
+
+  # Formatar os valores para terem sempre dois dígitos
+  hours=$(printf "%02d" $hours)
+  minutes=$(printf "%02d" $minutes)
+  seconds=$(printf "%02d" $seconds)
+  echo "$hours:$minutes:$seconds"
 }
 
 ##########################################################################################################################
@@ -836,7 +850,7 @@ configure_iso_name() {
 	msg_info "Debug: DISTRONAME=$DISTRONAME"
 	msg_info "Debug: MANJAROBRANCH=$MANJAROBRANCH"
 	msg_info "Debug: COMMUNITYBRANCH=$COMMUNITYBRANCH"
-	msg_info "Debug: ISO_LABEL=${DISTRONAME^^}-LIVE"
+	msg_info "Debug: ISO_LABEL=${DISTRONAME^^}_LIVE"
 
 	msg "Use $DISTRONAME para o label"
 	#sed -i "s/label=.*/label=${DISTRONAME}_$RELEASE_TAG.iso/"   "$PROFILE_PATH_EDITION"/profile.conf
@@ -954,6 +968,12 @@ sh_install_manjaro_build_packages() {
 }
 
 make_iso() {
+  local start_datetime
+  local end_datetime
+
+  start_time=$(date +%s) # Obtém o tempo de início em segundos desde a época Unix
+  start_datetime=$(date)
+
 	msg_info "with username $USERNAME"
 	sh_install_manjaro_build_packages
 	checkout_iso-profiles_and_clean_directories
@@ -979,6 +999,11 @@ make_iso() {
 	if $DEBUG; then
 		ls -lah
 	fi
+  end_datetime=$(date)
+  msg_info "$APP - Construção finalizada com sucesso"
+  msg_info "Start Date time  : $start_datetime"
+  msg_info "Finish Date Time : $end_datetime"
+  msg_info "Time elapsed     : ${red}$(sh_time_elapsed)"
 }
 
 ## start script
