@@ -18,7 +18,7 @@ on:
       iso_profiles_repo:
         type: choice
         description: "Choice ISO profiles"
-        required: false
+        required: true
         options:
           - "https://github.com/talesam/iso-profiles"
           - "https://github.com/chililinux/iso-profiles"
