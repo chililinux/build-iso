@@ -4,7 +4,7 @@
 #
 #  mkiso-bigcommunity
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: qua 25 set 2024 03:57:21 -04
+#  Altered: qui 26 set 2024 06:46:55 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -437,14 +437,16 @@ export -f checkout_iso-profiles_and_clean_directories
 cleaning_working_directories() {
 	local path_dirs=('/__t'
 		'/usr/share/manjaro-tools'
+		'/var/lib/manjaro-tools'
 		'/usr/lib/manjaro-tools'
 		'/var/cache/manjaro-tools/iso'
 	)
+  local cpath
 
-	for path in "${path_dirs[@]}"; do
-		if [[ -d "$path" ]]; then
-			msg 'Limpando diretório: $path'
-			rm -rf "$path"/* || true
+	for cpath in "${path_dirs[@]}"; do
+		if [[ -d "$cpath" ]]; then
+			msg "Limpando diretório: $cpath"
+			sudo rm -rf "$cpath"/* || true
 		fi
 	done
 }
