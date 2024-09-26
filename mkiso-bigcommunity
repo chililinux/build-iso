@@ -1147,7 +1147,7 @@ make_iso() {
 
 	# Starting repository configuration
 	for fileconfig in user-repos.conf live-overlay/etc/pacman.conf root-overlay/etc/pacman.conf; do
-		msg_info "Configuring $fileconfig"
+		msg_info "Configurando repositórios em: $fileconfig"
 		configure_repos "$PROFILE_PATH_EDITION/$fileconfig" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
