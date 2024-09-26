@@ -15,6 +15,15 @@ on:
           - biglinux
           - chililinux
         default: "bigcommunity"
+      iso_profiles_repo:
+        type: choice
+        description: "Choice ISO profiles"
+        required: true
+        options:
+          - "https://github.com/talesam/iso-profiles"
+          - "https://github.com/chililinux/iso-profiles"
+          - "https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git"
+        default: "https://github.com/talesam/iso-profiles"
       scope:
         type: choice
         description: "Build scope"
@@ -32,10 +41,6 @@ on:
         description: "Enable debugging with tmate"
         required: false
         default: false
-      release_tag:
-        type: string
-        description: "Release tag (e.g., YYYY-MM-DD_HH-mm)"
-        required: true
       kernel:
         type: choice
         description: "Kernel version"
@@ -187,6 +192,10 @@ jobs:
           tree -d /mnt
           echo "#########################################"
 
+      - name: Set release tag manually
+        id: date
+        run: echo "RELEASE_TAG=$(date '+%Y-%m-%d_%H-%M')" >> $GITHUB_ENV
+
       - name: Build ISO
         uses: ./actions/construir-iso/
         id: build
@@ -194,7 +203,8 @@ jobs:
           # Parâmetros básicos da ISO
           distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'bigcommunity' }}
           edition: ${{ github.event.client_payload.edition || inputs.edition}}
-          release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+          #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+          release_tag: ${{ env.RELEASE_TAG }}
           kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
           scope: ${{ github.event.client_payload.scope || inputs.scope }}
           office-chooser: ${{ github.event.client_payload.office-chooser || inputs.office-chooser }}
@@ -211,7 +221,7 @@ jobs:
           github_token: ${{ secrets.TOKEN_RELEASE }}
 
           # Parâmetros adicionais (se necessário)
-          # iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
+          iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
           # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
 
       - name: Set ISO path
