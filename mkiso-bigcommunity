@@ -930,25 +930,25 @@ configure_repos() {
 
 	# Community repositories
 	if [[ "$community_branch" == "testing" ]]; then
-		add_community-testing >>"$config_file" >/dev/null
-		add_community-stable >>"$config_file" >/dev/null
+		add_community-testing | sudo tee -a "$config_file" >/dev/null
+		add_community-stable | sudo tee -a "$config_file" >/dev/null
 	else
-		add_community-stable >>"$config_file" >/dev/null
-		add_community-testing >>"$config_file" >/dev/null
+		add_community-stable | sudo tee -a "$config_file" >/dev/null
+		add_community-testing | sudo tee -a "$config_file" >/dev/null
 	fi
 
 	if [[ "$biglinux_branch" == "testing" ]]; then
-		add_biglinux-testing >>"$config_file" >/dev/null
-		add_biglinux-stable >>"$config_file" >/dev/null
+		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
+		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
 	else
-		add_biglinux-stable >>"$config_file" >/dev/null
-		add_biglinux-testing >>"$config_file" >/dev/null
+		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
+		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
 	fi
-	add_community-extra >>"$config_file" >/dev/null
+	add_community-extra | sudo tee -a "$config_file" >/dev/null
 
 	if [[ "$DISTRONAME" == "chililinux" ]]; then
-		add_chili-stable >>"$config_file" >/dev/null
-		add_chili-testing >>"$config_file" >/dev/null
+		add_chili-stable | sudo tee -a "$config_file" >/dev/null
+		add_chili-testing | sudo tee -a "$config_file" >/dev/null
 	fi
 }
 export -f configure_repos
