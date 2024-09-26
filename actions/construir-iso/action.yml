@@ -96,7 +96,7 @@ runs:
         ls -la /mnt || true
         echo "##########################################################################"
 
-    - name: Setup build environment
+    - name: Setup pacman packages
       shell: bash
       run: |
         # Setup build environment
@@ -123,7 +123,7 @@ runs:
           } | sudo tee -a /etc/pacman.conf > /dev/null
         fi
 
-        # atualizar e instalar pacotes adicionais
+        # update and install additional packages
         sudo pacman -Sy --quiet --needed --noconfirm --overwrite \* \
           base-devel \
           manjaro-chrootbuild \
@@ -141,7 +141,7 @@ runs:
           cdrkit \
           ncurses > /dev/null
 
-        # atualizar e instalar pacotes extras
+        # update and install extra packages
     #        sudo pacman -Sy --quiet --needed --noconfirm --overwrite \* \
     #          base \
     #          curl \
@@ -172,7 +172,7 @@ runs:
         install-dependencies: false
         detached: true
 
-    - name: Configurar disable-fsync
+    - name: Configure disable-fsync
       shell: bash
       run: |
         # Configurar disable-fsync
@@ -194,7 +194,7 @@ runs:
     - name: Pull and setup keys
       shell: bash
       run: |
-        # Pull and setup Community keys
+        # Pull and setup keys
 
         git clone https://github.com/biglinux/biglinux-key.git
         sudo install -dm755 /etc/pacman.d/gnupg/
@@ -215,7 +215,7 @@ runs:
           sudo rm -r chili-keyring
         fi
 
-        # Inicializar o chaveiro do pacman
+        # Initialize pacman keychain
         #sudo pacman -S biglinux-keyring community-keyring chili-keyring
         sudo pacman-key --init
         sudo pacman-key --populate archlinux
@@ -225,13 +225,13 @@ runs:
           sudo pacman-key --populate chili
         fi
 
-        # Atualizar os bancos de dados do pacman
+        # Update pacman databases
         sudo pacman -Sy --quiet --noconfirm
 
-    - name: Ajuste nos hooks do mkinitcpio
+    - name: Adjustment of mkinitcpio hooks
       shell: bash
       run: |
-        # Ajuste nos hooks do mkinitcpio (se ainda necessário)
+        # Adjust mkinitcpio hooks (if still necessary)
         sudo sed -i -e 's/File/Path/' /usr/share/libalpm/hooks/*hook*
 
     - name: Create mknod /dev/sr0
@@ -242,10 +242,10 @@ runs:
         sudo chmod 660 /dev/sr0 || true
         sudo chown root:root /dev/sr0 || true
 
-    - name: Declare variáveis de ambiente
+    - name: Declare environment variables
       shell: bash
       run: |
-        # Declare variáveis de ambiente
+        # Declare environment variables
         {
           echo "USERNAME=builduser"
           echo "HOME_FOLDER=/home/builduser"
@@ -273,9 +273,9 @@ runs:
     - name: Build ISO Image ${{ github.event.client_payload.edition || inputs.edition }}
       shell: bash
       run: |
-        # Carregando script e building ISO
+        # Loading script and building ISO
         if [[ ! -e "$WORK_PATH/mkiso-bigcommunity" ]]; then
-          echo "ERRO(L284): Script $WORK_PATH/mkiso-bigcommunity não encontrado ou tamanho zerado!"
+          echo "ERROR(A-L278): Script $WORK_PATH/mkiso-bigcommunity not found or size zero!"
           exit 1
         fi
         pushd "$WORK_PATH" || true
