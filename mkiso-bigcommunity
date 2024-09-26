@@ -441,7 +441,7 @@ cleaning_working_directories() {
 		'/usr/lib/manjaro-tools'
 		'/var/cache/manjaro-tools/iso'
 	)
-  local cpath
+	local cpath
 
 	for cpath in "${path_dirs[@]}"; do
 		if [[ -d "$cpath" ]]; then
@@ -927,33 +927,29 @@ configure_repos() {
 
 	# Ensure the directory exists
 	mkdir -p "$config_dir"
+
 	# Community repositories
-	{
-		echo "[community-${community_branch}]"
-		echo "SigLevel = PackageRequired"
-		echo "Server = https://repo.communitybig.org/${community_branch}/\$arch"
-		echo
-	} >>"$config_file"
-
 	if [[ "$community_branch" == "testing" ]]; then
-		add_community-stable | sudo tee -a "$config_file" >/dev/null
+		add_community-testing >>"$config_file" >/dev/null
+		add_community-stable >>"$config_file" >/dev/null
+	else
+		add_community-stable >>"$config_file" >/dev/null
+		add_community-testing >>"$config_file" >/dev/null
 	fi
-
-	# BigLinux repositories
-	{
-		echo "[biglinux-${biglinux_branch}]"
-		echo "SigLevel = PackageRequired"
-		echo "Server = https://repo.biglinux.com.br/${biglinux_branch}/\$arch"
-		echo
-	} >>"$config_file"
 
 	if [[ "$biglinux_branch" == "testing" ]]; then
-		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
-		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
+		add_biglinux-testing >>"$config_file" >/dev/null
+		add_biglinux-stable >>"$config_file" >/dev/null
+	else
+		add_biglinux-stable >>"$config_file" >/dev/null
+		add_biglinux-testing >>"$config_file" >/dev/null
 	fi
-	add_community-extra | sudo tee -a "$config_file" >/dev/null
-	add_chili-stable | sudo tee -a "$config_file" >/dev/null
-	add_chili-testing | sudo tee -a "$config_file" >/dev/null
+	add_community-extra >>"$config_file" >/dev/null
+
+	if [[ "$DISTRONAME" == "chililinux" ]]; then
+		add_chili-stable >>"$config_file" >/dev/null
+		add_chili-testing >>"$config_file" >/dev/null
+	fi
 }
 export -f configure_repos
 
