@@ -103,27 +103,28 @@ runs:
 
         #configure extra repos
         {
-          echo "[community-testing]"
-          echo "SigLevel = PackageRequired"
-          echo "Server = https://repo.communitybig.org/testing/\$arch"
-          echo
           echo "[community-extra]"
           echo "SigLevel = PackageRequired"
           echo "Server = https://repo.communitybig.org/extra/\$arch"
           echo
-          echo "[chili-stable]"
-          echo "SigLevel = Optional TrustAll"
-          echo "Server = https://repo.chililinux.com/stable/\$arch"
-          echo
-          echo "[chili-testing]"
-          echo "SigLevel = Optional TrustAll"
-          echo "Server = https://repo.chililinux.com/testing/\$arch"
-          echo
         } | sudo tee -a /etc/pacman.conf > /dev/null
+
+        #configure chili repos
+        if [[ "$distroname" == 'chililinux' ]]; then
+          {
+            echo "[chili-stable]"
+            echo "SigLevel = Never"
+            echo "Server = https://repo.chililinux.com/stable/\$arch"
+            echo
+            echo "[chili-testing]"
+            echo "SigLevel = Never"
+            echo "Server = https://repo.chililinux.com/testing/\$arch"
+            echo
+          } | sudo tee -a /etc/pacman.conf > /dev/null
+        fi
 
         # atualizar e instalar pacotes adicionais
         sudo pacman -Syu --quiet --needed --noconfirm --overwrite \* \
-          git \
           base-devel \
           manjaro-chrootbuild \
           manjaro-tools-iso-git \
@@ -136,14 +137,33 @@ runs:
           calamares-tools \
           mkinitcpio \
           zip \
-          tree \
-          duf \
           shfmt \
           cdrkit \
-          ncurses \
-          chili-nanorc \
-          chili-bashrc \
-          inetutils > /dev/null
+          ncurses > /dev/null
+
+        # atualizar e instalar pacotes extras
+    #        sudo pacman -Syu --quiet --needed --noconfirm --overwrite \* \
+    #          base \
+    #          curl \
+    #          duf \
+    #          fakeroot \
+    #          git \
+    #          github-cli \
+    #          gnupg \
+    #          inetutils \
+    #          jq \
+    #          libarchive \
+    #          manjaro-chrootbuild \
+    #          nano \
+    #          openssh \
+    #          openssl \
+    #          rsync \
+    #          tmate \
+    #          tree \
+    #          wget \
+    #          zip \
+    #          shfmt \
+    #          cdrkit > /dev/null
 
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
@@ -175,6 +195,7 @@ runs:
       shell: bash
       run: |
         # Pull and setup Community keys
+
         git clone https://github.com/biglinux/biglinux-key.git
         sudo install -dm755 /etc/pacman.d/gnupg/
         sudo install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
@@ -186,11 +207,13 @@ runs:
         sudo install -m0644 community-keyring/community-revoked /usr/share/pacman/keyrings/
         sudo rm -r community-keyring
 
-        git clone https://github.com/chililinux/chili-keyring.git
-        sudo install -m0644 chili-keyring/chili.gpg /usr/share/pacman/keyrings/
-        sudo install -m0644 chili-keyring/chili-trusted /usr/share/pacman/keyrings/
-        sudo install -m0644 chili-keyring/chili-revoked /usr/share/pacman/keyrings/
-        sudo rm -r chili-keyring
+        if [[ "$distroname" == 'chililinux' ]]; then
+          git clone https://github.com/chililinux/chili-keyring.git
+          sudo install -m0644 chili-keyring/chili.gpg /usr/share/pacman/keyrings/
+          sudo install -m0644 chili-keyring/chili-trusted /usr/share/pacman/keyrings/
+          sudo install -m0644 chili-keyring/chili-revoked /usr/share/pacman/keyrings/
+          sudo rm -r chili-keyring
+        fi
 
         # Inicializar o chaveiro do pacman
         #sudo pacman -S biglinux-keyring community-keyring chili-keyring
@@ -198,7 +221,9 @@ runs:
         sudo pacman-key --populate archlinux
         sudo pacman-key --populate biglinux
         sudo pacman-key --populate community
-        sudo pacman-key --populate chili
+        if [[ "$distroname" == 'chililinux' ]]; then
+          sudo pacman-key --populate chili
+        fi
 
         # Atualizar os bancos de dados do pacman
         sudo pacman -Sy --quiet --noconfirm

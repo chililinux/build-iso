@@ -205,7 +205,7 @@ jobs:
           biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
 
           # Depuração
-          tmate: ${{ inputs.tmate != false && inputs.tmate || github.event.client_payload.tmate || false }}
+          tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
 
           # Tokens e segredos
           github_token: ${{ secrets.TOKEN_RELEASE }}
