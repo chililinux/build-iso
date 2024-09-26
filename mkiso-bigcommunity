@@ -94,7 +94,7 @@ configure_vars() {
 		fi
 		DISTRONAME="${MENU_RESULT}"
 	}
-  get_distroname
+	get_distroname
 	get_debug() {
 		create_menu \
 			"Escolha uma opcao para DEBUG:" \
@@ -310,7 +310,7 @@ replicate() {
 export -f replicate
 
 sh_version() {
-	cat <<-EOL
+	cat <<EOF_VERSION
 		${bold}${cyan}${0##*/} v${VERSION}${reset}
 		${APPDESC}
 		${bold}${black}Copyright (C) 2024-2024 ${reset}BigCommunity Team${black}
@@ -322,23 +322,23 @@ sh_version() {
 		o código fonte específico usado para criar esta cópia.
 		${red}Este programa vem com absolutamente NENHUMA garantia.
 		${reset}
-	EOL
+EOF_VERSION
 }
 
 # Função para exibir informações de ajuda
 sh_usage() {
-	cat <<-EOF
-		${reset}${APP} v${VERSION} - ${APPDESC}${reset}
-		${red}Uso: ${reset}$APP ${cyan}[opções]${reset}
+	cat <<EOF_USAGE
+    ${reset}${APP} v${VERSION} - ${APPDESC}${reset}
+    ${red}Uso: ${reset}$APP ${cyan}[opções]${reset}
 
-		${cyan}Opções:${reset}
-		  -o|--org|--organization ${orange}<name> ${cyan} # Configura organização de trabalho no Github ${yellow}(default: communitybig)${reset}
-		  -a|--auto|--automatic          ${cyan} # Construir ISO automaticamente pelo Action do github ${reset}
-		  -m|--manual|--standalone       ${cyan} # Construir ISO manualmente ${reset}
-		  -n|--nocolor                   ${cyan} # Suprime a impressão de cores ${reset}
-		  -V|--version                   ${cyan} # Imprime a versão do aplicativo ${reset}
-		  -h|--help                      ${cyan} # Mostra este Help ${reset}
-	EOF
+    ${cyan}Opções:${reset}
+      -o|--org|--organization ${orange}<name> ${cyan} # Configura organização de trabalho no Github ${yellow}(default: communitybig)${reset}
+      -a|--auto|--automatic          ${cyan} # Construir ISO automaticamente pelo Action do github ${reset}
+      -m|--manual|--standalone       ${cyan} # Construir ISO manualmente ${reset}
+      -n|--nocolor                   ${cyan} # Suprime a impressão de cores ${reset}
+      -V|--version                   ${cyan} # Imprime a versão do aplicativo ${reset}
+      -h|--help                      ${cyan} # Mostra este Help ${reset}
+EOF_USAGE
 }
 
 create_menu() {
@@ -366,7 +366,7 @@ create_menu() {
 		for i in "${!options[@]}"; do
 			if [[ "$i" -eq $selected ]]; then
 				if [[ "${options[$i]}" =~ ^(Sair|Voltar)$ ]]; then
-  				echo -e "${red}${bold}> ${reverse}${options[$i]}${reset}"
+					echo -e "${red}${bold}> ${reverse}${options[$i]}${reset}"
 				else
 					echo -e "${green}${bold}> ${reverse}${options[$i]}${reset}"
 				fi
@@ -435,30 +435,18 @@ checkout_iso-profiles_and_clean_directories() {
 export -f checkout_iso-profiles_and_clean_directories
 
 cleaning_working_directories() {
-	if [[ -d '/__t/' ]]; then
-		msg 'Limpando diretório: /__t/'
-		rm -rf /__t/* || true
-	fi
+	local path_dirs=('/__t'
+		'/usr/share/manjaro-tools'
+		'/usr/lib/manjaro-tools'
+		'/var/cache/manjaro-tools/iso'
+	)
 
-	if [[ -d '/usr/share/manjaro-tools/' ]]; then
-		msg 'Limpando diretório: /usr/share/manjaro-tools/*'
-		sudo rm -rf /usr/share/manjaro-tools/* || true
-	fi
-
-	if [[ -d '/usr/lib/manjaro-tools/' ]]; then
-		msg 'Limpando diretório: /usr/lib/manjaro-tools/*'
-		sudo rm -rf /usr/lib/manjaro-tools/* || true
-	fi
-
-	if [[ -d '/var/lib/manjaro-tools/buildiso/' ]]; then
-		msg 'Limpando diretório: /var/lib/manjaro-tools/buildiso/*'
-		sudo rm -rf /var/lib/manjaro-tools/buildiso/* || true
-	fi
-
-	if [[ -d '/var/cache/manjaro-tools/iso/' ]]; then
-		msg 'Limpando diretorio: /var/cache/manjaro-tools/iso/*'
-		sudo rm -rf /var/cache/manjaro-tools/iso/* || true
-	fi
+	for path in "${path_dirs[@]}"; do
+		if [[ -d "$path" ]]; then
+			msg 'Limpando diretório: $path'
+			rm -rf "$path"/* || true
+		fi
+	done
 }
 
 #Step 1 - Setup BUILD - check_directories_and_path
@@ -702,29 +690,29 @@ add_big_cleanups() {
 	# cleanups
 	local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
 
-	sudo tee -a "$cleanup_script" >/dev/null <<'EOF'
-		  # Big cleanups
-		  local path="$1"
+	sudo tee -a "$cleanup_script" >/dev/null <<-EOF_CLEANUPS
+		# Big cleanups
+		local path="$1"
 
-		  # Remove documentation
-		  rm -rf "$path/usr/share/doc"/* 2> /dev/null
+		# Remove documentation
+		rm -rf "$path/usr/share/doc"/* 2> /dev/null
 
-		  # Remove man pages
-		  rm -rf "$path/usr/share/man"/* 2> /dev/null
+		# Remove man pages
+		rm -rf "$path/usr/share/man"/* 2> /dev/null
 
-		  # Clean LibreOffice configs
-		  local libreoffice_path="$path/usr/lib/libreoffice/share/config"
-		  if [[ -d "$libreoffice_path" ]]; then
-		    rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
-		    rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
-		  fi
+		# Clean LibreOffice configs
+		local libreoffice_path="$path/usr/lib/libreoffice/share/config"
+		if [[ -d "$libreoffice_path" ]]; then
+		  rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
+		  rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
+		fi
 
-		  # Clean wallpapers
-		  local wallpapers_path="$path/usr/share/wallpapers"
-		  if [[ -d "$wallpapers_path" ]]; then
-		    rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
-		  fi
-EOF
+		# Clean wallpapers
+		local wallpapers_path="$path/usr/share/wallpapers"
+		if [[ -d "$wallpapers_path" ]]; then
+		  rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
+		fi
+	EOF_CLEANUPS
 }
 export -f add_big_cleanups
 
