@@ -124,7 +124,7 @@ runs:
         fi
 
         # atualizar e instalar pacotes adicionais
-        sudo pacman -Syu --quiet --needed --noconfirm --overwrite \* \
+        sudo pacman -S --quiet --needed --noconfirm --overwrite \* \
           base-devel \
           manjaro-chrootbuild \
           manjaro-tools-iso-git \
@@ -142,7 +142,7 @@ runs:
           ncurses > /dev/null
 
         # atualizar e instalar pacotes extras
-    #        sudo pacman -Syu --quiet --needed --noconfirm --overwrite \* \
+    #        sudo pacman -S --quiet --needed --noconfirm --overwrite \* \
     #          base \
     #          curl \
     #          duf \
