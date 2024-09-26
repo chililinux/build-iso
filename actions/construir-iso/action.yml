@@ -15,9 +15,14 @@ inputs:
       - chililinux
     default: "bigcommunity"
   iso_profiles_repo:
-    description: "ISO profiles repository to clone"
+    type: choice
+    description: 'Choice ISO profiles'
     required: false
-    default: "https://github.com/chililinux/iso-profiles"
+    options:
+      - 'https://github.com/talesam/iso-profiles'
+      - 'https://github.com/chililinux/iso-profiles'
+      - 'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git'
+    default: 'https://github.com/talesam/iso-profiles'
   iso_profiles_branch:
     description: "Branch of the ISO profiles repository (optional)"
     required: false
