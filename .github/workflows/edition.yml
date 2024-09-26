@@ -151,7 +151,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           #fetch-depth: 0    # All commit history is downloaded
-          fetch-depth: 1     # Only the most recent commit of the branch will be downloaded
+          fetch-depth: 1 # Only the most recent commit of the branch will be downloaded
 
       - name: Install some necessary packages
         shell: bash
@@ -235,14 +235,13 @@ jobs:
       - name: Calculate ISO MD5 Hash
         shell: bash
         run: |
-          echo "Calculating MD5 hash for ISO file..."
-          echo "ISO_PATH is: '${{ env.ISO_PATH }}'"
-          if [ -f "${{ env.ISO_PATH }}" ]; then
-            md5sum "${{ env.ISO_PATH }}" > "${{ env.ISO_PATH }}.md5"
+          echo "Calculating MD5 hash for ISO file ${ISO_PATH}"
+          if [[ -f "${ISO_PATH}" ]]; then
+            md5sum "${ISO_PATH}" > "${ISO_PATH}.md5"
             echo "MD5 hash calculated and saved:"
-            cat "${{ env.ISO_PATH }}.md5"
+            cat "${ISO_PATH}".md5
           else
-            echo "Error: ISO file not found at ${{ env.ISO_PATH }}"
+            echo "Error: ISO file not found at ${ISO_PATH}"
             exit 1
           fi
 
