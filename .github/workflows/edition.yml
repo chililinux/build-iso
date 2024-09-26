@@ -15,15 +15,6 @@ on:
           - biglinux
           - chililinux
         default: "bigcommunity"
-      iso_profiles_repo:
-        type: choice
-        description: "Choice ISO profiles"
-        required: true
-        options:
-          - "https://github.com/talesam/iso-profiles"
-          - "https://github.com/chililinux/iso-profiles"
-          - "https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git"
-        default: "https://github.com/talesam/iso-profiles"
       scope:
         type: choice
         description: "Build scope"
