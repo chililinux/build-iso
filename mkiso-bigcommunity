@@ -1147,14 +1147,14 @@ make_iso() {
 	configure_kernel
 
 	# Starting repository configuration
-	for fileconfig in pacman.conf do
+	for fileconfig in pacman.conf; do
 		msg_info "Configurando repositórios em: $fileconfig"
 		configure_repos "$WORK_PATH_ISO_PROFILES/shared/$fileconfig" "$COMMUNITYBRANCH" "$BIGBRANCH"
 	done
 
 	set_build_info
 	configure_iso_name
-#  build_iso
+  build_iso
 	cleanup_and_move_files
 	if $DEBUG; then
 		ls -lah
