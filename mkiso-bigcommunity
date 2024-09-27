@@ -1182,8 +1182,6 @@ if test $# -lt 1; then
 	exit $(($# ? 0 : 1))
 fi
 
-check_user
-
 # Loop através de todos os parâmetros ($@)
 for arg in "$@"; do
 	if [[ "$arg" = @(-n|--nocolor) ]]; then
