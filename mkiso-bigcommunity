@@ -1167,12 +1167,22 @@ make_iso() {
 	exit 0
 }
 
+check_user() {
+  set_varcolors
+	# Verifica se o usuário é root
+	if [ "$EUID" -eq 0 ]; then
+    die "${red}" "Construção da ISO não pode ser com usuário root ${reset}"
+	fi
+}
+
 ## start script
 if test $# -lt 1; then
 	set_varcolors
 	sh_usage
 	exit $(($# ? 0 : 1))
 fi
+
+check_user
 
 # Loop através de todos os parâmetros ($@)
 for arg in "$@"; do
