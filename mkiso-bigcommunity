@@ -42,8 +42,20 @@ configure_vars() {
 	REPO_PATH="$PWD"
 	USERNAME="$USER"
 	HOME_FOLDER="/home/$USERNAME"
+	get_distroname() {
+		create_menu \
+			"Escolha nome da distribuição:" \
+			"chililinux" \
+			"bigcommunity" \
+			"biglinux" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		DISTRONAME="${MENU_RESULT}"
+	}
 
-	get_repo() {
+	get_iso_profiles_repo() {
 		create_menu \
 			'Escolha uma repositório iso-profiles:' \
 			'https://github.com/chililinux/iso-profiles' \
@@ -59,12 +71,12 @@ configure_vars() {
 	get_edition() {
 		create_menu \
 			"Escolha uma EDICÃO/DE para a ISO:" \
+			"xfce" \
 			"cinnamon" \
 			"cosmic" \
 			"deepin" \
 			"gnome" \
 			"kde" \
-			"xfce" \
 			"wmaker" \
 			"Sair"
 		if [[ $MENU_RESULT == "Sair" ]]; then
@@ -72,8 +84,10 @@ configure_vars() {
 		fi
 		EDITION="${MENU_RESULT}"
 	}
+
+	get_distroname
 	get_edition
-	get_repo
+	get_iso_profiles_repo
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community"
@@ -82,19 +96,6 @@ configure_vars() {
 	PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
 	VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
 	VAR_CACHE_MANJARO_TOOLS_ISO='/var/cache/manjaro-tools/iso'
-	get_distroname() {
-		create_menu \
-			"Escolha nome da distribuição:" \
-			"bigcommunity" \
-			"biglinux" \
-			"chililinux" \
-			"Sair"
-		if [[ $MENU_RESULT == "Sair" ]]; then
-			die "${red}" "Construção da ISO cancelada.${reset}"
-		fi
-		DISTRONAME="${MENU_RESULT}"
-	}
-	get_distroname
 	get_debug() {
 		create_menu \
 			"Escolha uma opcao para DEBUG:" \
@@ -123,8 +124,8 @@ configure_vars() {
 	get_communitybranch() {
 		create_menu \
 			"Escolha uma opcao para Branch do BigCommunity:" \
-			"stable" \
 			"testing" \
+			"stable" \
 			"unstable" \
 			"Sair"
 		if [[ $MENU_RESULT == "Sair" ]]; then
@@ -136,8 +137,8 @@ configure_vars() {
 	get_bigbranch() {
 		create_menu \
 			"Escolha uma opcao para Branch do BigLinux:" \
-			"stable" \
 			"testing" \
+			"stable" \
 			"unstable" \
 			"Sair"
 		if [[ $MENU_RESULT == "Sair" ]]; then
@@ -421,7 +422,9 @@ checkout_iso-profiles_and_clean_directories() {
 
 	if [[ -d "$WORK_PATH_ISO_PROFILES" ]]; then
 		msg 'Mova perfis iso-profiles antigos para novo diretório'
-		mv -f $WORK_PATH_ISO_PROFILES $HOME_FOLDER/iso-profiles."$(date "+%Y%m%d_%H:%M:%S")"
+		if ! mv -f $WORK_PATH_ISO_PROFILES $HOME_FOLDER/iso-profiles."$(date "+%Y%m%d_%H:%M:%S")"; then
+		  rm -rf $WORK_PATH_ISO_PROFILES || true
+		fi
 	fi
 
 	msg "Fazendo checkout do repositório: $REPO"
@@ -934,7 +937,6 @@ configure_repos() {
 		add_community-stable | sudo tee -a "$config_file" >/dev/null
 	else
 		add_community-stable | sudo tee -a "$config_file" >/dev/null
-		add_community-testing | sudo tee -a "$config_file" >/dev/null
 	fi
 
 	if [[ "$biglinux_branch" == "testing" ]]; then
@@ -942,7 +944,6 @@ configure_repos() {
 		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
 	else
 		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
-		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
 	fi
 	add_community-extra | sudo tee -a "$config_file" >/dev/null
 
@@ -1153,7 +1154,7 @@ make_iso() {
 
 	set_build_info
 	configure_iso_name
-	build_iso
+	#build_iso
 	cleanup_and_move_files
 	if $DEBUG; then
 		ls -lah
