@@ -1154,7 +1154,7 @@ make_iso() {
 
 	set_build_info
 	configure_iso_name
-	#build_iso
+  build_iso
 	cleanup_and_move_files
 	if $DEBUG; then
 		ls -lah
