@@ -4,7 +4,7 @@
 #
 #  mkiso-bigcommunity
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: qui 26 set 2024 06:46:55 -04
+#  Altered: qui 26 set 2024 21:43:28 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -31,7 +31,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o manjaro buildiso"
-declare VERSION="1.1.3" # Versão do script
+declare VERSION="1.1.4" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -440,10 +440,10 @@ export -f checkout_iso-profiles_and_clean_directories
 cleaning_working_directories() {
 	local path_dirs=('/__t'
 		'/usr/share/manjaro-tools'
-		'/var/lib/manjaro-tools'
 		'/usr/lib/manjaro-tools'
-		'/var/cache/manjaro-tools/iso'
-	)
+		'/var/lib/manjaro-tools/buildiso'
+    '/var/cache/manjaro-tools/iso'
+  )
 	local cpath
 
 	for cpath in "${path_dirs[@]}"; do
