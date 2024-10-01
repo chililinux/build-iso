@@ -4,7 +4,7 @@
 #
 #  mkiso-bigcommunity
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: qui 26 set 2024 21:43:28 -04
+#  Altered: ter 01 out 2024 11:16:03 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -31,7 +31,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o manjaro buildiso"
-declare VERSION="1.1.4" # Versão do script
+declare VERSION="1.1.5" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -935,9 +935,11 @@ configure_repos() {
 	if [[ "$community_branch" == "testing" ]]; then
 		add_community-testing | sudo tee -a "$config_file" >/dev/null
 		add_community-stable | sudo tee -a "$config_file" >/dev/null
+  	add_community-extra | sudo tee -a "$config_file" >/dev/null
 	else
 		add_community-stable | sudo tee -a "$config_file" >/dev/null
-	fi
+		add_community-extra | sudo tee -a "$config_file" >/dev/null
+  fi
 
 	if [[ "$biglinux_branch" == "testing" ]]; then
 		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
@@ -945,7 +947,6 @@ configure_repos() {
 	else
 		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
 	fi
-	add_community-extra | sudo tee -a "$config_file" >/dev/null
 
 	if [[ "$DISTRONAME" == "chililinux" ]]; then
 		add_chili-stable | sudo tee -a "$config_file" >/dev/null
