@@ -1,8 +1,35 @@
-# created: ter 24 set 2024 03:23:36 -04
-# altered: ter 24 set 2024 03:23:36 -04
-
-name: "Build BigCommunity ISO"
-description: "Builds a BigCommunity ISO image"
+# -*- coding: utf-8 -*-
+#
+#  action.yml
+#  created: ter 24 set 2024 03:23:36 -04
+#  altered: sáb 16 nov 2024 23:53:40 -04
+#
+#  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
+#  Copyright (c) 2024-2024, Tales A. Mendonça <talesam@gmail.com>
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR AS IS'' AND ANY EXPRESS OR
+#  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+#  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+#  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+#  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+#  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+##############################################################################
+name: "Build ISO"
+description: "Builds a Custom ISO image"
 
 inputs:
   distroname:
@@ -13,16 +40,18 @@ inputs:
       - bigcommunity
       - biglinux
       - chililinux
-    default: "bigcommunity"
+      - manjaro
+    default: "chililinux"
   iso_profiles_repo:
     type: choice
     description: "Choice ISO profiles"
     required: true
     options:
       - "https://github.com/talesam/iso-profiles"
+      - "https://github.com/biglinux/iso-profiles"
       - "https://github.com/chililinux/iso-profiles"
       - "https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git"
-    default: "https://github.com/talesam/iso-profiles"
+    default: "https://github.com/chililinux/iso-profiles"
   iso_profiles_branch:
     description: "Branch of the ISO profiles repository (optional)"
     required: false
@@ -35,7 +64,7 @@ inputs:
     default: stable
   community_branch:
     description: "Community branch (stable, testing)"
-    required: true
+    required: false
   biglinux_branch:
     description: "BigLinux branch (stable, testing)"
     required: true
@@ -64,7 +93,7 @@ inputs:
     description: "URL for development mirror"
     required: false
   mirror_unstable:
-    description: "URL for unstable BigCommunity mirror"
+    description: "URL for unstable mirror"
     required: false
   github_token:
     description: "GitHub token for authentication"
@@ -100,14 +129,15 @@ runs:
       shell: bash
       run: |
         # Setup build environment
-
         #configure extra repos
-        {
-          echo "[community-extra]"
-          echo "SigLevel = PackageRequired"
-          echo "Server = https://repo.communitybig.org/extra/\$arch"
-          echo
-        } | sudo tee -a /etc/pacman.conf > /dev/null
+        if [[ "$distroname" == 'bigcommunity' ]]; then
+          {
+            echo "[community-extra]"
+            echo "SigLevel = PackageRequired"
+            echo "Server = https://repo.communitybig.org/extra/\$arch"
+            echo
+          } | sudo tee -a /etc/pacman.conf > /dev/null
+        fi
 
         #configure chili repos
         if [[ "$distroname" == 'chililinux' ]]; then
@@ -201,11 +231,13 @@ runs:
         sudo install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
         sudo rm -r biglinux-key
 
-        git clone https://github.com/communitybig/community-keyring.git
-        sudo install -m0644 community-keyring/community.gpg /usr/share/pacman/keyrings/
-        sudo install -m0644 community-keyring/community-trusted /usr/share/pacman/keyrings/
-        sudo install -m0644 community-keyring/community-revoked /usr/share/pacman/keyrings/
-        sudo rm -r community-keyring
+        if [[ "$distroname" == 'bigcommunity' ]]; then
+          git clone https://github.com/communitybig/community-keyring.git
+          sudo install -m0644 community-keyring/community.gpg /usr/share/pacman/keyrings/
+          sudo install -m0644 community-keyring/community-trusted /usr/share/pacman/keyrings/
+          sudo install -m0644 community-keyring/community-revoked /usr/share/pacman/keyrings/
+          sudo rm -r community-keyring
+        fi
 
         if [[ "$distroname" == 'chililinux' ]]; then
           git clone https://github.com/chililinux/chili-keyring.git
@@ -218,12 +250,7 @@ runs:
         # Initialize pacman keychain
         #sudo pacman -S biglinux-keyring community-keyring chili-keyring
         sudo pacman-key --init
-        sudo pacman-key --populate archlinux
-        sudo pacman-key --populate biglinux
-        sudo pacman-key --populate community
-        if [[ "$distroname" == 'chililinux' ]]; then
-          sudo pacman-key --populate chili
-        fi
+        sudo pacman-key --populate
 
         # Update pacman databases
         sudo pacman -Sy --quiet --noconfirm
@@ -246,6 +273,9 @@ runs:
       shell: bash
       run: |
         # Declare environment variables
+        DISTRONAME_ISOPROFILES="${{ inputs.distroname || 'chililinux' }}"
+        [[ "$DISTRONAME_ISOPROFILES" == "bigcommunity" ]] DISTRONAME_ISOPROFILES" == 'community' ]]
+
         {
           echo "USERNAME=builduser"
           echo "HOME_FOLDER=/home/builduser"
@@ -253,14 +283,15 @@ runs:
           echo "EDITION=${{ inputs.edition }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
-          echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/community"
-          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/community/${{ inputs.edition }}"
+          echo "DISTRONAME=${{ inputs.distroname || 'chililinux' }}"
+          echo "DISTRONAME_ISOPROFILES=$DISTRONAME_ISOPROFILES"
+          echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}"
+          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES/${{ inputs.edition }}"
           echo "PATH_MANJARO_ISO_PROFILES=/usr/share/manjaro-tools/iso-profiles"
           echo "PATH_MANJARO_TOOLS=/usr/share/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS_ISO=/var/cache/manjaro-tools/iso"
           echo "DEBUG=${{ inputs.tmate }}"
-          echo "DISTRONAME=${{ inputs.distroname || 'bigcommunity' }}"
           echo "MANJAROBRANCH=${{ inputs.manjaro_branch }}"
           echo "COMMUNITYBRANCH=${{ inputs.community_branch }}"
           echo "BIGBRANCH=${{ inputs.biglinux_branch }}"
@@ -275,7 +306,7 @@ runs:
       run: |
         # Loading script and building ISO
         if [[ ! -e "$WORK_PATH/mkiso-bigcommunity" ]]; then
-          echo "ERROR(A-L278): Script $WORK_PATH/mkiso-bigcommunity not found or size zero!"
+          echo "ERROR(A-L308): Script $WORK_PATH/mkiso-bigcommunity not found or size zero!"
           exit 1
         fi
         pushd "$WORK_PATH" || true
