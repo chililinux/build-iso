@@ -274,7 +274,7 @@ runs:
       run: |
         # Declare environment variables
         DISTRONAME_ISOPROFILES="${{ inputs.distroname || 'chililinux' }}"
-        [[ "$DISTRONAME_ISOPROFILES" == "bigcommunity" ]] DISTRONAME_ISOPROFILES" == 'community' ]]
+        [[ "$DISTRONAME_ISOPROFILES" == "bigcommunity" ]] && DISTRONAME_ISOPROFILES" == 'community' ]]
 
         {
           echo "USERNAME=builduser"
