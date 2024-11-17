@@ -153,6 +153,10 @@ runs:
             echo "SigLevel = Never"
             echo "Server = https://repo.chililinux.com/testing/\$arch"
             echo
+            echo "[chili-extra]"
+            echo "SigLevel = Never"
+            echo "Server = https://repo.chililinux.com/extra/\$arch"
+            echo
           } | sudo tee -a /etc/pacman.conf > /dev/null
         fi
 
