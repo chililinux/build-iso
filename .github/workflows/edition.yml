@@ -31,11 +31,11 @@ on:
           - full
           - minimal
         default: "full"
-      office-chooser:
-        type: boolean
-        description: "Include office suite"
-        required: false
-        default: false
+      #     office-chooser:
+      #       type: boolean
+      #       description: "Include office suite"
+      #       required: false
+      #       default: false
       tmate:
         type: boolean
         description: "Enable debugging with tmate"
