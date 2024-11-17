@@ -71,6 +71,13 @@ on:
           - stable
           - testing
         default: testing
+      chililinux_branch:
+        type: choice
+        description: "ChiliLinux branch"
+        options:
+          - stable
+          - testing
+        default: testing
       edition:
         type: choice
         description: "Edition"
@@ -216,6 +223,7 @@ jobs:
           manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
           community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
           biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
+          chililinux_branch: ${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch }}
 
           # Depuração
           tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
@@ -272,7 +280,12 @@ jobs:
             ${{ env.ISO_PATH }}.pkgs
 
       - name: Create Release
-        if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' }}
+        if: ${{
+          (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' &&
+          (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' &&
+          (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable'
+          (github.event.client_payload.chililinux_branch || inputs.chililinux_branch) == 'stable'
+        }}
         uses: softprops/action-gh-release@v1
         with:
           files: |

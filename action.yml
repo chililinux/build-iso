@@ -68,6 +68,9 @@ inputs:
   biglinux_branch:
     description: "BigLinux branch (stable, testing)"
     required: true
+  chililinux_branch:
+    description: "ChiliLinux branch (stable, testing)"
+    required: false
   scope:
     description: "Build scope (full or minimal)"
     required: false
@@ -295,6 +298,7 @@ runs:
           echo "MANJAROBRANCH=${{ inputs.manjaro_branch }}"
           echo "COMMUNITYBRANCH=${{ inputs.community_branch }}"
           echo "BIGBRANCH=${{ inputs.biglinux_branch }}"
+          echo "CHILIBRANCH=${{ inputs.chililinux_branch }}"
           echo "KERNEL=${{ inputs.kernel }}"
           echo "RELEASE_TAG=${{ inputs.release_tag }}"
           echo "SCOPE=${{ inputs.scope }}"
