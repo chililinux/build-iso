@@ -652,20 +652,22 @@ add_repository() {
 	done
 	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
-	msg 'Configurando repositórios do Community'
-	case "$COMMUNITYBRANCH" in
-	"stable")
-		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	"testing")
-		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	esac
+	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
+  	msg 'Configurando repositórios do Community'
+  	case "$COMMUNITYBRANCH" in
+  	"stable")
+  		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+  		;;
+  	"testing")
+  		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+  		;;
+  	esac
+  fi
 
 	msg 'Configurando repositórios do BigLinux'
 	case "$BIGBRANCH" in
@@ -678,6 +680,28 @@ add_repository() {
 		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
 		;;
 	esac
+
+	if [[ "$DISTRONAME" == "chililinux" ]]; then
+  	msg 'Configurando repositórios do ChiliLinux'
+  	case "$CHILIBRANCH" in
+  	"stable")
+  		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
+  		;;
+  	"testing")
+  		add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
+  		;;
+  	esac
+  fi
+
+
+
+
+
 }
 export -f add_repository
 
@@ -955,13 +979,15 @@ configure_repos() {
 	mkdir -p "$config_dir"
 
 	# Community repositories
-	if [[ "$community_branch" == "testing" ]]; then
-		add_community-testing | sudo tee -a "$config_file" >/dev/null
-		add_community-stable | sudo tee -a "$config_file" >/dev/null
-  	add_community-extra | sudo tee -a "$config_file" >/dev/null
-	else
-		add_community-stable | sudo tee -a "$config_file" >/dev/null
-		add_community-extra | sudo tee -a "$config_file" >/dev/null
+	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
+  	if [[ "$community_branch" == "testing" ]]; then
+	  	add_community-testing | sudo tee -a "$config_file" >/dev/null
+  		add_community-stable | sudo tee -a "$config_file" >/dev/null
+    	add_community-extra | sudo tee -a "$config_file" >/dev/null
+  	else
+	  	add_community-stable | sudo tee -a "$config_file" >/dev/null
+  		add_community-extra | sudo tee -a "$config_file" >/dev/null
+    fi
   fi
 
 	if [[ "$biglinux_branch" == "testing" ]]; then
