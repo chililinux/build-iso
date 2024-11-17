@@ -1,4 +1,33 @@
-name: Build ISO
+# -*- coding: utf-8 -*-
+#
+#  edition.yml
+#  Created: 2024/09/15 - 08:10
+#  Altered: 2024/10/27 - 12:26
+#
+#  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
+#  All rights reserved.
+#
+#  Redistribution and use in source and binary forms, with or without
+#  modification, are permitted provided that the following conditions
+#  are met:
+#  1. Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#  2. Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in the
+#     documentation and/or other materials provided with the distribution.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR AS IS'' AND ANY EXPRESS OR
+#  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+#  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+#  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+#  NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+#  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+#  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+#  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+##############################################################################
+name: name: 💿 Build ISO
 
 on:
   repository_dispatch:
@@ -91,6 +120,17 @@ on:
           - wmaker
         default: xfce
 
+
+env:
+  #BRANCH_TYPE: "${{ github.event.client_payload.branch_type || github.event.inputs.branch_type }}"
+  #NEW_BRANCH: "${{ github.event.client_payload.branch || github.event.inputs.new_branch }}"
+  #PACKAGE_NAME: "${{ github.event.action }}"
+  TELEGRAM_TOKEN: "${{ secrets.TOKEN_BOT }}"
+  CHAT_ID: "${{ secrets.CHAT_ID }}"
+  #BRANCH_ORIGEM: "${{ github.ref_name }}"
+  #REPO_ORIGEM: "${{ github.event.client_payload.url }}"
+  #BRANCH_FULLNAME: "${{ github.event.client_payload.branch }}"
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -110,6 +150,38 @@ jobs:
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
           sudo mkdir -p /mnt/lfs
+
+      - name: Capturar hora de início do workflow
+        id: start-time
+        run: |
+          START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
+          START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
+          echo "Início do Workflow: $START_TIME"
+          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
+          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
+
+      - name: Enviar notificação para o Telegram
+        shell: bash
+        run: |
+          started_by_user="${{ github.actor }}"
+          triggered_by_user="${{ github.triggering_actor }}"
+          repo_path="${{ secrets.PKGBUILD_DIR }}"
+
+          MESSAGE="🚀 <b>[step 0/6] INICIANDO WORKFLOW</b>
+          <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
+          <b>Workflow:</b> <code>edition.yml</code>
+          <b>Iniciado/Triggered:</b> <code>${started_by_user}/${triggered_by_user}</code>
+          <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
+          #<b>Iso:</b> <code>${{ env.PACKAGE_NAME }}</code>
+          #<b>Repo Origem:</b> <code>${{ env.REPO_ORIGEM }}</code>
+          #<b>Branch origem:</b> <code>${{ env.BRANCH_FULLNAME }}</code>
+          <b>Repositório:</b> <code>${repo_path}</code>"
+          #<b>Branch:</b> <code>${{ env.BRANCH_TYPE }}</code>"
+
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
