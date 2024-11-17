@@ -595,6 +595,16 @@ add_chili-testing() {
 }
 export -f add_chili-testing
 
+add_chili-extra() {
+	{
+		echo '[chili-extra]'
+		echo 'SigLevel = Optional TrustAll'
+		echo 'Server = https://repo.chililinux.com/extra/$arch'
+		echo
+	}
+}
+export -f add_chili-extra
+
 add_repository() {
 	arquivo_conf="$1"
 
@@ -961,9 +971,16 @@ configure_repos() {
 		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
 	fi
 
+	# Chililinux repositories
 	if [[ "$DISTRONAME" == "chililinux" ]]; then
-		add_chili-stable | sudo tee -a "$config_file" >/dev/null
-		add_chili-testing | sudo tee -a "$config_file" >/dev/null
+  	if [[ "$chililinux_branch" == "testing" ]]; then
+  		add_chili-testing | sudo tee -a "$config_file" >/dev/null
+  		add_chili-stable | sudo tee -a "$config_file" >/dev/null
+     	add_chili-extra | sudo tee -a "$config_file" >/dev/null
+  	else
+    	add_chili-stable | sudo tee -a "$config_file" >/dev/null
+	  	add_chili-extra | sudo tee -a "$config_file" >/dev/null
+    fi
 	fi
 }
 export -f configure_repos

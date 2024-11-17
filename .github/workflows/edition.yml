@@ -1,4 +1,4 @@
-name: Build ISO Custom
+name: Build ISO
 
 on:
   repository_dispatch:
