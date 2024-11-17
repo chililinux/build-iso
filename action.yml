@@ -273,7 +273,7 @@ runs:
       shell: bash
       run: |
         # Declare environment variables
-        DISTRONAME_ISOPROFILES="$distroname"
+        DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
         [[ "$DISTRONAME_ISOPROFILES" == 'bigcommunity' ]] && DISTRONAME_ISOPROFILES='community'
 
         {
@@ -283,7 +283,7 @@ runs:
           echo "EDITION=${{ inputs.edition }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
-          echo "DISTRONAME=$distroname"
+          echo "DISTRONAME=${{ inputs.distroname }}"
           echo "DISTRONAME_ISOPROFILES=$DISTRONAME_ISOPROFILES"
           echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}"
           echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}/${{ inputs.edition }}"

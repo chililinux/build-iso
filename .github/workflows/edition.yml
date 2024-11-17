@@ -204,7 +204,7 @@ jobs:
         id: build
         with:
           # Parâmetros básicos da ISO
-          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'bigcommunity' }}
+          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
           edition: ${{ github.event.client_payload.edition || inputs.edition}}
           #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
           release_tag: ${{ env.RELEASE_TAG }}
