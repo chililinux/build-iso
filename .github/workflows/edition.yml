@@ -1,0 +1,285 @@
+name: ISO Build
+
+on:
+  repository_dispatch:
+    types:
+      - "ISO-*"
+  workflow_dispatch:
+    inputs:
+      distroname:
+        type: choice
+        description: "Distroname for the ISO"
+        required: true
+        options:
+          - bigcommunity
+          - biglinux
+          - chililinux
+        default: "bigcommunity"
+      iso_profiles_repo:
+        type: choice
+        description: "Choice ISO profiles"
+        required: true
+        options:
+          - "https://github.com/talesam/iso-profiles"
+          - "https://github.com/chililinux/iso-profiles"
+          - "https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git"
+        default: "https://github.com/talesam/iso-profiles"
+      scope:
+        type: choice
+        description: "Build scope"
+        options:
+          - full
+          - minimal
+        default: "full"
+      office-chooser:
+        type: boolean
+        description: "Include office suite"
+        required: false
+        default: false
+      tmate:
+        type: boolean
+        description: "Enable debugging with tmate"
+        required: false
+        default: false
+      kernel:
+        type: choice
+        description: "Kernel version"
+        options:
+          - latest
+          - lts
+          - oldLts
+        default: lts
+      manjaro_branch:
+        type: choice
+        description: "Manjaro branch"
+        options:
+          - stable
+          - testing
+          - unstable
+        default: stable
+      community_branch:
+        type: choice
+        description: "Community branch"
+        options:
+          - stable
+          - testing
+        default: testing
+      biglinux_branch:
+        type: choice
+        description: "BigLinux branch"
+        options:
+          - stable
+          - testing
+        default: testing
+      edition:
+        type: choice
+        description: "Edition"
+        options:
+          - cinnamon
+          - cosmic
+          - deepin
+          - gnome
+          - kde
+          - xfce
+          - wmaker
+        default: xfce
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a Welcome file
+        run: |
+          echo "Hello from setup job" > shared_file.txt
+
+      - name: Install dependencies on HOST
+        run: |
+          #sudo apt-get update
+          sudo apt-get autoremove
+          sudo apt-get install -y inetutils-tools
+
+      - name: Set up volume directory on HOST
+        run: |
+          sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
+          sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
+          sudo mkdir -p /mnt/lfs
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: shared-file
+          path: shared_file.txt
+
+      - name: Display the current user in host
+        run: |
+          # Display the current user in host
+          echo "#########################################"
+          echo "Current host is: $(hostname)"
+          echo "Current user is: $(whoami)"
+          echo "Current user ID is: $(id -u)"
+          echo "Current user details:"
+          id
+          echo "#########################################"
+          df -hT
+          echo "#########################################"
+          ls -lah --color=auto /mnt
+          echo "#########################################"
+
+  build:
+    name: Build ISO ${{ github.event.client_payload.distroname || inputs.distroname }} ${{ github.event.client_payload.edition || inputs.edition }}
+    runs-on: ubuntu-latest
+    needs: [setup] # Espera o job "setup" terminar
+    container:
+      #image: talesam/community-build:1.4.1
+      image: talesam/community-build:1.3
+      options: --privileged
+      volumes:
+        - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
+        - /mnt/var_cache_manjaro_tools_iso:/var/cache/manjaro-tools/iso
+        - /mnt/lfs:/mnt/lfs
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: shared-file
+
+      - name: Display file content
+        run: cat shared_file.txt
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          #fetch-depth: 0    # All commit history is downloaded
+          fetch-depth: 1 # Only the most recent commit of the branch will be downloaded
+
+      - name: Install some necessary packages
+        shell: bash
+        run: |
+          # Install some necessary packages
+          sudo pacman -Sy inetutils tree --needed --quiet --noconfirm >/dev/null
+
+      - name: Set up aliases
+        run: |
+          echo "alias ll='ls -lah --color=auto'" >> $HOME/.bashrc
+          echo "alias gs='git status'"           >> $HOME/.bashrc
+          # Carrega o .bashrc para aplicar os aliases na sessão atual
+          source $HOME/.bashrc
+
+      - name: Initial Debug
+        run: |
+          echo "Workflow started"
+      #          echo "Event Name: ${{ github.event_name }}"
+      #          echo "Event Action: ${{ github.event.action }}"
+      #          echo "Edition: ${{ github.event.client_payload.edition || inputs.edition }}"
+      #          echo "Tmate from payload: ${{ github.event.client_payload.tmate }}"
+      #          echo "Full github event: ${{ toJson(github.event) }}"
+
+      - name: Display the current user in CONTAINER
+        shell: bash
+        run: |
+          # Display the current user in CONTAINER
+          echo "#########################################"
+          echo "Current host is: $(hostname)"
+          echo "Current user is: $(whoami)"
+          echo "Current user ID is: $(id -u)"
+          echo "Current user details:"
+          id
+          echo "#########################################"
+          df -hT
+          echo "#########################################"
+          ls -lah --color=auto /mnt
+          echo "#########################################"
+          tree -d /mnt
+          echo "#########################################"
+
+      - name: Set release tag manually
+        id: date
+        run: |
+          # Set release tag manually
+          echo "RELEASE_TAG=$(date '+%Y-%m-%d_%H-%M')" >> "$GITHUB_ENV"
+
+      - name: Build ISO
+        uses: ./
+        id: build
+        with:
+          # Parâmetros básicos da ISO
+          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'bigcommunity' }}
+          edition: ${{ github.event.client_payload.edition || inputs.edition}}
+          #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+          release_tag: ${{ env.RELEASE_TAG }}
+          kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
+          scope: ${{ github.event.client_payload.scope || inputs.scope }}
+          office-chooser: ${{ github.event.client_payload.office-chooser || inputs.office-chooser }}
+
+          # Parâmetros de branches
+          manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
+          community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
+          biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
+
+          # Depuração
+          tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
+
+          # Tokens e segredos
+          github_token: ${{ secrets.TOKEN_RELEASE }}
+
+          # Parâmetros adicionais (se necessário)
+          iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
+          # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
+
+      - name: Set ISO path
+        run: |
+          # Set ISO path
+          echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
+
+      - name: Calculate ISO MD5 Hash
+        shell: bash
+        run: |
+          echo "Calculating MD5 hash for ISO file ${ISO_PATH}"
+          if [[ -f "${ISO_PATH}" ]]; then
+            md5sum "${ISO_PATH}" > "${ISO_PATH}.md5"
+            echo "MD5 hash calculated and saved:"
+            cat "${ISO_PATH}".md5
+          else
+            echo "Error: ISO file not found at ${ISO_PATH}"
+            exit 1
+          fi
+
+      - name: Prepare ISO for release
+        id: prepare-iso
+        shell: bash
+        run: |
+          ls -lah
+          release=$(basename "${ISO_PATH}" .iso)
+          zip -j -0 -s 2000m ${release}.zip "${ISO_PATH}"
+          echo "release_name=${release}" >> "$GITHUB_OUTPUT"
+          echo "ISO prepared for release"
+
+          # Imprimir a variável ISO_PATH para depuração
+          echo "ISO_PATH (iso) : ${ISO_PATH}"
+          echo "ISO_PATH (md5) : ${ISO_PATH}.md5"
+          echo "ISO_PATH (pkgs): ${ISO_PATH}.pkgs"
+          echo "release        : ${release}"
+          echo "release_name   : ${release_name}"
+
+      - name: Upload ISO as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.prepare-iso.outputs.release_name }}
+          path: |
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
+
+      - name: Create Release
+        if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
+            ${{ steps.prepare-iso.outputs.release_name }}.z*
+          tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}
+          generate_release_notes: true
