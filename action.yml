@@ -2,7 +2,7 @@
 #
 #  action.yml
 #  created: ter 24 set 2024 03:23:36 -04
-#  altered: sáb 16 nov 2024 23:53:40 -04
+#  altered: dom 17 nov 2024 12:28:26 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  Copyright (c) 2024-2024, Tales A. Mendonça <talesam@gmail.com>
@@ -281,7 +281,7 @@ runs:
       run: |
         # Declare environment variables
         DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
-        [[ "$DISTRONAME_ISOPROFILES" == 'bigcommunity' ]] && DISTRONAME_ISOPROFILES='community'
+        #[[ "$DISTRONAME_ISOPROFILES" == 'bigcommunity' ]] && DISTRONAME_ISOPROFILES='community'
 
         {
           echo "USERNAME=builduser"
