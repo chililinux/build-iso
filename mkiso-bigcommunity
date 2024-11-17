@@ -669,18 +669,6 @@ add_repository() {
   	esac
   fi
 
-	msg 'Configurando repositórios do BigLinux'
-	case "$BIGBRANCH" in
-	"stable")
-		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_biglinux-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	"testing")
-		add_biglinux-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	esac
-
 	if [[ "$DISTRONAME" == "chililinux" ]]; then
   	msg 'Configurando repositórios do ChiliLinux'
   	case "$CHILIBRANCH" in
@@ -698,10 +686,17 @@ add_repository() {
   	esac
   fi
 
-
-
-
-
+	msg 'Configurando repositórios do BigLinux'
+	case "$BIGBRANCH" in
+	"stable")
+		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_biglinux-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+	"testing")
+		add_biglinux-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_biglinux-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+	esac
 }
 export -f add_repository
 
@@ -990,13 +985,6 @@ configure_repos() {
     fi
   fi
 
-	if [[ "$biglinux_branch" == "testing" ]]; then
-		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
-		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
-	else
-		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
-	fi
-
 	# Chililinux repositories
 	if [[ "$DISTRONAME" == "chililinux" ]]; then
   	if [[ "$chililinux_branch" == "testing" ]]; then
@@ -1007,6 +995,13 @@ configure_repos() {
     	add_chili-stable | sudo tee -a "$config_file" >/dev/null
 	  	add_chili-extra | sudo tee -a "$config_file" >/dev/null
     fi
+	fi
+
+	if [[ "$biglinux_branch" == "testing" ]]; then
+		add_biglinux-testing | sudo tee -a "$config_file" >/dev/null
+		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
+	else
+		add_biglinux-stable | sudo tee -a "$config_file" >/dev/null
 	fi
 }
 export -f configure_repos
