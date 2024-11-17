@@ -147,6 +147,19 @@ configure_vars() {
 		BIGBRANCH="${MENU_RESULT}"
 	}
 	get_bigbranch
+	get_chilibranch() {
+		create_menu \
+			"Escolha uma opcao para Branch do ChiliLinux:" \
+			"testing" \
+			"stable" \
+			"unstable" \
+			"Sair"
+		if [[ $MENU_RESULT == "Sair" ]]; then
+			die "${red}" "Construção da ISO cancelada.${reset}"
+		fi
+		CHILIBRANCH="${MENU_RESULT}"
+	}
+	get_chilibranch
 	get_kernel() {
 		create_menu \
 			"Escolha a versao KERNEL:" \
@@ -1044,6 +1057,7 @@ build_iso() {
 	echo "MANJAROBRANCH            : $MANJAROBRANCH"
 	echo "COMMUNITYBRANCH          : $COMMUNITYBRANCH"
 	echo "BIGLINUXBRANCH           : $BIGBRANCH"
+	echo "CHILILINUXBRANCH         : $CHILIBRANCH"
 	echo "KERNEL_VERSION_DOT       : ${KERNEL_VERSION_DOT}"
 	echo "KERNEL_NAME              : ${KERNEL_NAME}"
 	echo "SCOPE                    : $SCOPE"
