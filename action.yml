@@ -273,8 +273,8 @@ runs:
       shell: bash
       run: |
         # Declare environment variables
-        DISTRONAME_ISOPROFILES="${{ inputs.distroname || 'chililinux' }}"
-        [[ "$DISTRONAME_ISOPROFILES" == "bigcommunity" ]] && DISTRONAME_ISOPROFILES='community'
+        DISTRONAME_ISOPROFILES="$distroname"
+        [[ "$DISTRONAME_ISOPROFILES" == 'bigcommunity' ]] && DISTRONAME_ISOPROFILES='community'
 
         {
           echo "USERNAME=builduser"
@@ -283,10 +283,10 @@ runs:
           echo "EDITION=${{ inputs.edition }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
-          echo "DISTRONAME=${{ inputs.distroname || 'chililinux' }}"
+          echo "DISTRONAME=$distroname"
           echo "DISTRONAME_ISOPROFILES=$DISTRONAME_ISOPROFILES"
           echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}"
-          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES/${{ inputs.edition }}"
+          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}/${{ inputs.edition }}"
           echo "PATH_MANJARO_ISO_PROFILES=/usr/share/manjaro-tools/iso-profiles"
           echo "PATH_MANJARO_TOOLS=/usr/share/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"
