@@ -181,13 +181,13 @@ jobs:
           <b>Iniciado/Triggered:</b> <code>${started_by_user}/${triggered_by_user}</code>
           <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
           <b>Distroname:</b> <code>${iso_distroname}</code>
-          <b>Edition:</b>             <code>${iso_edition}</code>
-          <b>Manjaro Branch:</b>      <code>${iso_manjaro_branch}</code>
-          <b>BigLinux Branch:</b>     <code>${iso_biglinux_branch}</code>
+          <b>Edition:</b> <code>${iso_edition}</code>
+          <b>Manjaro Branch:</b> <code>${iso_manjaro_branch}</code>
+          <b>BigLinux Branch:</b> <code>${iso_biglinux_branch}</code>
           <b>BigCommunity Branch:</b> <code>${iso_community_branch}</code>
-          <b>ChiliLinux Branch:</b>   <code>${iso_chililinux_branch}</code>
-          <b>Release:</b>  <code>${iso_release_tag}</code>
-          <b>Kernel:</b>   <code>${iso_kernel}</code>
+          <b>ChiliLinux Branch:</b> <code>${iso_chililinux_branch}</code>
+          <b>Release:</b> <code>${iso_release_tag}</code>
+          <b>Kernel:</b> <code>${iso_kernel}</code>
           <b>ISO Name:</b> <code>${iso_distroname}_${iso_branch^^}_${iso_edition}_${iso_release_tag}</code>"
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
@@ -196,8 +196,6 @@ jobs:
             -d parse_mode="HTML"
 
           exit 1
-
-
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
