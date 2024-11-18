@@ -168,7 +168,7 @@ jobs:
       - name: Enviar notificação para o Telegram
         shell: bash
         run: |
-          case [[ "${{ env.iso_distroname }}" ]] in
+          case [[ "$iso_distroname" ]] in
           bigcommunity) iso_branch="${iso_community_branch}";;
           biglinux) iso_branch="${iso_biglinux_branch}";;
           chililinux) iso_branch="${iso_chililinux_branch}";;
