@@ -167,11 +167,11 @@ jobs:
           repo_path="${{ secrets.PKGBUILD_DIR }}"
 
           MESSAGE="🚀 <b>[step 0/6] INICIANDO WORKFLOW</b>
-          <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
-          <b>Workflow:</b> <code>edition.yml</code>
+          <b>Job     :</b> <code>#${GITHUB_RUN_NUMBER}</code>
+          <b>Workflow:</b> <code>build-iso/edition.yml</code>
           <b>Iniciado/Triggered:</b> <code>${started_by_user}/${triggered_by_user}</code>
-          <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
-          #<b>Iso:</b> <code>${{ env.PACKAGE_NAME }}</code>
+          <b>Inicio  :</b> <code>${{ env.START_TIME }}</code>
+          <b>Iso     :</b> <code>${{ github.event.client_payload.edition || inputs.edition}}</code>
           #<b>Repo Origem:</b> <code>${{ env.REPO_ORIGEM }}</code>
           #<b>Branch origem:</b> <code>${{ env.BRANCH_FULLNAME }}</code>
           <b>Repositório:</b> <code>${repo_path}</code>"
