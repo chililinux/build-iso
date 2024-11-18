@@ -165,7 +165,7 @@ jobs:
       - name: Enviar notificação para o Telegram
         shell: bash
         run: |
-          MESSAGE="🚀 <b>[step 0/6] INICIANDO WORKFLOW build-iso</b>
+          MESSAGE="🚀 <b>[step 0/6] build-iso - INICIANDO WORKFLOW</b>
           <b>Job     :</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-iso/edition.yml</code>
           <b>Iniciado/Triggered:</b> <code>${started_by_user}/${triggered_by_user}</code>
@@ -175,7 +175,7 @@ jobs:
           <b>Branch    :</b> <code>${iso_branch}</code>
           <b>Release   :</b> <code>${iso_release_tag}</code>
           <b>Kernel    :</b> <code>${iso_kernel}</code>
-          <b>ISO Name  :</b> <code>${iso_basename}</code>"
+          <b>ISO Name  :</b> <code>$${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}</code>"
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
             -d chat_id="${CHAT_ID}" \
