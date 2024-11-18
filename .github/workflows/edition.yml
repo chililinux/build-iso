@@ -165,11 +165,11 @@ jobs:
           started_by_user="${{ github.actor }}"
           triggered_by_user="${{ github.triggering_actor }}"
           repo_path="${{ secrets.PKGBUILD_DIR }}"
-          iso_distroname=${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
+          iso_distroname="${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}"
           iso_branch="STABLE"
-          iso_edition=${{ github.event.client_payload.edition || inputs.edition}}
-          iso_release_tag=${{ env.RELEASE_TAG }}
-          iso_kernel=${{ github.event.client_payload.kernel || inputs.kernel }}
+          iso_edition="${{ github.event.client_payload.edition || inputs.edition}}"
+          iso_release_tag="${{ github.event.client_payload.release_tag || inputs.release_tag }}"
+          iso_kernel="${{ github.event.client_payload.kernel || inputs.kernel }}"
           iso_basename="${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}"
 
           MESSAGE="🚀 <b>[step 0/6] INICIANDO WORKFLOW</b>
