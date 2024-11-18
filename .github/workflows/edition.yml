@@ -127,7 +127,10 @@ env:
   triggered_by_user: "${{ github.triggering_actor }}"
   repo_path: "${{ secrets.PKGBUILD_DIR }}"
   iso_distroname: "${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}"
-  iso_branch: "STABLE"
+  iso_manjaro_branch: "${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch}}"
+  iso_biglinux_branch: "${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch}}"
+  iso_community_branch: "${{ github.event.client_payload.community_branch || inputs.community_branch}}"
+  iso_chililinux_branch: "${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch}}"
   iso_edition: "${{ github.event.client_payload.edition || inputs.edition}}"
   iso_release_tag: "${{ github.event.client_payload.release_tag || inputs.release_tag }}"
   iso_kernel: "${{ github.event.client_payload.kernel || inputs.kernel }}"
@@ -165,6 +168,8 @@ jobs:
       - name: Enviar notificação para o Telegram
         shell: bash
         run: |
+          iso_branch="${{ env.iso_distroname }}"
+
           MESSAGE="🚀 <b>[step 0/6] build-iso - INICIANDO WORKFLOW</b>
           <b>Job     :</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-iso/edition.yml</code>
@@ -172,7 +177,10 @@ jobs:
           <b>Inicio    :</b> <code>${{ env.START_TIME }}</code>
           <b>Distroname:</b> <code>${iso_distroname}</code>
           <b>Edition   :</b> <code>${iso_edition}</code>
-          <b>Branch    :</b> <code>${iso_branch}</code>
+          <b>Manjaro Branch :</b> <code>${iso_manjaro_branch}</code>
+          <b>Biglinux Branch :</b> <code>${iso_biglinux_branch}</code>
+          <b>Community Branch :</b> <code>${iso_community_branch}</code>
+          <b>Chililinux Branch :</b> <code>${iso_chililinux_branch}</code>
           <b>Release   :</b> <code>${iso_release_tag}</code>
           <b>Kernel    :</b> <code>${iso_kernel}</code>
           <b>ISO Name  :</b> <code>$${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}</code>"
