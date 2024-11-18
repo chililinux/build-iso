@@ -195,8 +195,6 @@ jobs:
             -d text="${MESSAGE}" \
             -d parse_mode="HTML"
 
-          exit 1
-
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
