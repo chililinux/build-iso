@@ -168,7 +168,12 @@ jobs:
       - name: Enviar notificação para o Telegram
         shell: bash
         run: |
-          iso_branch="${{ env.iso_distroname }}"
+          case [[ "${{ env.iso_distroname }}" ]] in
+          bigcommunity) iso_branch="${iso_community_branch}";;
+          biglinux) iso_branch="${iso_biglinux_branch}";;
+          chililinux) iso_branch="${iso_chililinux_branch}";;
+          manjaro) iso_branch="${iso_manjaro_branch}";;
+          esac
 
           MESSAGE="🚀 <b>[step 0/6] build-iso - INICIANDO WORKFLOW</b>
           <b>Job     :</b> <code>#${GITHUB_RUN_NUMBER}</code>
