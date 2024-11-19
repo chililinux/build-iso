@@ -222,7 +222,8 @@ jobs:
     needs: [setup] # Espera o job "setup" terminar
     container:
       #image: talesam/community-build:1.4.1
-      image: talesam/community-build:1.3
+      #image: talesam/community-build:1.3
+      image: talesam/community-build:1.5.1
       options: --privileged
       volumes:
         - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
