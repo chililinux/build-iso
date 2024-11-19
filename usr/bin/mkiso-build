@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 # shellcheck shell=bash disable=SC1091,SC2039,SC2166
 #
-#  mkiso-bigcommunity
+#  mkiso-build - Wrapper bash para o buildiso
+#  Ferramenta auxiliar para o buildiso, adicionando automações, validações e opções customizadas
+#  ao fluxo padrão de construção de ISOs.
+#
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: ter 19 nov 2024 00:46:42 -04
+#  Altered: ter 19 nov 2024 12:13:14 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -30,7 +33,7 @@
 #  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##############################################################################
 declare APP="${0##*/}"
-declare APPDESC="Wrapper bash para o manjaro buildiso"
+declare APPDESC="Wrapper bash para o buildiso"
 declare VERSION="1.1.6" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
@@ -71,12 +74,13 @@ configure_vars() {
 	get_edition() {
 		create_menu \
 			"Escolha uma EDICÃO/DE para a ISO:" \
-			"xfce" \
+			"base" \
 			"cinnamon" \
 			"cosmic" \
 			"deepin" \
 			"gnome" \
 			"kde" \
+			"xfce" \
 			"wmaker" \
 			"Sair"
 		if [[ $MENU_RESULT == "Sair" ]]; then
@@ -88,10 +92,11 @@ configure_vars() {
 	get_distroname
 	get_edition
 	get_iso_profiles_repo
+  DISTRONAME_ISOPROFILES="${DISTRONAME}"
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
-	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community"
-	PROFILE_PATH_EDITION="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/community/$EDITION"
+	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}"
+	PROFILE_PATH_EDITION="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}/$EDITION"
 	PATH_MANJARO_ISO_PROFILES='/usr/share/manjaro-tools/iso-profiles'
 	PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
 	VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
@@ -324,18 +329,18 @@ replicate() {
 export -f replicate
 
 sh_version() {
-	cat <<EOF_VERSION
-		${bold}${cyan}${0##*/} v${VERSION}${reset}
-		${APPDESC}
-		${bold}${black}Copyright (C) 2024-2024 ${reset}BigCommunity Team${black}
+  cat <<EOF_VERSION
+${bold}${cyan}${0##*/} v${VERSION}${reset}
+${APPDESC}
+${bold}${black}Copyright (c) 2024-2024, ${reset}Vilmar Catafesta <vcatafesta@gmail.com>${black}
+${bold}${black}Copyright (C) 2024-2024, ${reset}BigCommunity Team${black}
 
-		Este é um software livre: você é livre para alterá-lo e redistribuí-lo.
-		O $APP é disponibilizado para você sob a ${yellow}Licença MIT${black}, e
-		inclui software de código aberto sob uma variedade de outras licenças.
-		Você pode ler instruções sobre como baixar e criar para você mesmo
-		o código fonte específico usado para criar esta cópia.
-		${red}Este programa vem com absolutamente NENHUMA garantia.
-		${reset}
+  Este é um software livre: você é livre para alterá-lo e redistribuí-lo.
+  O $APP é disponibilizado para você sob a ${yellow}Licença MIT${black}, e
+  inclui software de código aberto sob uma variedade de outras licenças.
+  Você pode ler instruções sobre como baixar e criar para você mesmo
+  o código fonte específico usado para criar esta cópia.
+  ${red}Este programa vem com absolutamente NENHUMA garantia.${reset}
 EOF_VERSION
 }
 
