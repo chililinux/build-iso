@@ -4,7 +4,7 @@
 #
 #  mkiso-bigcommunity
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: seg 18 nov 2024 23:30:24 -04
+#  Altered: ter 19 nov 2024 00:46:42 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -302,17 +302,17 @@ switch_to_root() {
 
 msg() {
 	local msg="$1"
-	echo "=>${cyan}running: ${yellow}${msg}${reset}"
+	echo "mkiso=>${cyan}running: ${yellow}${msg}${reset}"
 }
 
 msg_info() {
 	local msg="$1"
-	echo "=>${yellow}info   : ${cyan}${msg}${reset}"
+	echo "mkiso=>${yellow}info   : ${cyan}${msg}${reset}"
 }
 
 msg_warning() {
 	local msg="$1"
-	echo "=>${red}warning: ${orange}${msg}${reset}"
+	echo "mkiso=>${red}warning: ${orange}${msg}${reset}"
 }
 
 replicate() {
@@ -1263,7 +1263,8 @@ for arg in "$@"; do
 		sh_usage
 		exit $(($# ? 0 : 1))
 	elif [[ "$arg" = @(-a|--auto|--automatic) ]]; then
-		unset_varcolors
+		#unset_varcolors
+		set_varcolors
 		IS_AUTO=true
 		make_iso
 	elif [[ "$arg" = @(-m|--manual|--standalone) ]]; then
