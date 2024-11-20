@@ -331,6 +331,10 @@ jobs:
           iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
           # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
 
+          # Passando o START_TIME para action.yml
+          start_time: "${{ env.START_TIME }}"
+          start_timestamp: "${{ env.START_TIMESTAMP }}"
+
       - name: Set ISO path
         run: |
           # Set ISO path
