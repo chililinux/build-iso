@@ -179,7 +179,7 @@ jobs:
           chililinux) iso_branch="${iso_chililinux_branch}";;
           manjaro) iso_branch="${iso_manjaro_branch}";;
           esac
-          link_action='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'
+          link_action=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
           MESSAGE="🚀 <b>[step 0/6] build-iso - INICIANDO WORKFLOW</b>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
