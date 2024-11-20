@@ -41,7 +41,7 @@ declare IS_AUTO=false
 declare -aG bigcommunity_edition=(base cinnamon cosmic deepin gnome kde xfce wmaker)
 declare -aG biglinux_edition=(FalaQueEuTeEscuto flisol kde smallxivastudio)
 declare -aG chililinux_edition=(base cinnamon cosmic deepin gnome i3 kde xfce wmaker)
-declare -aG manjaro_edition=(architect bladebook gnome gnome-next grub kde kde-dev netinstall nxd xfce)
+declare -aG manjaro_edition=(architect bladebook gnome gnome-next grub i3 kde kde-dev netinstall nxd xfce)
 
 get_distroname() {
 	create_menu \
