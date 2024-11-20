@@ -145,6 +145,15 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
+      - name: Capturar hora de início do workflow
+        id: start-time
+        run: |
+          START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
+          START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
+          echo "Início do Workflow: $START_TIME"
+          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
+          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
+
       - name: Create a Welcome file
         run: |
           echo "Hello from setup job" > shared_file.txt
@@ -160,15 +169,6 @@ jobs:
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
           sudo mkdir -p /mnt/lfs
-
-      - name: Capturar hora de início do workflow
-        id: start-time
-        run: |
-          START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
-          START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
-          echo "Início do Workflow: $START_TIME"
-          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
 
       - name: Enviar notificação para o Telegram
         shell: bash
@@ -196,6 +196,13 @@ jobs:
           <b>Release:</b> <code>${iso_release_tag}</code>
           <b>Kernel:</b> <code>${iso_kernel}</code>
           <b>ISO Name:</b> <code>${iso_distroname}_${iso_branch^^}_${iso_edition}_${iso_release_tag}</code>"
+          # Remove as tags HTML e exibe o resultado no terminal
+          echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
+          # Envia a mensagem original com HTML para o Telegram
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
