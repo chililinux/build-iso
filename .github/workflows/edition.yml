@@ -181,7 +181,7 @@ jobs:
           esac
           link_action=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
-          MESSAGE="🚀 <b>[step 0/6] build-iso - INICIANDO WORKFLOW</b>
+          MESSAGE="🚀 <b>[step 1/2] build-iso - INICIANDO WORKFLOW</b>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Job URL:</b> <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>${link_action}</a>
           <b>Workflow:</b> <code>build-iso/edition.yml</code>
@@ -394,7 +394,7 @@ jobs:
         shell: bash
         run: |
           # Function to send Telegram message
-          source /tmp/send_telegram_message.sh
+          #source /tmp/send_telegram_message.sh
 
           START_TIME="${{ inputs.start_time }}"
           START_TIMESTAMP="${{ inputs.start_timestamp }}"
@@ -406,7 +406,7 @@ jobs:
           minutes=$(( (duration % 3600) / 60 ))
           seconds=$((duration % 60))
 
-          MESSAGE="⏳ <b>[step 6/6] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
+          MESSAGE="⏳ <b>[step 2/2] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-package/action.yml</code>
           <b>Inicio:</b> <code>${START_TIME}</code>
