@@ -416,4 +416,3 @@ jobs:
             -d chat_id="${CHAT_ID}" \
             -d text="${MESSAGE}" \
             -d parse_mode="HTML"
-
