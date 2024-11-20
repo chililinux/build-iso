@@ -183,7 +183,7 @@ jobs:
 
           MESSAGE="🚀 <b>[step 0/6] build-iso - INICIANDO WORKFLOW</b>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
-          <b>Job URL:</b> <a href=${link_action}>${link_action}</a>
+          <b>Job URL:</b> <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>${link_action}</a>
           <b>Workflow:</b> <code>build-iso/edition.yml</code>
           <b>Iniciado/Triggered:</b> <code>${started_by_user}/${triggered_by_user}</code>
           <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
