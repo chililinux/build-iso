@@ -170,15 +170,6 @@ jobs:
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
           sudo mkdir -p /mnt/lfs
 
-      - name: Capturar hora de início do workflow
-        id: start-time
-        run: |
-          START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
-          START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
-          echo "Início do Workflow: $START_TIME"
-          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
-
       - name: Enviar notificação para o Telegram
         shell: bash
         run: |
