@@ -171,6 +171,7 @@ get_kernel() {
 		"latest" \
 		"lts" \
 		"oldlts" \
+		"xanmod" \
 		"Sair"
 	if [[ $MENU_RESULT == "Sair" ]]; then
 		die "${red}" "Construção da ISO cancelada.${reset}"

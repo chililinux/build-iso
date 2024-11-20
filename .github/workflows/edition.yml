@@ -2,7 +2,7 @@
 #
 #  edition.yml
 #  Created: 2024/09/15 - 08:10
-#  Altered: 2024/10/27 - 12:26
+#  Altered: qua 20 nov 2024 10:00:22 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -43,16 +43,19 @@ on:
           - bigcommunity
           - biglinux
           - chililinux
-        default: "bigcommunity"
+          - manjaro
+        default: "chililinux"
       iso_profiles_repo:
         type: choice
         description: "Choice ISO profiles"
         required: true
         options:
           - "https://github.com/talesam/iso-profiles"
+          - "https://github.com/biglinux/iso-profiles"
           - "https://github.com/chililinux/iso-profiles"
+          - "https://github.com/chililinux/manjaro-iso-profiles"
           - "https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git"
-        default: "https://github.com/talesam/iso-profiles"
+        default: "https://github.com/chililinux/iso-profiles"
       scope:
         type: choice
         description: "Build scope"
@@ -77,6 +80,7 @@ on:
           - latest
           - lts
           - oldLts
+          - xanmod
         default: lts
       manjaro_branch:
         type: choice
@@ -115,6 +119,7 @@ on:
           - cosmic
           - deepin
           - gnome
+          - i3
           - kde
           - xfce
           - wmaker
