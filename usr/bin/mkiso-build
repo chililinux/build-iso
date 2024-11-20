@@ -7,7 +7,7 @@
 #  ao fluxo padrão de construção de ISOs.
 #
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: ter 19 nov 2024 12:13:14 -04
+#  Altered: qua 20 nov 2024 09:49:25 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -672,21 +672,26 @@ export -f add_chili-extra
 add_repository() {
 	arquivo_conf="$1"
 
-	for key in biglinux-keyring community-keyring chili-keyring; do
-		msg "Checa e senão, adiciona repositório '$key' no arquivo $arquivo_conf"
-		if ! grep -q "$key" "$arquivo_conf"; then
-			sudo sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
-		fi
-	done
+	if [[ "$DISTRONAME" != "manjaro" ]]; then
+    # Lista de chaves a serem verificadas
+  	for key in biglinux-keyring community-keyring chili-keyring; do
+      msg "Verificando e adicionando repositório '$key' ao arquivo $arquivo_conf, se necessário."
+      # Verifica e adiciona a chave ao SyncFirst, caso não exista
+  		if ! grep -q "$key" "$arquivo_conf"; then
+	  		sudo sed -i '/SyncFirst/s/$/ "$key"/' "$arquivo_conf"
+  		fi
+  	done
 
-	msg "Checando se repositório 'biglinux-update-stable' está presente no arquivo $arquivo_conf, senão adiciona"
-	if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
-		msg_info 'Inserindo o repositório [biglinux-update-stable] antes da seção [core]'
-		sudo sed -i "/\[core\]/i \
-		  [biglinux-update-stable]\
-		  \nSigLevel = PackageRequired\
-		  \nServer = https://repo.biglinux.com.br/update-stable/\$arch\n" "$arquivo_conf"
-	fi
+    msg "Verificando se o repositório 'biglinux-update-stable' está presente no arquivo $arquivo_conf."
+    # Verifica e insere o repositório antes da seção [core], se necessário
+	  if ! grep -q 'biglinux-update-stable' "$arquivo_conf"; then
+  		msg_info 'Inserindo o repositório [biglinux-update-stable] antes da seção [core]'
+		  sudo sed -i "/\[core\]/i \
+		    [biglinux-update-stable]\
+  		  \nSigLevel = PackageRequired\
+	  	  \nServer = https://repo.biglinux.com.br/update-stable/\$arch\n" "$arquivo_conf"
+  	fi
+  fi
 
 	msg "Configurando repositórios do Manjaro"
 	branch="$MANJAROBRANCH"
@@ -717,7 +722,7 @@ add_repository() {
 	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
 	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
-		msg 'Configurando repositórios do Community'
+		msg 'Configurando repositórios do BigCommunity'
 		case "$COMMUNITYBRANCH" in
 		"stable")
 			add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
@@ -767,8 +772,11 @@ export -f add_repository
 configure_repositories_and_build_environment() {
 	msg 'Configurar repositórios e criar ambiente'
 	msg 'Aplicando as configurações'
-	add_repository "$PATH_MANJARO_TOOLS/pacman-default.conf"
-	add_repository "$PATH_MANJARO_TOOLS/pacman-multilib.conf"
+
+	if [[ "$DISTRONAME" != "manjaro" ]]; then
+  	add_repository "$PATH_MANJARO_TOOLS/pacman-default.conf"
+  	add_repository "$PATH_MANJARO_TOOLS/pacman-multilib.conf"
+  fi
 
 	msg 'Alterando o path da remoção do cache de pacotes para remover /usr/share/man'
 	msg_info "sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh"
