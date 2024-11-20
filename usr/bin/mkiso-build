@@ -38,6 +38,10 @@ declare VERSION="1.1.6" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
+declare -aG bigcommunity_edition=(base cinnamon cosmic deepin gnome kde xfce wmaker)
+declare -aG biglinux_edition=(FalaQueEuTeEscuto flisol kde smallxivastudio)
+declare -aG chililinux_edition=(base cinnamon cosmic deepin gnome i3 kde xfce wmaker)
+declare -aG manjaro_edition=(architect bladebook gnome gnome-next grub kde kde-dev netinstall nxd xfce)
 
 get_distroname() {
 	create_menu \
@@ -59,6 +63,7 @@ get_iso_profiles_repo() {
 		'https://github.com/talesam/iso-profiles' \
 		'https://github.com/biglinux/iso-profiles' \
 		'https://github.com/chililinux/iso-profiles' \
+		'https://github.com/chililinux/manjaro-iso-profiles' \
 		'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' \
 		'Sair'
 	if [[ $MENU_RESULT == "Sair" ]]; then
@@ -67,22 +72,45 @@ get_iso_profiles_repo() {
 	REPO="${MENU_RESULT}"
 }
 
+#get_edition() {
+#	create_menu \
+#		"Escolha uma EDICÃO/DE para a ${DISTRONAME}:" \
+#		"base" \
+#		"cinnamon" \
+#		"cosmic" \
+#		"deepin" \
+#		"gnome" \
+#		"kde" \
+#		"xfce" \
+#		"wmaker" \
+#		"Sair"
+#	if [[ $MENU_RESULT == "Sair" ]]; then
+#		die "${red}" "Construção da ISO cancelada.${reset}"
+#	fi
+#	EDITION="${MENU_RESULT}"
+#}
+
+# Função para obter a edição
 get_edition() {
-	create_menu \
-		"Escolha uma EDICÃO/DE para a ISO:" \
-		"base" \
-		"cinnamon" \
-		"cosmic" \
-		"deepin" \
-		"gnome" \
-		"kde" \
-		"xfce" \
-		"wmaker" \
-		"Sair"
-	if [[ $MENU_RESULT == "Sair" ]]; then
-		die "${red}" "Construção da ISO cancelada.${reset}"
-	fi
-	EDITION="${MENU_RESULT}"
+  # Determina o array com base na distribuição
+  local editions_var="${DISTRONAME}_edition"
+  local -n editions="${editions_var}"  # Referência ao array correspondente
+
+  # Adiciona a opção "Sair" ao menu
+  editions+=("Sair")
+
+  # Cria o menu dinamicamente com as opções do array
+  create_menu \
+    "Escolha uma EDIÇÃO/DE para a ${DISTRONAME}:" \
+    "${editions[@]}"
+
+  # Verifica se a opção selecionada foi "Sair"
+  if [[ $MENU_RESULT == "Sair" ]]; then
+    die "${red}" "Construção da ISO cancelada.${reset}"
+  fi
+
+  # Define a edição escolhida
+  EDITION="${MENU_RESULT}"
 }
 
 get_manjarobranch() {
@@ -101,8 +129,8 @@ get_manjarobranch() {
 get_bigbranch() {
 	create_menu \
 		"Escolha uma opcao para Branch do BigLinux:" \
-		"testing" \
 		"stable" \
+		"testing" \
 		"unstable" \
 		"Sair"
 	if [[ $MENU_RESULT == "Sair" ]]; then
@@ -114,8 +142,8 @@ get_bigbranch() {
 get_communitybranch() {
 	create_menu \
 		"Escolha uma opcao para Branch do BigCommunity:" \
-		"testing" \
 		"stable" \
+		"testing" \
 		"unstable" \
 		"Sair"
 	if [[ $MENU_RESULT == "Sair" ]]; then
@@ -127,8 +155,8 @@ get_communitybranch() {
 get_chilibranch() {
 	create_menu \
 		"Escolha uma opcao para Branch do ChiliLinux:" \
-		"testing" \
 		"stable" \
+		"testing" \
 		"unstable" \
 		"Sair"
 	if [[ $MENU_RESULT == "Sair" ]]; then
@@ -383,7 +411,7 @@ sh_usage() {
     ${cyan}Opções:${reset}
       -o|--org|--organization ${orange}<name> ${cyan} # Configura organização de trabalho no Github ${yellow}(default: communitybig)${reset}
       -a|--auto|--automatic          ${cyan} # Construir ISO automaticamente pelo Action do github ${reset}
-      -m|--manual|--standalone       ${cyan} # Construir ISO manualmente ${reset}
+      -m|--manual|--standalone       ${cyan} # Construir ISO localmente ${reset}
       -n|--nocolor                   ${cyan} # Suprime a impressão de cores ${reset}
       -V|--version                   ${cyan} # Imprime a versão do aplicativo ${reset}
       -h|--help                      ${cyan} # Mostra este Help ${reset}
@@ -518,8 +546,9 @@ check_directories_and_path() {
 
 	# Verificando o diretório do perfil específico
 	if [[ ! -d "$PROFILE_PATH_EDITION" ]]; then
-		msg_info "ERRO($LINENO): perfil $PROFILE_PATH_EDITION não encontrado!"
-		exit 1
+		#msg_info "ERRO($LINENO): perfil $PROFILE_PATH_EDITION não encontrado!"
+		#exit 1
+		die "${red}" "ERRO($LINENO): perfil $PROFILE_PATH_EDITION não encontrado!"
 	fi
 	if $DEBUG; then
 		replicate "#"
@@ -1122,7 +1151,7 @@ export -f configure_iso_name
 
 build_iso() {
 	echo "########################## RESUMO #################################"
-	echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
+	echo "BUILD COMMAND            : buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "PROFILE_PATH_EDITION     : $PROFILE_PATH_EDITION"
 	echo "DISTRONAME               : $DISTRONAME"
@@ -1147,16 +1176,16 @@ build_iso() {
 
 	verificar_iso_profiles_conf
 	msg "Executar buildiso e capturar o código de saída"
-	msg_info 'LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"'
+	msg_info 'LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"'
 
 	#  if [[ "$DISTRONAME" == 'chililinux' ]]; then
 	if $DEBUG; then
-		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
 	else
-		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	fi
 	#  else
-	#    LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
+	#    LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	#	fi
 	BUILD_EXIT_CODE=$?
 
