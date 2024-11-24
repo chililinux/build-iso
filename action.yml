@@ -164,7 +164,7 @@ runs:
           local line
           #printf -v line "%*s" "$nsize" && echo "${line// /$char}"
           #printf -v line "%*s" "$nsize" && echo -e "\033[31m${line// /$char}\033[0m"
-          printf -v line "%*s" "$nsize" && echo -e "${red}${line// /$char}${reset}"
+          printf -v line "%*s" "$nsize" && echo -e "${blue}${line// /$char}${reset}"
         }
         export -f replicate
 
@@ -192,13 +192,15 @@ runs:
         #Display the current user in CONTAINER
         source /tmp/send_telegram_message.sh
         replicate '='
-        echo "Current host is     : $(hostname)"
-        echo "Current user is     : $(whoami)"
-        echo "Current user ID is  : $(id -u)"
-        echo "Current user details: $(id)"
+        echo -e "${cyan}Current host is     : ${yellow}$(hostname)${reset}"
+        echo -e "${cyan}Current user is     : ${yellow}$(whoami)${reset}"
+        echo -e "${cyan}Current user ID is  : ${yellow}$(id -u)${reset}"
+        echo -e "${cyan}Current user details: ${yellow}$(id)${reset}"
         replicate '='
+        echo 'df -hT || true'
         df -hT || true
         replicate '='
+        echo 'ls -la /mnt || true'
         ls -la /mnt || true
         replicate '='
 
