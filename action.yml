@@ -120,25 +120,92 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Definir a função send_telegram_message no script temporário
+      shell: bash
+      env:
+        TELEGRAM_TOKEN: "${{ inputs.telegram_token }}"
+        TELEGRAM_CHAT_ID: "${{ inputs.telegram_chat_id }}"
+      run: |
+        #Definir a função send_telegram_message no script temporário
+        cat << 'EOF' > /tmp/send_telegram_message.sh
+        export TERM=${TERM:-xterm}
+        export TERM=${TERM:-xterm-256color}
+
+        #Definindo variáveis de cores
+        export green="\033[01;32m"
+        export red="\033[01;31m"
+        export blue="\033[01;34m"
+        export cyan="\033[01;36m"
+        export pink="\033[01;35m"
+        export yellow="\033[01;33m"
+        export reset="\033[0m"
+
+        msg() {
+          local msg="$1"
+          msg="$(sed 's/<[^>]*>//g' <<< "$msg")" # Remove as tags HTML
+          echo -e "build-package=>${cyan}running: ${yellow}${msg}${reset}"
+        }
+
+        msg_info() {
+          local msg="$1"
+          msg="$(sed 's/<[^>]*>//g' <<< "$msg")" # Remove as tags HTML
+          echo -e "build-package=>${yellow}info   : ${cyan}${msg}${reset}"
+        }
+
+        msg_warning() {
+          local msg="$1"
+          msg="$(sed 's/<[^>]*>//g' <<< "$msg")" # Remove as tags HTML
+          echo -e "build-package=>${red}warning: ${orange}${msg}${reset}"
+        }
+
+        replicate() {
+          local char=${1:-'#'}
+          local nsize=${2:-$(tput cols)}
+          local line
+          #printf -v line "%*s" "$nsize" && echo "${line// /$char}"
+          #printf -v line "%*s" "$nsize" && echo -e "\033[31m${line// /$char}\033[0m"
+          printf -v line "%*s" "$nsize" && echo -e "${red}${line// /$char}${reset}"
+        }
+        export -f replicate
+
+        send_telegram_message() {
+          local message="$1"
+          local parse_mode="$2"
+
+          # Define parse_mode como "MarkdownV2" se não for especificado
+          [[ -z $parse_mode ]] && parse_mode="HTML"
+
+          # Remove as tags HTML e exibe o resultado no terminal
+          echo -e "${red}$(sed 's/<[^>]*>//g' <<< "$message")${reset}"
+          # Envia a mensagem original com HTML para o Telegram
+          curl -s -X POST "https://api.telegram.org/bot${{ inputs.telegram_token }}/sendMessage" \
+            -d chat_id="${{ inputs.telegram_chat_id }}" \
+            -d text="$message" \
+            -d parse_mode="$parse_mode"
+        }
+        export -f send_telegram_message
+        EOF
+
     - name: Display the current user in CONTAINER
       shell: bash
       run: |
-        # Display the current user in CONTAINER
-        echo "##########################################################################"
+        #Display the current user in CONTAINER
+        source /tmp/send_telegram_message.sh
+        replicate '='
         echo "Current host is     : $(hostname)"
         echo "Current user is     : $(whoami)"
         echo "Current user ID is  : $(id -u)"
         echo "Current user details: $(id)"
-        echo "##########################################################################"
+        replicate '='
         df -hT || true
-        echo "##########################################################################"
+        replicate '='
         ls -la /mnt || true
-        echo "##########################################################################"
+        replicate '='
 
     - name: Setup pacman packages
       shell: bash
       run: |
-        # Setup build environment
+        #Setup build environment
         #configure extra repos
         if [[ "${{ inputs.distroname }}" == 'bigcommunity' ]]; then
           {
@@ -169,7 +236,24 @@ runs:
 
         # update and install additional packages
         sudo pacman -Sy --quiet --needed --noconfirm --overwrite \* \
+          base \
           base-devel \
+          curl \
+          duf \
+          fakeroot \
+          git \
+          github-cli \
+          gnupg \
+          inetutils \
+          jq \
+          libarchive \
+          nano \
+          openssh \
+          openssl \
+          rsync \
+          tmate \
+          tree \
+          wget \
           manjaro-chrootbuild \
           manjaro-tools-iso-git \
           manjaro-tools-yaml-git \
@@ -184,30 +268,6 @@ runs:
           shfmt \
           cdrkit \
           ncurses > /dev/null
-
-        # update and install extra packages
-    #        sudo pacman -Sy --quiet --needed --noconfirm --overwrite \* \
-    #          base \
-    #          curl \
-    #          duf \
-    #          fakeroot \
-    #          git \
-    #          github-cli \
-    #          gnupg \
-    #          inetutils \
-    #          jq \
-    #          libarchive \
-    #          manjaro-chrootbuild \
-    #          nano \
-    #          openssh \
-    #          openssl \
-    #          rsync \
-    #          tmate \
-    #          tree \
-    #          wget \
-    #          zip \
-    #          shfmt \
-    #          cdrkit > /dev/null
 
     - name: Setup TMATE Session
       uses: mxschmitt/action-tmate@v3
