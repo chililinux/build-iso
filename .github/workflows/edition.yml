@@ -205,7 +205,7 @@ jobs:
             -d parse_mode="HTML"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: shared-file
           path: shared_file.txt
@@ -241,7 +241,7 @@ jobs:
 
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: shared-file
 
@@ -369,7 +369,7 @@ jobs:
           echo "release_name   : ${release_name}"
 
       - name: Upload ISO as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.prepare-iso.outputs.release_name }}
           path: |
