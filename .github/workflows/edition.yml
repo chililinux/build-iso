@@ -394,6 +394,7 @@ jobs:
         id: get-artifact-url
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          #FILE_NAME: "${{ steps.prepare-iso.outputs.release_name }}"
           FILE_NAME: "${ISO_BASENAME%.iso}"
           RUN_ID: "${{ github.run_id }}"
           REPO: "${{ github.repository }}"
@@ -407,6 +408,10 @@ jobs:
             echo "artifact_id=$artifact_id" >> $GITHUB_ENV
             echo "Artifact ID: $artifact_id"
 
+            artifact_size_in_bytes=$(echo "$artifacts" | jq -r --arg file_name "$FILE_NAME" '.artifacts[] | select(.name==$file_name) | .size_in_bytes')
+            echo "artifact_size_in_bytes=$artifact_size_in_bytes" >> $GITHUB_ENV
+            echo "Artifact SiZE: $artifact_size_in_bytes"
+
             artifact_url=https://github.com/$REPO/actions/runs/$RUN_ID/artifacts/$artifact_id
             echo "artifact_url=$artifact_url" >> $GITHUB_ENV
             echo "Artifact URL: $artifact_url"
@@ -416,10 +421,9 @@ jobs:
         run: |
           # Function to send Telegram message
           #source /tmp/send_telegram_message.sh
-
-          START_TIME="${{ inputs.start_time }}"
-          START_TIMESTAMP="${{ inputs.start_timestamp }}"
-          END_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
+          START_TIME="$START_TIME"
+          START_TIMESTAMP="$START_TIMESTAMP"
+          END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
           END_TIMESTAMP=$(date +%s)
           duration=$((END_TIMESTAMP - START_TIMESTAMP))
           hours=$((duration / 3600))
@@ -427,13 +431,15 @@ jobs:
           seconds=$((duration % 60))
           RUN_ID="${{ github.run_id }}"
           link_action="${{ env.artifact_url }}"
+          iso_size=$(numfmt --to=iec --suffix=B ${artifact_size_in_bytes})
 
           MESSAGE="⏳ <b>[step 2/2] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-package/action.yml</code>
           <b>Inicio:</b> <code>${START_TIME}</code>
           <b>Fim:</b> <code>${END_TIME}</code>
-          <b>Info:</b> <code>${{ steps.prepare-iso.outputs.release_name }}</code>
+          <b>Nome ISO:</b> <code>${ISO_BASENAME}</code>
+          <b>Tam ISO:</b> <code>${iso_size}</code>
           <b>URL:</b> <a href='${{ env.artifact_url }}'>${link_action}</a>"
 
           # Remove as tags HTML e exibe o resultado no terminal
