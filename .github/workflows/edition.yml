@@ -394,8 +394,8 @@ jobs:
         id: get-artifact-url
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          #FILE_NAME: "${{ steps.prepare-iso.outputs.release_name }}"
-          FILE_NAME: "${ISO_BASENAME%.iso}"
+          #FILE_NAME: "${ISO_BASENAME%.iso}"
+          FILE_NAME: "${{ steps.prepare-iso.outputs.release_name }}"
           RUN_ID: "${{ github.run_id }}"
           REPO: "${{ github.repository }}"
         run: |
@@ -403,6 +403,8 @@ jobs:
             -H "Accept: application/vnd.github+json"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
              /repos/$REPO/actions/runs/$RUN_ID/artifacts)
+
+            echo "$artifacts" | jq .
 
             artifact_id=$(echo "$artifacts" | jq -r --arg file_name "$FILE_NAME" '.artifacts[] | select(.name==$file_name) | .id')
             echo "artifact_id=$artifact_id" >> $GITHUB_ENV
@@ -420,19 +422,26 @@ jobs:
         shell: bash
         run: |
           # Function to send Telegram message
-          #source /tmp/send_telegram_message.sh
+          # Define a hora de início e término
           START_TIME="$START_TIME"
           START_TIMESTAMP="$START_TIMESTAMP"
           END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
           END_TIMESTAMP=$(date +%s)
+
+          # Calcula a duração em segundos, horas, minutos e segundos
           duration=$((END_TIMESTAMP - START_TIMESTAMP))
           hours=$((duration / 3600))
           minutes=$(( (duration % 3600) / 60 ))
           seconds=$((duration % 60))
+
+          # Obtém o ID do run e o URL do artefato a partir das variáveis de ambiente
           RUN_ID="${{ github.run_id }}"
           link_action="${{ env.artifact_url }}"
-          iso_size=$(numfmt --to=iec --suffix=B ${artifact_size_in_bytes})
 
+          # Converte o tamanho do artefato para um formato legível
+          iso_size=$(numfmt --to=iec --suffix=B "${artifact_size_in_bytes}")
+
+          # Prepara a mensagem
           MESSAGE="⏳ <b>[step 2/2] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-package/action.yml</code>
@@ -444,7 +453,8 @@ jobs:
 
           # Remove as tags HTML e exibe o resultado no terminal
           echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
-          # Envia a mensagem original com HTML para o Telegram
+
+          # Envia a mensagem para o Telegram com formatação HTML
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
             -d chat_id="${CHAT_ID}" \
             -d text="${MESSAGE}" \
