@@ -259,8 +259,8 @@ configure_vars() {
 	fi
 
 	get_kernel
-	get_scope
-	get_office
+	#get_scope
+	#get_office
 	get_debug
 
 	mkdir -p "$WORK_PATH" &>/dev/null
@@ -434,9 +434,9 @@ create_menu() {
 		replicate '-'
 		msg_info "USERNAME      : ${cyan}$USERNAME ${reset}"
 		msg_info "HOME_FOLDER   : ${cyan}$HOME_FOLDER ${reset}"
+		msg_info "DISTRONAME    : ${cyan}$DISTRONAME ${reset}"
 		msg_info "EDITION       : ${cyan}$EDITION ${reset}"
 		msg_info "REPO          : ${cyan}$REPO ${reset}"
-		msg_info "DISTRONAME    : ${cyan}$DISTRONAME ${reset}"
 		msg_info "DEBUG         : ${cyan}$DEBUG ${reset}"
 		replicate '-'
 		echo -e "${blue}${bold}$title${reset}\n"
@@ -716,6 +716,10 @@ add_repository() {
 		'mirrors.gigenet.com'
 		'ask4.mm.fcix.net'
 	)
+
+  echo "Server = https://linorg.usp.br/manjaro/$branch/\$repo/\$arch" | sudo tee -a "$arquivo_conf" >/dev/null
+  echo "Server = https://manjaro.c3sl.ufpr.br/$branch/\$repo/\$arch"  | sudo tee -a "$arquivo_conf" >/dev/null
+
 	for server in "${servers[@]}"; do
 		msg_info "Incluindo $server no arquivo $arquivo_conf"
 		echo "Server = https://$server/manjaro/$branch/\$repo/\$arch" | sudo tee -a "$arquivo_conf" >/dev/null

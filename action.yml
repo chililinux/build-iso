@@ -102,6 +102,12 @@ inputs:
   github_token:
     description: "GitHub token for authentication"
     required: true
+  start_time:
+    description: "Hora de início do workflow"
+    required: false
+  start_timestamp:
+    description: "Timestamp de início do workflow"
+    required: false
 
 outputs:
   iso_path:
