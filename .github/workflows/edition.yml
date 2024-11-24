@@ -393,14 +393,23 @@ jobs:
       - name: Get Artifact URL
         id: get-artifact-url
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          FILE_NAME: "${ISO_BASENAME%.iso}"
+          RUN_ID: "${{ github.run_id }}"
+          REPO: "${{ github.repository }}"
         run: |
-          artifacts=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts")
-          echo "Artifacts: $artifacts"
-          artifact_url=$(echo "$artifacts" | jq -r '.artifacts[] | select(.name=="shared-file") | .archive_download_url')
-          echo "artifact_url=$artifact_url" >> $GITHUB_ENV
-          echo "Artifact URL: $artifact_url"
+          artifacts=$(gh api \
+            -H "Accept: application/vnd.github+json"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+             /repos/$REPO/actions/runs/$RUN_ID/artifacts)
+
+            artifact_id=$(echo "$artifacts" | jq -r --arg file_name "$FILE_NAME" '.artifacts[] | select(.name==$file_name) | .id')
+            echo "artifact_id=$artifact_id" >> $GITHUB_ENV
+            echo "Artifact ID: $artifact_id"
+
+            artifact_url=https://github.com/$REPO/actions/runs/$RUN_ID/artifacts/$artifact_id
+            echo "artifact_url=$artifact_url" >> $GITHUB_ENV
+            echo "Artifact URL: $artifact_url"
 
       - name: Capturar hora de término e calcular duração
         shell: bash
