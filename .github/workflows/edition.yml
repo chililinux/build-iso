@@ -485,7 +485,7 @@ jobs:
           # Prepara a mensagem
           MESSAGE="⏳ <b>[step 2/2] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
-          <b>Workflow:</b> <code>build-package/action.yml</code>
+          <b>Workflow:</b> <code>build-iso/edition.yml</code>
           <b>Inicio:</b> <code>${START_TIME}</code>
           <b>Fim:</b> <code>${END_TIME}</code>
           <b>Nome ISO:</b> <code>${ISO_BASENAME}</code>
