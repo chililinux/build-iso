@@ -252,7 +252,7 @@ jobs:
         run: |
           cat shared_file.txt
           # Atribuir o conteúdo do arquivo à variável START_TIME
-          START_TIME="$(<$shared_file.txt)"
+          START_TIME="$(<shared_file.txt)"
           # Exibir a variável para verificação
           echo "START_TIME=$START_TIME"
           # Definir a variável START_TIME para outros jobs
