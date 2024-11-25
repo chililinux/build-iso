@@ -152,13 +152,11 @@ jobs:
           echo "Início do Workflow: $START_TIME"
           echo "START_TIME=$START_TIME" >> $GITHUB_ENV
           echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
-          echo "start_time=$START_TIME" >> $GITHUB_OUTPUT
-          echo "start_timestamp=$START_TIMESTAMP" >> $GITHUB_OUTPUT
 
       - name: Create a Welcome file
         shell: bash
         run: |
-          echo "Início do Workflow: $START_TIME" > shared_file.txt
+          echo "$START_TIME" > shared_file.txt
 
       - name: Install dependencies on HOST
         shell: bash
@@ -250,7 +248,15 @@ jobs:
           name: shared-file
 
       - name: Display file content
-        run: cat shared_file.txt
+        shell: bash
+        run: |
+          cat shared_file.txt
+          # Atribuir o conteúdo do arquivo à variável START_TIME
+          START_TIME="$(<$shared_file.txt)"
+          # Exibir a variável para verificação
+          echo "START_TIME=$START_TIME"
+          # Definir a variável START_TIME para outros jobs
+          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -428,8 +434,10 @@ jobs:
           # Function to send Telegram message
           # Define a hora de início e término
           # Acessa os valores passados como output do step anterior
-          START_TIME="${{ needs.setup.outputs.start_time }}"
-          START_TIMESTAMP="${{ needs.setup.outputs.start_timestamp }}"
+          #START_TIME="${{ needs.setup.outputs.start_time }}"
+          #START_TIMESTAMP="${{ needs.setup.outputs.start_timestamp }}"
+          START_TIME="${{ env.START_TIME }}"
+          START_TIMESTAMP="${{ env.START_TIMESTAMP }}"
 
           END_TIMESTAMP=$(date +%s)
           END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
