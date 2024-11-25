@@ -153,9 +153,10 @@ jobs:
           echo "START_TIME=$START_TIME" >> $GITHUB_ENV
           echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
 
-      - name: Create a Welcome file
+      - name: Cria um arquivo de variaveis para compartilhar entre jobs
         shell: bash
         run: |
+          #Cria um arquivo de variaveis para compartilhar entre jobs
           #echo "$START_TIME" > shared_file.txt
           echo "START_TIME='$START_TIME'" >> shared_file.txt
           echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
@@ -249,9 +250,10 @@ jobs:
         with:
           name: shared-file
 
-      - name: Display file content and Load variables
+      - name: Exibir conteúdo do arquivo e carregar variáveis
         shell: bash
         run: |
+          #Exibir conteúdo do arquivo e carregar variáveis
           cat shared_file.txt
           # Atribuir o conteúdo do arquivo à variável START_TIME
           #START_TIME="$(<shared_file.txt)"
