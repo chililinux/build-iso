@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 #  edition.yml
 #  Created: 2024/09/15 - 08:10
 #  Altered: qua 20 nov 2024 10:00:22 -04
@@ -153,6 +151,23 @@ jobs:
           echo "Início do Workflow: $START_TIME"
           echo "START_TIME=$START_TIME" >> $GITHUB_ENV
           echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
+
+      - name: Usar as variáveis capturadas
+        run: |
+          echo "Hora de início do workflow: ${{ env.START_TIME }}"
+          echo "Timestamp de início: ${{ env.START_TIMESTAMP }}"
+
+      - name: Calcular duração do workflow
+        run: |
+          START_TIMESTAMP=${{ env.START_TIMESTAMP }}
+          END_TIMESTAMP=$(date +%s)
+          DURATION=$((END_TIMESTAMP - START_TIMESTAMP))
+
+          HOURS=$((DURATION / 3600))
+          MINUTES=$(((DURATION % 3600) / 60))
+          SECONDS=$((DURATION % 60))
+          echo "O workflow levou ${HOURS}h ${MINUTES}m ${SECONDS}s para ser concluído."
+          exit 1
 
       - name: Create a Welcome file
         run: |
@@ -425,6 +440,9 @@ jobs:
           # Define a hora de início e término
           END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
           END_TIMESTAMP=$(date +%s)
+
+          START_TIME="${{ inputs.start_time }}"
+          START_TIMESTAMP="${{ inputs.start_timestamp }}"
 
           # Calcula a duração em segundos, horas, minutos e segundos
           duration=$((END_TIMESTAMP - START_TIMESTAMP))
