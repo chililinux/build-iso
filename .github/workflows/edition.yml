@@ -423,8 +423,6 @@ jobs:
         run: |
           # Function to send Telegram message
           # Define a hora de início e término
-          START_TIME="${{ env.START_TIME }}"
-          START_TIMESTAMP="${{ env.START_TIMESTAMP }}"
           END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
           END_TIMESTAMP=$(date +%s)
 
@@ -445,11 +443,11 @@ jobs:
           MESSAGE="⏳ <b>[step 2/2] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-package/action.yml</code>
-          <b>Inicio:</b> <code>${START_TIME}</code>
+          <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
           <b>Fim:</b> <code>${END_TIME}</code>
           <b>Nome ISO:</b> <code>${ISO_BASENAME}</code>
           <b>Tam ISO:</b> <code>${iso_size}</code>
-          <b>Download:</b> <a href='${{ env.artifact_url }}'>${FILE_NAME}.zip</a>"
+          <b>Download:</b> <a href='${{ env.artifact_url }}'>${{env.FILE_NAME}}.zip</a>"
 
           # Remove as tags HTML e exibe o resultado no terminal
           echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
