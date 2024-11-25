@@ -428,6 +428,28 @@ jobs:
             echo "artifact_url=$artifact_url" >> $GITHUB_ENV
             echo "Artifact URL: $artifact_url"
 
+      - name: Telegram Alert Fail
+        if: failure()
+        shell: bash
+        run: |
+          # Send a Telegram alert if the build fails
+          # Function to send Telegram message
+          link_action=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          MESSAGE="🚨 <b>FALHA ao criar ISO:</b>
+          <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
+          <b>Iso:</b> <code>${{ github.event.action }}</code>
+          <b>URL erro:</b> <a href='https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}'>${link_action}</a>"
+
+          # Remove as tags HTML e exibe o resultado no terminal
+          echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
+
+          # Envia a mensagem para o Telegram com formatação HTML
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d text="${MESSAGE}" \
+            -d parse_mode="HTML"
+
       - name: Capturar hora de término e calcular duração
         shell: bash
         run: |
