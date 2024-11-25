@@ -152,23 +152,6 @@ jobs:
           echo "START_TIME=$START_TIME" >> $GITHUB_ENV
           echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
 
-      - name: Usar as variáveis capturadas
-        run: |
-          echo "Hora de início do workflow: ${{ env.START_TIME }}"
-          echo "Timestamp de início: ${{ env.START_TIMESTAMP }}"
-
-      - name: Calcular duração do workflow
-        run: |
-          START_TIMESTAMP=${{ env.START_TIMESTAMP }}
-          END_TIMESTAMP=$(date +%s)
-          DURATION=$((END_TIMESTAMP - START_TIMESTAMP))
-
-          HOURS=$((DURATION / 3600))
-          MINUTES=$(((DURATION % 3600) / 60))
-          SECONDS=$((DURATION % 60))
-          echo "O workflow levou ${HOURS}h ${MINUTES}m ${SECONDS}s para ser concluído."
-          exit 1
-
       - name: Create a Welcome file
         run: |
           echo "Hello from setup job" > shared_file.txt
@@ -438,11 +421,10 @@ jobs:
         run: |
           # Function to send Telegram message
           # Define a hora de início e término
-          END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+          START_TIME=${{ env.START_TIME }}
+          START_TIMESTAMP=${{ env.START_TIMESTAMP }}
           END_TIMESTAMP=$(date +%s)
-
-          START_TIME="${{ inputs.start_time }}"
-          START_TIMESTAMP="${{ inputs.start_timestamp }}"
+          END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
 
           # Calcula a duração em segundos, horas, minutos e segundos
           duration=$((END_TIMESTAMP - START_TIMESTAMP))
@@ -453,6 +435,7 @@ jobs:
           # Obtém o ID do run e o URL do artefato a partir das variáveis de ambiente
           RUN_ID="${{ github.run_id }}"
           link_action="${{ env.artifact_url }}"
+          file_name="${{ steps.prepare-iso.outputs.release_name }}"
 
           # Converte o tamanho do artefato para um formato legível
           iso_size=$(numfmt --to=iec --suffix=B "${artifact_size_in_bytes}")
@@ -461,11 +444,11 @@ jobs:
           MESSAGE="⏳ <b>[step 2/2] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
           <b>Workflow:</b> <code>build-package/action.yml</code>
-          <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
+          <b>Inicio:</b> <code>${START_TIME}</code>
           <b>Fim:</b> <code>${END_TIME}</code>
           <b>Nome ISO:</b> <code>${ISO_BASENAME}</code>
           <b>Tam ISO:</b> <code>${iso_size}</code>
-          <b>Download:</b> <a href='${{ env.artifact_url }}'>${{env.FILE_NAME}}.zip</a>"
+          <b>Download:</b> <a href='${{ env.artifact_url }}'>${file_name}.zip</a>"
 
           # Remove as tags HTML e exibe o resultado no terminal
           echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
