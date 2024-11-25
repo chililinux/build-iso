@@ -143,6 +143,18 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     steps:
+      - name: Capturar hora de início do workflow
+        id: start-time
+        shell: bash
+        run: |
+          START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
+          START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
+          echo "Início do Workflow: $START_TIME"
+          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
+          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
+          echo "start_time=$START_TIME" >> $GITHUB_OUTPUT
+          echo "start_timestamp=$START_TIMESTAMP" >> $GITHUB_OUTPUT
+
       - name: Create a Welcome file
         shell: bash
         run: |
@@ -232,16 +244,6 @@ jobs:
         - /mnt/lfs:/mnt/lfs
 
     steps:
-      - name: Capturar hora de início do workflow
-        id: start-time
-        shell: bash
-        run: |
-          START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
-          START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
-          echo "Início do Workflow: $START_TIME"
-          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
-
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
@@ -426,8 +428,8 @@ jobs:
           # Function to send Telegram message
           # Define a hora de início e término
           # Acessa os valores passados como output do step anterior
-          START_TIME="${{ steps.start-time.outputs.start_time }}"
-          START_TIMESTAMP="${{ steps.start-time.outputs.start_timestamp }}"
+          START_TIME="${{ needs.setup.outputs.start_time }}"
+          START_TIMESTAMP="${{ needs.setup.outputs.start_timestamp }}"
 
           END_TIMESTAMP=$(date +%s)
           END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
