@@ -423,8 +423,8 @@ jobs:
         run: |
           # Function to send Telegram message
           # Define a hora de início e término
-          START_TIME="$START_TIME"
-          START_TIMESTAMP="$START_TIMESTAMP"
+          START_TIME="${{ env.START_TIME }}"
+          START_TIMESTAMP="${{ env.START_TIMESTAMP }}"
           END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
           END_TIMESTAMP=$(date +%s)
 
@@ -449,7 +449,7 @@ jobs:
           <b>Fim:</b> <code>${END_TIME}</code>
           <b>Nome ISO:</b> <code>${ISO_BASENAME}</code>
           <b>Tam ISO:</b> <code>${iso_size}</code>
-          <b>URL:</b> <a href='${{ env.artifact_url }}'>${link_action}</a>"
+          <b>Download:</b> <a href='${{ env.artifact_url }}'>${FILE_NAME}.zip</a>"
 
           # Remove as tags HTML e exibe o resultado no terminal
           echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
