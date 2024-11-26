@@ -172,6 +172,7 @@ jobs:
       - name: Enviar notificação para o Telegram
         shell: bash
         run: |
+          #Enviar notificação para o Telegram
           case "${iso_distroname}" in
           bigcommunity) iso_branch="${iso_community_branch}";;
           biglinux) iso_branch="${iso_biglinux_branch}";;
@@ -210,7 +211,7 @@ jobs:
           #Cria um arquivo de variaveis para compartilhar entre jobs
           echo "START_TIME='$START_TIME'"           >> shared_file.txt
           echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
-          echo "iso_branch='${{ env.iso_branch }}'" >> shared_file.txt
+          echo "iso_branch='$iso_branch'"           >> shared_file.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
