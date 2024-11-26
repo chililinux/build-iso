@@ -507,8 +507,8 @@ jobs:
             start_ts=$(date -d "$created_at" +%s)
             end_ts=$(date -d "$updated_at" +%s)
 
-            START_TIME="$start_ts"
-            END_TIME="$end_ts"
+            START_TIME="$created_at"
+            END_TIME="$updated_at"
 
             # Calculando a duração em segundos
             duration=$((end_ts - start_ts))
