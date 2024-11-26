@@ -436,8 +436,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          # Send a Telegram alert if the build fails
-          # Function to send Telegram message
+          #Telegram Alert Fail - Send a Telegram alert if the build fails
           link_action=https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
           MESSAGE="🚨 <b>FALHA ao criar ISO:</b>
