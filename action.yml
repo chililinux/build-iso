@@ -389,7 +389,10 @@ runs:
         pushd "$WORK_PATH" || true
         #source "$WORK_PATH/usr/bin/mkiso-build"
         #make_iso
-        ./usr/bin/mkiso-build --automatic
+        #./usr/bin/mkiso-build --automatic
+
+        touch "$WORK_PATH/$iso_basename"
+        echo "ISO_BASENAME=$iso_basename" >> $GITHUB_ENV
 
     - name: Set ISO path
       shell: bash

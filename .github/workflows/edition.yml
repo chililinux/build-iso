@@ -355,10 +355,6 @@ jobs:
           # Set ISO path
           echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
 
-
-
-          touch "$ISO_PATH"
-
       - name: Calculate ISO MD5 Hash
         shell: bash
         run: |
