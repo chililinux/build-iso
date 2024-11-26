@@ -208,13 +208,13 @@ jobs:
             -d text="${MESSAGE}" \
             -d parse_mode="HTML"
 
-#      - name: Cria um arquivo de variaveis para compartilhar entre jobs
-#        shell: bash
-#        run: |
-#          #Cria um arquivo de variaveis para compartilhar entre jobs
-#          echo "START_TIME='$START_TIME'"           >> shared_file.txt
-#          echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
-#          echo "ISO_BRANCH='$iso_branch'"           >> shared_file.txt
+      #      - name: Cria um arquivo de variaveis para compartilhar entre jobs
+      #        shell: bash
+      #        run: |
+      #          #Cria um arquivo de variaveis para compartilhar entre jobs
+      #          echo "START_TIME='$START_TIME'"           >> shared_file.txt
+      #          echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
+      #          echo "ISO_BRANCH='$iso_branch'"           >> shared_file.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -322,55 +322,55 @@ jobs:
           # Set release tag manually
           echo "RELEASE_TAG=$(date '+%Y-%m-%d_%H-%M')" >> "$GITHUB_ENV"
 
-      #      - name: Build ISO
-      #        uses: ./
-      #        id: build
-      #        with:
-      #          # Parâmetros básicos da ISO
-      #          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
-      #          edition: ${{ github.event.client_payload.edition || inputs.edition}}
-      #          #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
-      #          release_tag: ${{ env.RELEASE_TAG }}
-      #          kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
-      #          scope: ${{ github.event.client_payload.scope || inputs.scope }}
-      #          office-chooser: ${{ github.event.client_payload.office-chooser || inputs.office-chooser }}
-      #
-      #          # Parâmetros de branches
-      #          manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
-      #          community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
-      #          biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
-      #          chililinux_branch: ${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch }}
-      #
-      #          # Depuração
-      #          tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
-      #
-      #          # Tokens e segredos
-      #          github_token: ${{ secrets.TOKEN_RELEASE }}
-      #
-      #          # Parâmetros adicionais (se necessário)
-      #          iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
-      #          # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
-      #
-      #          # Passando o START_TIME para action.yml
-      #          start_time: "${{ env.START_TIME }}"
-      #          start_timestamp: "${{ env.START_TIMESTAMP }}"
+      - name: Build ISO
+        uses: ./
+        id: build
+        with:
+          # Parâmetros básicos da ISO
+          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
+          edition: ${{ github.event.client_payload.edition || inputs.edition}}
+          #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+          release_tag: ${{ env.RELEASE_TAG }}
+          kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
+          scope: ${{ github.event.client_payload.scope || inputs.scope }}
+          office-chooser: ${{ github.event.client_payload.office-chooser || inputs.office-chooser }}
+
+          # Parâmetros de branches
+          manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
+          community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
+          biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
+          chililinux_branch: ${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch }}
+
+          # Depuração
+          tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
+
+          # Tokens e segredos
+          github_token: ${{ secrets.TOKEN_RELEASE }}
+
+          # Parâmetros adicionais (se necessário)
+          iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
+          # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
+
+          # Passando o START_TIME para action.yml
+          start_time: "${{ env.START_TIME }}"
+          start_timestamp: "${{ env.START_TIMESTAMP }}"
 
       - name: Set ISO path
         shell: bash
         run: |
           # Set ISO path
-          #echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
 
-          #temporario
-          WORK_PATH='/__w/build-iso/build-iso'
-          ISO_BASENAME="${iso_distroname}_${ISO_BRANCH^^}_${iso_edition}_${iso_release_tag}.iso"
-          {
-            echo "WORK_PATH=$WORK_PATH"
-            echo "ISO_BASENAME=$ISO_BASENAME"
-          } >> $GITHUB_ENV
-          echo "ISO_PATH=${WORK_PATH}/${ISO_BASENAME}" >> $GITHUB_ENV
-          touch "${WORK_PATH}/${ISO_BASENAME}"
-          #temporario
+          #temporario - para testes
+          #WORK_PATH='/__w/build-iso/build-iso'
+          #ISO_BASENAME="${iso_distroname}_${ISO_BRANCH^^}_${iso_edition}_${iso_release_tag}.iso"
+          #{
+          #  echo "WORK_PATH=$WORK_PATH"
+          #  echo "ISO_BASENAME=$ISO_BASENAME"
+          #} >> $GITHUB_ENV
+          #echo "ISO_PATH=${WORK_PATH}/${ISO_BASENAME}" >> $GITHUB_ENV
+          #touch "${WORK_PATH}/${ISO_BASENAME}"
+          #temporario - para testes
+          echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
 
       - name: Calculate ISO MD5 Hash
         shell: bash
