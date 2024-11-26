@@ -474,7 +474,7 @@ jobs:
 
           sh_calc_duration_via_api() {
             # Endpoint da API
-            API_URL="https://api.github.com/repos/$REPO/actions/runs"
+            API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs"
 
             # Fazendo a requisição para obter o último workflow run
             response=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
