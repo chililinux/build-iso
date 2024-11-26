@@ -316,38 +316,38 @@ jobs:
           # Set release tag manually
           echo "RELEASE_TAG=$(date '+%Y-%m-%d_%H-%M')" >> "$GITHUB_ENV"
 
-      - name: Build ISO
-        uses: ./
-        id: build
-        with:
-          # Parâmetros básicos da ISO
-          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
-          edition: ${{ github.event.client_payload.edition || inputs.edition}}
-          #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
-          release_tag: ${{ env.RELEASE_TAG }}
-          kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
-          scope: ${{ github.event.client_payload.scope || inputs.scope }}
-          office-chooser: ${{ github.event.client_payload.office-chooser || inputs.office-chooser }}
-
-          # Parâmetros de branches
-          manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
-          community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
-          biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
-          chililinux_branch: ${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch }}
-
-          # Depuração
-          tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
-
-          # Tokens e segredos
-          github_token: ${{ secrets.TOKEN_RELEASE }}
-
-          # Parâmetros adicionais (se necessário)
-          iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
-          # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
-
-          # Passando o START_TIME para action.yml
-          start_time: "${{ env.START_TIME }}"
-          start_timestamp: "${{ env.START_TIMESTAMP }}"
+      #      - name: Build ISO
+      #        uses: ./
+      #        id: build
+      #        with:
+      #          # Parâmetros básicos da ISO
+      #          distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
+      #          edition: ${{ github.event.client_payload.edition || inputs.edition}}
+      #          #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
+      #          release_tag: ${{ env.RELEASE_TAG }}
+      #          kernel: ${{ github.event.client_payload.kernel || inputs.kernel }}
+      #          scope: ${{ github.event.client_payload.scope || inputs.scope }}
+      #          office-chooser: ${{ github.event.client_payload.office-chooser || inputs.office-chooser }}
+      #
+      #          # Parâmetros de branches
+      #          manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
+      #          community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
+      #          biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
+      #          chililinux_branch: ${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch }}
+      #
+      #          # Depuração
+      #          tmate: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}
+      #
+      #          # Tokens e segredos
+      #          github_token: ${{ secrets.TOKEN_RELEASE }}
+      #
+      #          # Parâmetros adicionais (se necessário)
+      #          iso_profiles_repo: ${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}
+      #          # iso_profiles_branch: ${{ github.event.client_payload.iso_profiles_branch || inputs.iso_profiles_branch }}
+      #
+      #          # Passando o START_TIME para action.yml
+      #          start_time: "${{ env.START_TIME }}"
+      #          start_timestamp: "${{ env.START_TIMESTAMP }}"
 
       - name: Set ISO path
         run: |
@@ -494,6 +494,9 @@ jobs:
             # Convertendo horários para timestamps
             start_ts=$(date -d "$created_at" +%s)
             end_ts=$(date -d "$updated_at" +%s)
+
+            START_TIME="$start_ts"
+            END_TIME="$end_ts"
 
             # Calculando a duração em segundos
             duration=$((end_ts - start_ts))
