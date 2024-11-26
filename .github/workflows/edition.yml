@@ -358,7 +358,7 @@ jobs:
 
           #temporario
           WORK_PATH='/__w/build-iso/build-iso'
-          ISO_BASENAME="${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}.iso"
+          ISO_BASENAME="${iso_distroname}_${{ env.iso_branch }}_${iso_edition}_${iso_release_tag}.iso"
           {
             echo "WORK_PATH=$WORK_PATH"
             echo "ISO_BASENAME=$ISO_BASENAME"
