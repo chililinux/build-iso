@@ -125,6 +125,8 @@ on:
 
 env:
   TELEGRAM_TOKEN: "${{ secrets.TOKEN_BOT }}"
+  #GITHUB_TOKEN: "${{ secrets.TOKEN_RELEASE }}"
+  GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   CHAT_ID: "${{ secrets.CHAT_ID }}"
   started_by_user: "${{ github.actor }}"
   triggered_by_user: "${{ github.triggering_actor }}"
@@ -456,22 +458,57 @@ jobs:
       - name: Capturar hora de término e calcular duração
         shell: bash
         run: |
-          # Function to send Telegram message
-          # Define a hora de início e término
-          # Acessa os valores passados como output do step anterior
-          #START_TIME="${{ needs.setup.outputs.start_time }}"
-          #START_TIMESTAMP="${{ needs.setup.outputs.start_timestamp }}"
-          START_TIME="${{ env.START_TIME }}"
-          START_TIMESTAMP="${{ env.START_TIMESTAMP }}"
+          #Capturar hora de término e calcular duração
+          sh_calc_duration_via_normal() {
+            # Configurações
+            START_TIME="${{ env.START_TIME }}"
+            START_TIMESTAMP="${{ env.START_TIMESTAMP }}"
+            END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
+            END_TIMESTAMP=$(date +%s)
+            # Calcula a duração em segundos, horas, minutos e segundos
+            duration=$((END_TIMESTAMP - START_TIMESTAMP))
+            hours=$((duration / 3600))
+            minutes=$(( (duration % 3600) / 60 ))
+            seconds=$((duration % 60))
+          }
 
-          END_TIME=$(date +"%Y-%m-%d %H:%M:%S")
-          END_TIMESTAMP=$(date +%s)
+          sh_calc_duration_via_api() {
+            # Endpoint da API
+            API_URL="https://api.github.com/repos/$REPO/actions/runs"
 
-          # Calcula a duração em segundos, horas, minutos e segundos
-          duration=$((END_TIMESTAMP - START_TIMESTAMP))
-          hours=$((duration / 3600))
-          minutes=$(( (duration % 3600) / 60 ))
-          seconds=$((duration % 60))
+            # Fazendo a requisição para obter o último workflow run
+            response=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+                              -H "Accept: application/vnd.github+json" \
+                              "$API_URL")
+
+            # Extraindo os horários (created_at e updated_at) do último workflow
+            created_at=$(echo "$response" | jq -r '.workflow_runs[0].created_at')
+            updated_at=$(echo "$response" | jq -r '.workflow_runs[0].updated_at')
+
+            # Verificando se os valores foram obtidos
+            if [[ -z "$created_at" || -z "$updated_at" ]]; then
+              echo "Erro: Não foi possível obter os dados do workflow."
+              exit 1
+            fi
+
+            # Convertendo horários para timestamps
+            start_ts=$(date -d "$created_at" +%s)
+            end_ts=$(date -d "$updated_at" +%s)
+
+            # Calculando a duração em segundos
+            duration=$((end_ts - start_ts))
+
+            # Convertendo para formato legível (HH:MM:SS)
+            hours=$((duration / 3600))
+            minutes=$(((duration % 3600) / 60))
+            seconds=$((duration % 60))
+
+            # Exibindo o tempo total
+            printf "Tempo total da execução: %02d:%02d:%02d\n" "$hours" "$minutes" "$seconds"
+          }
+
+          #sh_calc_duration_via_normal
+          sh_calc_duration_via_api
 
           # Obtém o ID do run e o URL do artefato a partir das variáveis de ambiente
           RUN_ID="${{ github.run_id }}"
