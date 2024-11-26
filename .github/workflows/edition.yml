@@ -152,8 +152,10 @@ jobs:
           START_TIME=$(date +"%Y-%m-%d %H:%M:%S")  # Hora completa
           START_TIMESTAMP=$(date +%s)  # Timestamp em segundos
           echo "Início do Workflow: $START_TIME"
-          echo "START_TIME=$START_TIME" >> $GITHUB_ENV
-          echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
+          echo "START_TIME=$START_TIME"             >> $GITHUB_ENV
+          echo "START_TIMESTAMP=$START_TIMESTAMP"   >> $GITHUB_ENV
+          echo "START_TIME='$START_TIME'"           >> shared_file.txt
+          echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
 
       - name: Install dependencies on HOST
         shell: bash
@@ -179,7 +181,8 @@ jobs:
           chililinux) iso_branch="${iso_chililinux_branch}";;
           manjaro) iso_branch="${iso_manjaro_branch}";;
           esac
-          echo "iso_branch=$iso_branch" >> GITHUB_ENV
+          echo "ISO_BRANCH='$iso_branch'" >> GITHUB_ENV
+          echo "ISO_BRANCH='$iso_branch'" >> shared_file.txt
           link_action=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
           MESSAGE="🚀 <b>[step 1/2] build-iso - INICIANDO WORKFLOW</b>
@@ -205,13 +208,13 @@ jobs:
             -d text="${MESSAGE}" \
             -d parse_mode="HTML"
 
-      - name: Cria um arquivo de variaveis para compartilhar entre jobs
-        shell: bash
-        run: |
-          #Cria um arquivo de variaveis para compartilhar entre jobs
-          echo "START_TIME='$START_TIME'"           >> shared_file.txt
-          echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
-          echo "iso_branch='$iso_branch'"           >> shared_file.txt
+#      - name: Cria um arquivo de variaveis para compartilhar entre jobs
+#        shell: bash
+#        run: |
+#          #Cria um arquivo de variaveis para compartilhar entre jobs
+#          echo "START_TIME='$START_TIME'"           >> shared_file.txt
+#          echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
+#          echo "ISO_BRANCH='$iso_branch'"           >> shared_file.txt
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -265,7 +268,7 @@ jobs:
           # Definir a variável START_TIME para outros jobs
           echo "START_TIME=$START_TIME"           >> $GITHUB_ENV
           echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
-          echo "iso_branch=$iso_branch"           >> $GITHUB_ENV
+          echo "ISO_BRANCH=$ISO_BRANCH"           >> $GITHUB_ENV
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -360,7 +363,7 @@ jobs:
 
           #temporario
           WORK_PATH='/__w/build-iso/build-iso'
-          ISO_BASENAME="${iso_distroname}_${iso_branch^^}_${iso_edition}_${iso_release_tag}.iso"
+          ISO_BASENAME="${iso_distroname}_${ISO_BRANCH^^}_${iso_edition}_${iso_release_tag}.iso"
           {
             echo "WORK_PATH=$WORK_PATH"
             echo "ISO_BASENAME=$ISO_BASENAME"
