@@ -186,6 +186,7 @@ jobs:
           chililinux) iso_branch="${iso_chililinux_branch}";;
           manjaro) iso_branch="${iso_manjaro_branch}";;
           esac
+          echo "iso_branch=$iso_branch" >> GITHUB_ENV
           link_action=https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
           MESSAGE="🚀 <b>[step 1/2] build-iso - INICIANDO WORKFLOW</b>
@@ -357,7 +358,7 @@ jobs:
 
           #temporario
           WORK_PATH='/__w/build-iso/build-iso'
-          ISO_BASENAME="${{env.iso_basename}}.iso"
+          ISO_BASENAME="${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}.iso"
           {
             echo "WORK_PATH=$WORK_PATH"
             echo "ISO_BASENAME=$ISO_BASENAME"
