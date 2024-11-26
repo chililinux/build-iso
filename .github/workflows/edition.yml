@@ -353,11 +353,17 @@ jobs:
         shell: bash
         run: |
           # Set ISO path
+          #echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
+
+          #temporario
+          WORK_PATH='/__w/build-iso/build-iso'
+          ISO_BASENAME="$iso_basename"
           {
-            echo "WORK_PATH=/__w/build-iso/build-iso"
-            echo "ISO_BASENAME=$iso_basename"
+            echo "WORK_PATH=$WORK_PATH"
+            echo "ISO_BASENAME=$ISO_BASENAME"
           } >> $GITHUB_ENV
-          echo "ISO_PATH=${{ env.WORK_PATH }}/${{ env.ISO_BASENAME }}" >> $GITHUB_ENV
+          echo "ISO_PATH=${WORK_PATH}/${ISO_BASENAME}" >> $GITHUB_ENV
+          #temporario
 
       - name: Calculate ISO MD5 Hash
         shell: bash
