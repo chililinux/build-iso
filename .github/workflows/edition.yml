@@ -140,6 +140,7 @@ env:
   iso_release_tag: "${{ github.event.client_payload.release_tag || inputs.release_tag }}"
   iso_kernel: "${{ github.event.client_payload.kernel || inputs.kernel }}"
   iso_basename: "${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}"
+  iso_profiles_repo: "${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}"
 
 jobs:
   setup:
@@ -192,6 +193,7 @@ jobs:
           <b>Iniciado/Triggered:</b> <code>${started_by_user}/${triggered_by_user}</code>
           <b>Inicio:</b> <code>${{ env.START_TIME }}</code>
           <b>Distroname:</b> <code>${iso_distroname}</code>
+          <b>Iso Profile:</b> <code>${iso_profile_repo}</code>
           <b>Edition:</b> <code>${iso_edition}</code>
           <b>Manjaro Branch:</b> <code>${iso_manjaro_branch}</code>
           <b>BigLinux Branch:</b> <code>${iso_biglinux_branch}</code>
