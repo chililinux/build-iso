@@ -407,41 +407,40 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare ISO for release
+      - name: Prepare ISO for release (7z)
         id: prepare-iso
         shell: bash
         run: |
           ls -lah
           release=$(basename "${ISO_PATH}" .iso)
-          zip -j -0 -s 2000m ${release}.zip "${ISO_PATH}"
+          7z a -v2000m ${release}.7z "${ISO_PATH}" # Compacta e divide em partes de 2000 MB
           echo "release_name=${release}" >> "$GITHUB_OUTPUT"
           echo "ISO prepared for release"
 
-          # Imprimir a variável ISO_PATH para depuração
-          echo "ISO_PATH (iso) : ${ISO_PATH}"
-          echo "ISO_PATH (md5) : ${ISO_PATH}.md5"
-          echo "ISO_PATH (pkgs): ${ISO_PATH}.pkgs"
-          echo "release        : ${release}"
-          echo "release_name   : ${release_name}"
+          # Debug
+          echo "ISO_PATH (original): ${ISO_PATH}"
+          echo "ISO_PATH (md5)     : ${ISO_PATH}.md5"
+          echo "ISO_PATH (pkgs)    : ${ISO_PATH}.pkgs"
+          echo "release            : ${release}"
+          echo "release_name       : ${release_name}"
 
       - name: Upload ISO as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.prepare-iso.outputs.release_name }}
+          #name: ${{ steps.prepare-iso.outputs.release_name }}
+          name: Full_ISO_${{ steps.prepare-iso.outputs.release_name }}
           path: |
             ${{ env.ISO_PATH }}
             ${{ env.ISO_PATH }}.md5
             ${{ env.ISO_PATH }}.pkgs
 
       - name: Create Release
-        if: ${{ (github.event.client_payload.manjaro_branch || inputs.manjaro_branch) == 'stable' && (github.event.client_payload.community_branch || inputs.community_branch) == 'stable' && (github.event.client_payload.biglinux_branch || inputs.biglinux_branch) == 'stable' && (github.event.client_payload.chililinux_branch || inputs.chililinux_branch) == 'stable' }}
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ${{ env.ISO_PATH }}
             ${{ env.ISO_PATH }}.md5
             ${{ env.ISO_PATH }}.pkgs
-            ${{ steps.prepare-iso.outputs.release_name }}.z*
+            ${{ steps.prepare-iso.outputs.release_name }}.7z.*
           tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
           name: ${{ steps.prepare-iso.outputs.release_name }}
           generate_release_notes: true
