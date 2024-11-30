@@ -281,7 +281,7 @@ jobs:
         shell: bash
         run: |
           # Install some necessary packages
-          sudo pacman -Sy inetutils tree --needed --quiet --noconfirm >/dev/null
+          sudo pacman -Sy p7zip inetutils tree --needed --quiet --noconfirm >/dev/null
 
       - name: Set up aliases
         run: |
