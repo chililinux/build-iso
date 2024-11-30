@@ -349,8 +349,17 @@ runs:
       shell: bash
       run: |
         # Declare environment variables
-        DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
-        #[[ "$DISTRONAME_ISOPROFILES" == 'bigcommunity' ]] && DISTRONAME_ISOPROFILES='community'
+        REPO="${{ inputs.iso_profiles_repo }}"
+        get_distroname_isoprofiles() {
+          # Extraindo a organização
+          if [[ $REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
+            DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
+          else
+            DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
+          fi
+          echo "$DISTRONAME_ISOPROFILES"
+        }
+        DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
 
         {
           echo "USERNAME=builduser"
