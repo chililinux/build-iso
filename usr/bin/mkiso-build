@@ -7,7 +7,7 @@
 #  ao fluxo padrão de construção de ISOs.
 #
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: sex 29 nov 2024 23:07:19 -04
+#  Altered: sáb 30 nov 2024 15:43:52 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -38,12 +38,12 @@ declare VERSION="1.1.6" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
-declare -aG bigcommunity_edition=(cinnamon cosmic deepin gnome kde xfce wmaker)
+declare -aG communitybig_edition=(cinnamon cosmic deepin gnome kde xfce wmaker)
 declare -aG biglinux_edition=(FalaQueEuTeEscuto flisol kde smallxivastudio)
 declare -aG chililinux_edition=(base cinnamon cosmic deepin gnome i3 kde xfce wmaker)
 declare -aG manjaro_edition=(architect bladebook gnome gnome-next grub i3 kde kde-dev netinstall nxd xfce)
 declare -aG talesam_edition=(cinnamon cosmic deepin gnome kde xfce wmaker)
-declare -aG aDistros=('bigcommunity' 'biglinux' 'chililinux' 'manjaro' 'talesam' 'Sair')
+declare -aG aDistros=('communitybig' 'biglinux' 'chililinux' 'manjaro' 'talesam' 'Sair')
 declare -aG aProfiles=(
     'https://github.com/communitybig/iso-profiles'
     'https://github.com/biglinux/iso-profiles'
@@ -121,7 +121,7 @@ get_bigbranch() {
 
 get_communitybranch() {
 	create_menu \
-		"Escolha uma opcao para Branch do BigCommunity:" \
+		"Escolha uma opcao para Branch do CommunityBig:" \
 		"stable" \
 		"testing" \
 		"unstable" \
@@ -241,7 +241,7 @@ configure_vars() {
 		get_communitybranch
 	fi
 
-	if [[ "$DISTRONAME" =~ ^(manjaro|biglinux|bigcommunity|talesam)$ ]]; then
+	if [[ "$DISTRONAME" =~ ^(manjaro|biglinux|communitybig|talesam)$ ]]; then
 		CHILIBRANCH=
 	else
 		get_chilibranch
@@ -381,7 +381,7 @@ sh_version() {
 ${bold}${cyan}${0##*/} v${VERSION}${reset}
 ${APPDESC}
 ${bold}${black}Copyright (c) 2024-2024, ${reset}Vilmar Catafesta <vcatafesta@gmail.com>${black}
-${bold}${black}Copyright (C) 2024-2024, ${reset}BigCommunity Team${black}
+${bold}${black}Copyright (C) 2024-2024, ${reset}CommunityBig Team${black}
 
   Este é um software livre: você é livre para alterá-lo e redistribuí-lo.
   O $APP é disponibilizado para você sob a ${yellow}Licença MIT${black}, e
@@ -715,8 +715,8 @@ add_repository() {
 	done
 	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
-	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
-		msg 'Configurando repositórios do BigCommunity'
+	if [[ "$DISTRONAME" == "communitybig" ]]; then
+		msg 'Configurando repositórios do CommunityBig'
 		case "$COMMUNITYBRANCH" in
 		"stable")
 			add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
@@ -1169,7 +1169,7 @@ configure_repos() {
 	mkdir -p "$config_dir"
 
 	# Community repositories
-	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
+	if [[ "$DISTRONAME" == "communitybig" ]]; then
 		if [[ "$community_branch" == "testing" ]]; then
 			add_community-testing | sudo tee -a "$config_file" >/dev/null
 			add_community-stable | sudo tee -a "$config_file" >/dev/null
@@ -1257,7 +1257,7 @@ configure_iso_name() {
 	sed -i "s/label=.*/label=${VOL_ID}/" "$PROFILE_PATH_EDITION"/profile.conf
 	sudo sed -i "s/iso_label=.*/iso_label=${VOL_ID}/" "/usr/lib/manjaro-tools/util-iso.sh"
 
-	if [[ "$DISTRONAME" == 'bigcommunity' ]]; then
+	if [[ "$DISTRONAME" == 'communitybig' ]]; then
 		case "$MANJAROBRANCH/$COMMUNITYBRANCH" in
 		stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 		stable/testing | testing/*) ISO_BASENAME="${DISTRONAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -1405,7 +1405,7 @@ make_iso() {
 	# Community Pre Config Build ISO
 	setup_manjaro_tools
   #configure_dwarfs # substituto ao squashfs
-	configure_mesa
+	#configure_mesa
 	# Starting kernel configuration
 	configure_kernel
 
