@@ -411,18 +411,24 @@ jobs:
         id: prepare-iso
         shell: bash
         run: |
+          #Prepare ISO for release (7z)
+          source /tmp/send_telegram_message.sh
+          replicate '='
           ls -lah
           release=$(basename "${ISO_PATH}" .iso)
           7z a -v2000m ${release}.7z "${ISO_PATH}" # Compacta e divide em partes de 2000 MB
           echo "release_name=${release}" >> "$GITHUB_OUTPUT"
           echo "ISO prepared for release"
-
+          replicate '='
+          ls -lah
+          replicate '='
           # Debug
           echo "ISO_PATH (original): ${ISO_PATH}"
           echo "ISO_PATH (md5)     : ${ISO_PATH}.md5"
           echo "ISO_PATH (pkgs)    : ${ISO_PATH}.pkgs"
           echo "release            : ${release}"
           echo "release_name       : ${release_name}"
+          replicate '='
 
       - name: Upload ISO as artifact
         uses: actions/upload-artifact@v4
