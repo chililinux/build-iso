@@ -381,7 +381,6 @@ jobs:
         shell: bash
         run: |
           # Set ISO path
-
           #temporario - para testes
           #WORK_PATH='/__w/build-iso/build-iso'
           #ISO_BASENAME="${iso_distroname}_${ISO_BRANCH^^}_${iso_edition}_${iso_release_tag}.iso"
@@ -402,13 +401,13 @@ jobs:
           replicate '='
           ls -lah
           replicate '='
-          echo "Calculating MD5 hash for ISO file ${ISO_PATH}"
+          msg "Calculating MD5 hash for ISO file ${ISO_PATH}"
           if [[ -f "${ISO_PATH}" ]]; then
             md5sum "${ISO_PATH}" > "${ISO_PATH}.md5"
-            echo "MD5 hash calculated and saved:"
+            msg_info "MD5 hash calculated and saved:"
             cat "${ISO_PATH}".md5
           else
-            echo "Error: ISO file not found at ${ISO_PATH}"
+            msg_warning "Error: ISO file not found at ${ISO_PATH}"
             exit 1
           fi
           ls -lah
@@ -425,7 +424,7 @@ jobs:
           release=$(basename "${ISO_PATH}" .iso)
           7z a -v2000m ${release}.7z "${ISO_PATH}" # Compacta e divide em partes de 2000 MB
           echo "release_name=${release}" >> "$GITHUB_OUTPUT"
-          echo "ISO prepared for release"
+          msg_info "ISO prepared for release"
           replicate '='
           ls -lah
           replicate '='
@@ -440,8 +439,8 @@ jobs:
       - name: Upload ISO as artifact
         uses: actions/upload-artifact@v4
         with:
-          #name: ${{ steps.prepare-iso.outputs.release_name }}
-          name: Full_ISO_${{ steps.prepare-iso.outputs.release_name }}
+          #name: Full_ISO_${{ steps.prepare-iso.outputs.release_name }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}
           path: |
             ${{ env.ISO_PATH }}
             ${{ env.ISO_PATH }}.md5
@@ -467,6 +466,7 @@ jobs:
           RUN_ID: "${{ github.run_id }}"
           REPO: "${{ github.repository }}"
         run: |
+          # Get Artifact URL
           artifacts=$(gh api \
             -H "Accept: application/vnd.github+json"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
