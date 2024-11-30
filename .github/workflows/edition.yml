@@ -555,8 +555,8 @@ jobs:
             printf "Tempo total da execução: %02d:%02d:%02d\n" "$hours" "$minutes" "$seconds"
           }
 
-          #sh_calc_duration_via_normal
-          sh_calc_duration_via_api
+          sh_calc_duration_via_normal
+          #sh_calc_duration_via_api
 
           # Obtém o ID do run e o URL do artefato a partir das variáveis de ambiente
           RUN_ID="${{ github.run_id }}"
