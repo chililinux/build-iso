@@ -37,7 +37,7 @@ inputs:
     description: "Distroname for the ISO"
     required: true
     options:
-      - bigcommunity
+      - communitybig
       - biglinux
       - chililinux
       - manjaro
@@ -209,7 +209,7 @@ runs:
       run: |
         #Setup build environment
         #configure extra repos
-        if [[ "${{ inputs.distroname }}" == 'bigcommunity' ]]; then
+        if [[ "${{ inputs.distroname }}" == 'communitybig' ]]; then
           {
             echo "[community-extra]"
             echo "SigLevel = PackageRequired"
@@ -307,7 +307,7 @@ runs:
         sudo install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
         sudo rm -r biglinux-key
 
-        if [[ "${{ inputs.distroname }}" == 'bigcommunity' ]]; then
+        if [[ "${{ inputs.distroname }}" == 'communitybig' ]]; then
           git clone https://github.com/communitybig/community-keyring.git
           sudo install -m0644 community-keyring/community.gpg /usr/share/pacman/keyrings/
           sudo install -m0644 community-keyring/community-trusted /usr/share/pacman/keyrings/
