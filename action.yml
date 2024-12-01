@@ -47,12 +47,14 @@ inputs:
     description: "Choice ISO profiles"
     required: true
     options:
-      - "https://github.com/talesam/iso-profiles"
+      - "https://github.com/communitybig/iso-profiles"
       - "https://github.com/biglinux/iso-profiles"
       - "https://github.com/chililinux/iso-profiles"
       - "https://github.com/chililinux/manjaro-iso-profiles"
       - "https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git"
-    default: "https://github.com/chililinux/iso-profiles"
+      - "https://github.com/talesam/iso-profiles"
+      - "https://github.com/vcatafesta/iso-profiles"
+    default: "https://github.com/communitybig/iso-profiles"
   iso_profiles_branch:
     description: "Branch of the ISO profiles repository (optional)"
     required: false
@@ -350,13 +352,13 @@ runs:
       run: |
         # Declare environment variables
         #DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
-        REPO="${{ inputs.iso_profiles_repo }}"
+        ISO_PROFILES_REPO="${{ inputs.iso_profiles_repo }}"
         get_distroname_isoprofiles() {
           # Extraindo a organização
-          if [[ $REPO ==  'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' ]]; then
+          if [[ $ISO_PROFILES_REPO ==  'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' ]]; then
             DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
           else
-            if [[ $REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
+            if [[ $ISO_PROFILES_REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
               DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
             else
               DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
@@ -369,7 +371,7 @@ runs:
         {
           echo "USERNAME=builduser"
           echo "HOME_FOLDER=/home/builduser"
-          echo "REPO=${{ inputs.iso_profiles_repo }}"
+          echo "ISO_PROFILES_REPO=${{ inputs.iso_profiles_repo }}"
           echo "EDITION=${{ inputs.edition }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
@@ -382,10 +384,10 @@ runs:
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS_ISO=/var/cache/manjaro-tools/iso"
           echo "DEBUG=${{ inputs.tmate }}"
-          echo "MANJAROBRANCH=${{ inputs.manjaro_branch }}"
-          echo "COMMUNITYBRANCH=${{ inputs.community_branch }}"
-          echo "BIGBRANCH=${{ inputs.biglinux_branch }}"
-          echo "CHILIBRANCH=${{ inputs.chililinux_branch }}"
+          echo "MANJARO_BRANCH=${{ inputs.manjaro_branch }}"
+          echo "COMMUNITYBIG_BRANCH=${{ inputs.community_branch }}"
+          echo "BIGLINUX_BRANCH=${{ inputs.biglinux_branch }}"
+          echo "CHILILINUX_BRANCH=${{ inputs.chililinux_branch }}"
           echo "KERNEL=${{ inputs.kernel }}"
           echo "RELEASE_TAG=${{ inputs.release_tag }}"
           echo "SCOPE=${{ inputs.scope }}"
