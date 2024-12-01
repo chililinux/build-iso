@@ -361,7 +361,7 @@ jobs:
 
           # Parâmetros de branches
           manjaro_branch: ${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch }}
-          communitybig_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
+          community_branch: ${{ github.event.client_payload.community_branch || inputs.community_branch }}
           biglinux_branch: ${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch }}
           chililinux_branch: ${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch }}
 
