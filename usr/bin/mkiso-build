@@ -355,17 +355,17 @@ switch_to_root() {
 
 msg() {
 	local msg="$1"
-	echo "mkiso=>${cyan}running: ${yellow}${msg}${reset}"
+	echo -e "mkiso=>${cyan}running: ${yellow}${msg}${reset}"
 }
 
 msg_info() {
 	local msg="$1"
-	echo "mkiso=>${yellow}info   : ${cyan}${msg}${reset}"
+	echo -e "mkiso=>${yellow}info   : ${cyan}${msg}${reset}"
 }
 
 msg_warning() {
 	local msg="$1"
-	echo "mkiso=>${red}warning: ${orange}${msg}${reset}"
+	echo -e "mkiso=>${red}warning: ${orange}${msg}${reset}"
 }
 
 replicate() {
@@ -1283,7 +1283,7 @@ export -f configure_iso_name
 
 build_iso() {
 	echo "########################## RESUMO #################################"
-	echo "BUILD COMMAND            : buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
+	echo "BUILD COMMAND            : buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k ${KERNEL_NAME} ${OFFICE:+-o}"
 	echo "PROFILE_PATH             : $PROFILE_PATH"
 	echo "PROFILE_PATH_EDITION     : $PROFILE_PATH_EDITION"
 	echo "DISTRONAME               : $DISTRONAME"
@@ -1308,7 +1308,7 @@ build_iso() {
 
 	verificar_iso_profiles_conf
 	msg "Executar buildiso e capturar o código de saída"
-	msg_info 'LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"'
+	msg_info 'LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"'
 
 	#  if [[ "$DISTRONAME" == 'chililinux' ]]; then
 	if $DEBUG; then
@@ -1317,7 +1317,7 @@ build_iso() {
 		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	fi
 	#  else
-	#    LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
+	#    LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	#	fi
 	BUILD_EXIT_CODE=$?
 
