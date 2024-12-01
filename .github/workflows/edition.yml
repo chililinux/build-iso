@@ -420,6 +420,7 @@ jobs:
         shell: bash
         run: |
           #Prepare ISO for release (7z)
+          source /tmp/send_telegram_message.sh
           # Prepara a mensagem
           MESSAGE="⏳ <b>[step 2/3] Prepare ISO for release (7z)</b>
           <b>Job:</b> <code>#${GITHUB_RUN_NUMBER}</code>
