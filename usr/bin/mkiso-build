@@ -43,7 +43,8 @@ declare -aG biglinux_edition=(FalaQueEuTeEscuto flisol kde smallxivastudio)
 declare -aG chililinux_edition=(base cinnamon cosmic deepin gnome i3 kde xfce wmaker)
 declare -aG manjaro_edition=(architect bladebook gnome gnome-next grub i3 kde kde-dev netinstall nxd xfce)
 declare -aG talesam_edition=(cinnamon cosmic deepin gnome kde xfce wmaker)
-declare -aG aDistros=('communitybig' 'biglinux' 'chililinux' 'manjaro' 'talesam' 'Sair')
+declare -aG vcatafesta_edition=(base cinnamon cosmic deepin gnome kde xfce wmaker)
+declare -aG aDistros=('communitybig' 'biglinux' 'chililinux' 'manjaro' 'Sair')
 declare -aG aProfiles=(
     'https://github.com/communitybig/iso-profiles'
     'https://github.com/biglinux/iso-profiles'
@@ -51,6 +52,7 @@ declare -aG aProfiles=(
     'https://github.com/chililinux/manjaro-iso-profiles'
     'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git'
     'https://github.com/talesam/iso-profiles'
+    'https://github.com/vcatafesta/iso-profiles'
     'Voltar'
   )
 
@@ -197,10 +199,14 @@ get_debug() {
 
 get_distroname_isoprofiles() {
   # Extraindo a organização
-  if [[ $REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
-    DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
-  else
+  if [[ $REPO ==  'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' ]]; then
     DISTRONAME_ISOPROFILES="${DISTRONAME}"
+  else
+    if [[ $REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
+      DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
+    else
+      DISTRONAME_ISOPROFILES="${DISTRONAME}"
+    fi
   fi
   echo "$DISTRONAME_ISOPROFILES"
 }
@@ -488,9 +494,9 @@ checkout_iso-profiles_and_clean_directories() {
 
 	if [[ -d "$WORK_PATH_ISO_PROFILES" ]]; then
 		msg 'Mova perfis iso-profiles antigos para novo diretório'
-		if ! mv -f $WORK_PATH_ISO_PROFILES $HOME_FOLDER/iso-profiles."$(date "+%Y%m%d_%H:%M:%S")"; then
+		#if ! mv -f $WORK_PATH_ISO_PROFILES $HOME_FOLDER/iso-profiles."$(date "+%Y%m%d_%H:%M:%S")"; then
 			rm -rf $WORK_PATH_ISO_PROFILES || true
-		fi
+		#fi
 	fi
 
 	msg "Fazendo checkout do repositório: $REPO"
@@ -1310,15 +1316,12 @@ build_iso() {
 	msg "Executar buildiso e capturar o código de saída"
 	msg_info 'LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"'
 
-	#  if [[ "$DISTRONAME" == 'chililinux' ]]; then
+	LC_ALL=C sudo -u $USERNAME bash -c "buildiso -q -v"
 	if $DEBUG; then
-		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o};exit \$?"
 	else
-		LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
+		LC_ALL=C sudo -u $USERNAME bash -c "buildiso -m ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
 	fi
-	#  else
-	#    LC_ALL=C sudo -u $USERNAME bash -c "buildiso ${SCOPE:+-f} -p $EDITION -b $MANJAROBRANCH -k linux${KERNEL_NAME} ${OFFICE:+-o} > /dev/null 2>&1; exit \$?"
-	#	fi
 	BUILD_EXIT_CODE=$?
 
 	msg 'Testando se buildiso falhou, e caso sair com o código de erro'
