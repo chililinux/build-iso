@@ -38,7 +38,7 @@ on:
         description: "Distroname for the ISO"
         required: true
         options:
-          - bigcommunity
+          - communitybig
           - biglinux
           - chililinux
           - manjaro
@@ -176,7 +176,7 @@ jobs:
         run: |
           #Enviar notificação para o Telegram
           case "${iso_distroname}" in
-          bigcommunity) iso_branch="${iso_community_branch}";;
+          communitybig) iso_branch="${iso_community_branch}";;
           biglinux) iso_branch="${iso_biglinux_branch}";;
           chililinux) iso_branch="${iso_chililinux_branch}";;
           manjaro) iso_branch="${iso_manjaro_branch}";;
@@ -196,7 +196,7 @@ jobs:
           <b>Edition:</b> <code>${iso_edition}</code>
           <b>Manjaro Branch:</b> <code>${iso_manjaro_branch}</code>
           <b>BigLinux Branch:</b> <code>${iso_biglinux_branch}</code>
-          <b>BigCommunity Branch:</b> <code>${iso_community_branch}</code>
+          <b>CommunityBig Branch:</b> <code>${iso_community_branch}</code>
           <b>ChiliLinux Branch:</b> <code>${iso_chililinux_branch}</code>
           <b>Release:</b> <code>${iso_release_tag}</code>
           <b>Kernel:</b> <code>${iso_kernel}</code>
