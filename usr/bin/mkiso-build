@@ -860,8 +860,6 @@ setup_manjaro_tools() {
 	find "$WORK_PATH_ISO_PROFILES" -name "kernels.cfg" -exec sed -i "s/misolabel=[^ ]*/misolabel=${VOL_ID}/g" {} + || true
 	#find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
 	#find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME,,}-live/theme.txt#g" {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "variable.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME_ISOPROFILES,,}-live/theme.txt#g" {} + || true
-	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i "s#/boot/grub/themes/[^/]*/theme.txt#/boot/grub/themes/${DISTRONAME_ISOPROFILES,,}-live/theme.txt#g" {} + || true
 
 	# Apply Custom Profile Modifications
 	# Apply edition-specific removals
