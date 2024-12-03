@@ -56,13 +56,13 @@ on:
           - "https://github.com/talesam/iso-profiles"
           - "https://github.com/vcatafesta/iso-profiles"
         default: "https://github.com/communitybig/iso-profiles"
-      scope:
-        type: choice
-        description: "Build scope"
-        options:
-          - full
-          - minimal
-        default: "full"
+      #scope:
+      #  type: choice
+      #  description: "Build scope"
+      #  options:
+      #    - full
+      #    - minimal
+      #  default: "full"
       #     office-chooser:
       #       type: boolean
       #       description: "Include office suite"
