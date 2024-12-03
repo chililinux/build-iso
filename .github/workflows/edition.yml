@@ -125,10 +125,14 @@ on:
           - wmaker
         default: xfce
       build_dir:
-        type: string  # Permite digitar um valor livre
-        description: 'Build List dir ISO profile'
-        required: true
-        default: 'bigcommunity'
+        type: choice
+        description: "Build List dir ISO profile"
+        options:
+          - bigcommunity
+          - biglinux
+          - chililinux
+          - manjaro
+        default: "bigcommunity"
 
 env:
   TELEGRAM_TOKEN: "${{ secrets.TOKEN_BOT }}"
