@@ -38,7 +38,7 @@ on:
         description: "Distroname for the ISO"
         required: true
         options:
-          - communitybig
+          - bigcommunity
           - biglinux
           - chililinux
           - manjaro
@@ -136,7 +136,7 @@ env:
   iso_distroname: "${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}"
   iso_manjaro_branch: "${{ github.event.client_payload.manjaro_branch || inputs.manjaro_branch}}"
   iso_biglinux_branch: "${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch}}"
-  iso_communitybig_branch: "${{ github.event.client_payload.community_branch || inputs.community_branch}}"
+  iso_bigcommunity_branch: "${{ github.event.client_payload.community_branch || inputs.community_branch}}"
   iso_chililinux_branch: "${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch}}"
   iso_edition: "${{ github.event.client_payload.edition || inputs.edition}}"
   iso_release_tag: "${{ github.event.client_payload.release_tag || inputs.release_tag }}"
@@ -178,7 +178,7 @@ jobs:
         run: |
           #Enviar notificação para o Telegram
           case "${iso_distroname}" in
-          communitybig) iso_branch="${iso_communitybig_branch}";;
+          bigcommunity) iso_branch="${iso_bigcommunity_branch}";;
           biglinux) iso_branch="${iso_biglinux_branch}";;
           chililinux) iso_branch="${iso_chililinux_branch}";;
           manjaro) iso_branch="${iso_manjaro_branch}";;
@@ -198,7 +198,7 @@ jobs:
           <b>Edition:</b> <code>${iso_edition}</code>
           <b>Manjaro Branch:</b> <code>${iso_manjaro_branch}</code>
           <b>BigLinux Branch:</b> <code>${iso_biglinux_branch}</code>
-          <b>CommunityBig Branch:</b> <code>${iso_communitybig_branch}</code>
+          <b>BigCommunity Branch:</b> <code>${iso_bigcommunity_branch}</code>
           <b>ChiliLinux Branch:</b> <code>${iso_chililinux_branch}</code>
           <b>Release:</b> <code>${iso_release_tag}</code>
           <b>Kernel:</b> <code>${iso_kernel}</code>

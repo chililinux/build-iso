@@ -37,7 +37,7 @@ inputs:
     description: "Distroname for the ISO"
     required: true
     options:
-      - communitybig
+      - bigcommunity
       - biglinux
       - chililinux
       - manjaro
@@ -211,7 +211,7 @@ runs:
       run: |
         #Setup build environment
         #configure extra repos
-        if [[ "${{ inputs.distroname }}" == 'communitybig' ]]; then
+        if [[ "${{ inputs.distroname }}" == 'bigcommunity' ]]; then
           {
             echo "[community-extra]"
             echo "SigLevel = PackageRequired"
@@ -309,7 +309,7 @@ runs:
         sudo install -m0644 biglinux-key/usr/share/pacman/keyrings/* /etc/pacman.d/gnupg/
         sudo rm -r biglinux-key
 
-        if [[ "${{ inputs.distroname }}" == 'communitybig' ]]; then
+        if [[ "${{ inputs.distroname }}" == 'bigcommunity' ]]; then
           git clone https://github.com/communitybig/community-keyring.git
           sudo install -m0644 community-keyring/community.gpg /usr/share/pacman/keyrings/
           sudo install -m0644 community-keyring/community-trusted /usr/share/pacman/keyrings/
@@ -351,22 +351,22 @@ runs:
       shell: bash
       run: |
         # Declare environment variables
-        #DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
-        ISO_PROFILES_REPO="${{ inputs.iso_profiles_repo }}"
-        get_distroname_isoprofiles() {
-          # Extraindo a organização
-          if [[ $ISO_PROFILES_REPO ==  'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' ]]; then
-            DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
-          else
-            if [[ $ISO_PROFILES_REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
-              DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
-            else
-              DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
-            fi
-          fi
-          echo "$DISTRONAME_ISOPROFILES"
-        }
-        DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
+        DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
+        # ISO_PROFILES_REPO="${{ inputs.iso_profiles_repo }}"
+        # get_distroname_isoprofiles() {
+        #   # Extraindo a organização
+        #   if [[ $ISO_PROFILES_REPO ==  'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' ]]; then
+        #     DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
+        #   else
+        #     if [[ $ISO_PROFILES_REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
+        #       DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
+        #     else
+        #       DISTRONAME_ISOPROFILES="${{ inputs.distroname }}"
+        #     fi
+        #   fi
+        #   echo "$DISTRONAME_ISOPROFILES"
+        # }
+        # DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
 
         {
           echo "USERNAME=builduser"
@@ -385,7 +385,7 @@ runs:
           echo "VAR_CACHE_MANJARO_TOOLS_ISO=/var/cache/manjaro-tools/iso"
           echo "DEBUG=${{ inputs.tmate }}"
           echo "MANJARO_BRANCH=${{ inputs.manjaro_branch }}"
-          echo "COMMUNITYBIG_BRANCH=${{ inputs.community_branch }}"
+          echo "BIGCOMMUNITY_BRANCH=${{ inputs.community_branch }}"
           echo "BIGLINUX_BRANCH=${{ inputs.biglinux_branch }}"
           echo "CHILILINUX_BRANCH=${{ inputs.chililinux_branch }}"
           echo "KERNEL=${{ inputs.kernel }}"
