@@ -58,6 +58,9 @@ inputs:
   iso_profiles_branch:
     description: "Branch of the ISO profiles repository (optional)"
     required: false
+  build_dir:
+    description: "Build List dir ISO profile"
+    required: true
   edition:
     description: "Name of the ISO profile to build"
     required: true
@@ -368,17 +371,19 @@ runs:
         # }
         # DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
 
+        BUILD_DIR=${{ inputs.build_dir }}
         {
           echo "USERNAME=builduser"
           echo "HOME_FOLDER=/home/builduser"
           echo "ISO_PROFILES_REPO=${{ inputs.iso_profiles_repo }}"
           echo "EDITION=${{ inputs.edition }}"
+          echo "BUILD_DIR=${{ inputs.build_dir }}"
           echo "WORK_PATH=/__w/build-iso/build-iso"
           echo "WORK_PATH_ISO_PROFILES=/__w/build-iso/build-iso/iso-profiles"
           echo "DISTRONAME=${{ inputs.distroname }}"
           echo "DISTRONAME_ISOPROFILES=$DISTRONAME_ISOPROFILES"
-          echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}"
-          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}/${{ inputs.edition }}"
+          echo "PROFILE_PATH=/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}"
+          echo "PROFILE_PATH_EDITION=/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}/${{ inputs.edition }}"
           echo "PATH_MANJARO_ISO_PROFILES=/usr/share/manjaro-tools/iso-profiles"
           echo "PATH_MANJARO_TOOLS=/usr/share/manjaro-tools"
           echo "VAR_CACHE_MANJARO_TOOLS=/var/cache/manjaro-tools"

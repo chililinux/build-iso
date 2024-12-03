@@ -124,6 +124,11 @@ on:
           - xfce
           - wmaker
         default: xfce
+      build_dir:
+        type: string  # Permite digitar um valor livre
+        description: 'Build List dir ISO profile'
+        required: true
+        default: 'bigcommunity'
 
 env:
   TELEGRAM_TOKEN: "${{ secrets.TOKEN_BOT }}"
@@ -138,6 +143,7 @@ env:
   iso_biglinux_branch: "${{ github.event.client_payload.biglinux_branch || inputs.biglinux_branch}}"
   iso_bigcommunity_branch: "${{ github.event.client_payload.community_branch || inputs.community_branch}}"
   iso_chililinux_branch: "${{ github.event.client_payload.chililinux_branch || inputs.chililinux_branch}}"
+  iso_build_dir: "${{ github.event.client_payload.build_dir || inputs.build_dir}}"
   iso_edition: "${{ github.event.client_payload.edition || inputs.edition}}"
   iso_release_tag: "${{ github.event.client_payload.release_tag || inputs.release_tag }}"
   iso_kernel: "${{ github.event.client_payload.kernel || inputs.kernel }}"
@@ -196,6 +202,7 @@ jobs:
           <b>Distroname:</b> <code>${iso_distroname}</code>
           <b>Iso Profile:</b> <code>${{ github.event.client_payload.iso_profiles_repo || inputs.iso_profiles_repo }}</code>
           <b>Edition:</b> <code>${iso_edition}</code>
+          <b>Build dir:</b> <code>${iso_build_dir}</code>
           <b>Manjaro Branch:</b> <code>${iso_manjaro_branch}</code>
           <b>BigLinux Branch:</b> <code>${iso_biglinux_branch}</code>
           <b>BigCommunity Branch:</b> <code>${iso_bigcommunity_branch}</code>
@@ -352,6 +359,7 @@ jobs:
         with:
           # Parâmetros básicos da ISO
           distroname: ${{ github.event.client_payload.distroname || inputs.distroname || 'chililinux' }}
+          build_dir: ${{ github.event.client_payload.build_dir || inputs.build_dir}}
           edition: ${{ github.event.client_payload.edition || inputs.edition}}
           #release_tag: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
           release_tag: ${{ env.RELEASE_TAG }}
