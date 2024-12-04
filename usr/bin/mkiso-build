@@ -7,7 +7,7 @@
 #  ao fluxo padrão de construção de ISOs.
 #
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: seg 02 dez 2024 12:39:29 -04
+#  Altered: ter 03 dez 2024 13:06:09 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -34,7 +34,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o buildiso"
-declare VERSION="1.12.1" # Versão do script
+declare VERSION="1.12.3" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -51,16 +51,27 @@ configure_vars() {
 	declare -aG aDistros=('communitybig' 'biglinux' 'chililinux' 'manjaro' 'Sair')
 	declare -aG aBranchs=('stable' 'testing' 'unstable' 'Sair')
 	declare -aG aKernels=('latest' 'lts' 'oldlts' 'xanmod' 'Sair')
-	declare -aG aProfiles=(
-		'https://github.com/communitybig/iso-profiles'
-		'https://github.com/biglinux/iso-profiles'
-		'https://github.com/chililinux/iso-profiles'
-		'https://github.com/chililinux/manjaro-iso-profiles'
-		'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git'
-		'https://github.com/talesam/iso-profiles'
-		'https://github.com/vcatafesta/iso-profiles'
-		'Sair'
-	)
+  declare -aG aProfiles=(
+      'https://github.com/communitybig/iso-profiles'
+      'https://github.com/biglinux/iso-profiles'
+      'https://github.com/chililinux/iso-profiles'
+      'https://github.com/chililinux/manjaro-iso-profiles'
+      'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git'
+      'https://github.com/talesam/iso-profiles'
+      'https://github.com/vcatafesta/iso-profiles'
+      'Voltar'
+  )
+  declare -AG ApiProfiles=(
+    # GitHub Repositories
+    [https://github.com/communitybig/iso-profiles]='https://api.github.com/repos/communitybig/iso-profiles/contents/'
+    [https://github.com/biglinux/iso-profiles]='https://api.github.com/repos/biglinux/iso-profiles/contents/'
+    [https://github.com/chililinux/iso-profiles]='https://api.github.com/repos/chililinux/iso-profiles/contents/'
+    [https://github.com/chililinux/manjaro-iso-profiles]='https://api.github.com/repos/chililinux/manjaro-iso-profiles/contents/'
+    [https://github.com/talesam/iso-profiles]='https://api.github.com/repos/talesam/iso-profiles/contents/'
+    [https://github.com/vcatafesta/iso-profiles]='https://api.github.com/repos/vcatafesta/iso-profiles/contents/'
+    # GitLab Repositories
+    [https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git]='https://gitlab.manjaro.org/api/v4/projects/profiles-and-settings%2Fiso-profiles/repository/tree'
+  )
 	#
 	declare -aG communitybig_build_list=(communitybig)
 	declare -aG biglinux_build_list=(biglinux biglinux-make-iso-profiles)
@@ -84,14 +95,14 @@ configure_vars() {
 	HOME_FOLDER="/home/$USERNAME"
 
 	get_distroname
-	get_edition
 	get_iso_profiles_repo
-	get_build_list
+	get_build_list "$ISO_PROFILES_REPO"
+	get_edition "$ISO_PROFILES_REPO" "$BUILD_DIR"
 	DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
-	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}"
-	PROFILE_PATH_EDITION="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${DISTRONAME_ISOPROFILES}/$EDITION"
+	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}"
+	PROFILE_PATH_EDITION="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}/$EDITION"
 	PATH_MANJARO_ISO_PROFILES='/usr/share/manjaro-tools/iso-profiles'
 	PATH_MANJARO_TOOLS='/usr/share/manjaro-tools'
 	VAR_CACHE_MANJARO_TOOLS='/var/cache/manjaro-tools'
@@ -135,7 +146,66 @@ get_distroname() {
 	DISTRONAME="${MENU_RESULT}"
 }
 
+
 get_edition() {
+  local repo="$1"
+  local dir="$2"
+  local api_url="${ApiProfiles[$repo]}"
+  local response
+
+  # Verifica se o repositório existe no array
+  if [[ -z "$api_url" ]]; then
+    die "${red}" "Erro: Repositório não encontrado no array: $repo ${reset}"
+  fi
+
+  # Se for GitHub, faz a requisição
+  if [[ "$api_url" == *"github"* ]]; then
+    # Faz a requisição para o GitHub
+    p_log "${CYAN}" "Fazendo requisição na API $api_url {NC}"
+    response=$(curl -sL "${api_url}${dir}")
+    sleep 1
+
+    # Verifica se a resposta está vazia ou se ocorreu erro
+    if [[ -z "$response" || "$response" == *"404 Not Found"* ]]; then
+      die "${red}" "Erro: Problema ao acessar o diretório: $dir ${reset}"
+    fi
+
+    # Processamento para GitHub
+    mapfile -t subdirs < <(
+      echo "$response" | \
+      jq -r '.[] | select(.type == "dir") | .name'
+    )
+  elif [[ "$api_url" == *"gitlab"* ]]; then
+    # Faz a requisição para o GitLab com o parâmetro 'path'
+    p_log "${CYAN}" "Fazendo requisição na API $api_url {NC}"
+    response=$(curl -sL "${api_url}?path=${dir}")
+    sleep 1
+
+    # Verifica se a resposta está vazia ou se ocorreu erro
+    if [[ -z "$response" || "$response" == *"404 Not Found"* ]]; then
+      die "${red}" "Erro: Problema ao acessar o repositório: $repo ${reset}"
+    fi
+
+    # Processamento para GitLab
+    # Filtra os diretórios e pega o nome de cada um, excluindo os indesejados
+    mapfile -t subdirs < <(
+      echo "$response" | \
+      jq -r '.[] | select(.type == "tree") | .name' | \
+      grep -vE '^(shared|grub|temp_repo|.github)$'
+    )
+  else
+    die "${red}" "Erro: Repositório desconhecido ${reset}"
+  fi
+
+  # Adiciona a opção "Voltar"
+  subdirs+=("Voltar")
+
+  # Cria o menu com as edições encontradas
+  create_menu_with_array "Escolha uma ${yellow}EDIÇÃO/DE${reset} para o ${yellow}${DISTRONAME}${reset}:" subdirs[@] "$EDITION"
+  EDITION="${MENU_RESULT}"
+}
+
+get_editionOLD() {
 	local editions_var="${DISTRONAME}_edition"
 	# local editions=(${!editions_var[@]})
 
@@ -161,17 +231,46 @@ get_iso_profiles_repo() {
 }
 
 get_build_list() {
-	local build_list_var="${DISTRONAME}_build_list"
+  local repo="$1"
+  local api_url="${ApiProfiles[$repo]}"
 
-	# Usando eval para acessar o conteúdo do array dinamicamente
-	eval "local build_list=(\"\${${build_list_var}[@]}\")"
-	build_list+=("Sair")
-	create_menu_with_array "Escolha uma ${yellow}BUILD_LIST ${reset}para o ${yellow}${DISTRONAME}${reset}:" build_list[@] "$DISTRONAME"
-	# Verifica se a opção selecionada foi "Sair"
-	if [[ $MENU_RESULT == "Sair" ]]; then
-		die "${red}" "Construção da ISO cancelada.${reset}"
-	fi
-	BUILD_LIST="${MENU_RESULT}"
+  # Verifica se o repositório existe no array
+  if [[ -z "$api_url" ]]; then
+    die "${red}" "Erro: Repositório não encontrado no array: $repo ${reset}"
+  fi
+
+  # Faz a requisição e inspeciona a resposta para entender o formato
+  p_log "${cyan}" "Fazendo requisição na API $api_url ${reset}"
+  local response=$(curl -sL "$api_url")
+  sleep 1
+
+  # Verifica se a resposta está vazia ou se ocorreu um erro 404
+  if [[ -z "$response" || "$response" == *"404 Not Found"* ]]; then
+    die "${red}" "Erro: Repositório não encontrado ou erro ao acessar a URL: $repo ${reset}"
+  fi
+
+  # Se o repositório for do GitHub, a estrutura de resposta é diferente
+  if [[ "$api_url" == *"github"* ]]; then
+    # Processa a resposta para GitHub
+    mapfile -t build_list < <(
+      echo "$response" | \
+      jq -r '.[] | select(.type == "dir") | .name' | \
+      grep -vE '^(shared|grub|temp_repo|.github)$'
+    )
+  else
+    # Processa a resposta para GitLab
+    mapfile -t build_list < <(
+      echo "$response" | \
+      jq -r '.[] | select(.type == "tree") | .name' | \
+      grep -vE '^(shared|grub|temp_repo|.github)$'
+    )
+  fi
+
+  # Retorna o array
+  #echo "${build_list[@]}"
+  build_list+=("Voltar")
+  create_menu_with_array "Escolha uma ${yellow}BUILD_LIST${reset} para o ${yellow}${DISTRONAME}${reset}:" build_list[@] "$DISTRONAME"
+  BUILD_DIR="${MENU_RESULT}"
 }
 
 get_manjaro_branch() {
