@@ -1476,8 +1476,15 @@ add_repos_to_pacman_conf_into_iso_distro() {
 export -f add_repos_to_pacman_conf_into_iso_distro
 
 set_build_info() {
-	local release_file="$PROFILE_PATH_EDITION/root-overlay/etc/big-release"
+	local release_file
 	local release_dir
+
+  case "$DISTRONAME" in
+  bigcommunity) release_file="$PROFILE_PATH_EDITION/root-overlay/etc/big-release";;
+  biglinux) release_file="$PROFILE_PATH_EDITION/root-overlay/etc/big-release";;
+  chililinux) release_file="$PROFILE_PATH_EDITION/root-overlay/etc/chili-release";;
+  manjaro) release_file="$PROFILE_PATH_EDITION/root-overlay/etc/manjaro-release";;
+  fi
 	release_dir=$(dirname "$release_file")
 
 	# Ensure the directory exists
