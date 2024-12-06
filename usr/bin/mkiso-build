@@ -1020,38 +1020,14 @@ configure_repositories_and_build_environment() {
 	msg_info "sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh"
 	sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
 
-	if [[ "$DISTRONAME" == "manjaro" ]]; then
-	  msg 'Configurando compressão'
-  	if [[ "$MANJARO_BRANCH" != "stable" ]]; then
-	    msg_info "sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh"
-  	  sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
-	  fi
+  msg 'Configurando compressão'
+  # Acessa dinamicamente a variável correspondente ao DISTRONAME_BRANCH
+  BRANCH_VAR="${DISTRONAME^^}_BRANCH" # Converte DISTRONAME para maiúsculas
+  BRANCH="${!BRANCH_VAR}"             # Expande o valor da variável com esse nome
+  if [[ "$BRANCH" != "stable" ]]; then
+    msg_info "sudo sed -i 's/-Xcompression-level 22/-Xcompression-level 7/g' /usr/lib/manjaro-tools/util-iso.sh"
+    sudo sed -i 's/-Xcompression-level 22/-Xcompression-level 7/g' /usr/lib/manjaro-tools/util-iso.sh
   fi
-
-	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
-    msg 'Configurando compressão'
-  	if [[ "$BIGCOMMUNITY_BRANCH" != "stable" ]]; then
-	    msg_info "sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh"
-  	  sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
-	  fi
-  fi
-
-	if [[ "$DISTRONAME" == "biglinux" ]]; then
-	  msg 'Configurando compressão'
-  	if [[ "$BIGLINUX_BRANCH" != "stable" ]]; then
-	    msg_info "sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh"
-  	  sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
-	  fi
-  fi
-
-	if [[ "$DISTRONAME" == "chililinux" ]]; then
-	  msg 'Configurando compressão'
-  	if [[ "$CHILILINUX_BRANCH" != "stable" ]]; then
-	    msg_info "sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh"
-  	  sudo sed -i 's/-Xcompression-level 20/-Xcompression-level 6/g' /usr/lib/manjaro-tools/util-iso.sh
-	  fi
-  fi
-
 	msg_info "sudo sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh"
 	sudo sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh
 
