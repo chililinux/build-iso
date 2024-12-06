@@ -1016,7 +1016,7 @@ configure_repositories_and_build_environment() {
 		add_repositorys_only_install "$PATH_MANJARO_TOOLS/pacman-multilib.conf"
 	fi
 
-	msg 'Alterando o path da remoção do cache de pacotes para remover /usr/share/man'
+	msg "Alterando o path da remoção do cache de pacotes para remover '/usr/share/man'"
 	msg_info "sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh"
 	sudo sed -i 's/path=\$1\/var\/lib\/pacman\/sync/path=\$1\/usr\/share\/man/g' /usr/lib/manjaro-tools/util-iso-image.sh
 
