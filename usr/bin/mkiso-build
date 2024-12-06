@@ -7,7 +7,7 @@
 #  ao fluxo padrão de construção de ISOs.
 #
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: qua 04 dez 2024 21:27:36 -04
+#  Altered: sex 06 dez 2024 10:09:52 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -1070,7 +1070,7 @@ configure_repositories_and_build_environment() {
 }
 export -f configure_repositories_and_build_environment
 
-add_big_cleanups() {
+add_iso_cleanups() {
 	# cleanups
 	local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
 
@@ -1098,7 +1098,7 @@ add_big_cleanups() {
 		fi
 	EOF_CLEANUPS
 }
-export -f add_big_cleanups
+export -f add_iso_cleanups
 
 setup_manjaro_tools() {
 	msg "Setting up Manjaro tools..."
@@ -1181,8 +1181,8 @@ setup_manjaro_tools() {
 	msg 'Desabilitar a verificação de versão do kernel'
 	sudo sed -i '/${iso_kernel}/s/^/#/' /usr/lib/manjaro-tools/util-iso.sh
 
-	msg 'Adicionar limpezas do Big'
-	add_big_cleanups
+	msg 'Adicionar limpezas da ISO'
+	add_iso_cleanups
 
 	msg 'Adicionar root-overlay'
 	sudo sed -i '/copy_overlay "${profile_dir}\/root-overlay" "${path}"/a [[ -e ${profile_dir}\/root-overlay ]] && copy_overlay "${profile_dir}\/root-overlay" "${path}"' /usr/lib/manjaro-tools/util-iso.sh
