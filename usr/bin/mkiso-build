@@ -438,30 +438,6 @@ unset_varcolors() {
 	: "${INFO="${white}[${gray}i${rst}${white}]${rst}"}"
 }
 
-p_log() {
-	local color="$1"
-	local message="$2"
-	local died="$3"
-
-	[[ -z "$died" ]] && died=false
-	# echo -e "${color}=> ${message}${reset}"
-	if $died; then
-		printf "${CROSS} => ${color}%s\n\033[m" "$message"
-	else
-		printf "${TICK} => ${color}%s\n\033[m" "$message"
-	fi
-	# Remover códigos de escape ANSI do log
-	#clean_log=$(sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\(B//g' <<<"$message")
-	#echo "[$(date '+%Y-%m-%d %H:%M:%S')] ${clean_log}" >>"${LOG_FILE}"
-}
-
-die() {
-	local color="$1"
-	local message="$2"
-	p_log "$color" "$message" true
-	exit 1
-}
-
 funcao_A() { return; }
 funcao_B() { return; }
 funcao_C() { return; }
@@ -489,6 +465,30 @@ msg_info() {
 msg_warning() {
 	local msg="$1"
 	echo -e "mkiso=>${red}warning: ${orange}${msg}${reset}"
+}
+
+p_log() {
+	local color="$1"
+	local message="$2"
+	local died="$3"
+
+	[[ -z "$died" ]] && died=false
+	# echo -e "${color}=> ${message}${reset}"
+	if $died; then
+		printf "${CROSS} mkiso=>${red}Error: ${color}%s\n\033[m" "$message"
+	else
+		printf "${TICK} mkiso=> ${color}%s\n\033[m" "$message"
+	fi
+	# Remover códigos de escape ANSI do log
+	#clean_log=$(sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g; s/\x1b\(B//g' <<<"$message")
+	#echo "[$(date '+%Y-%m-%d %H:%M:%S')] ${clean_log}" >>"${LOG_FILE}"
+}
+
+die() {
+	local color="$1"
+	local message="$2"
+	p_log "$color" "$message" true
+	exit 1
 }
 
 replicate() {
@@ -1014,9 +1014,12 @@ configure_repositories_and_build_environment() {
   # Acessa dinamicamente a variável correspondente ao DISTRONAME_BRANCH
   BRANCH_VAR="${DISTRONAME^^}_BRANCH" # Converte DISTRONAME para maiúsculas
   BRANCH="${!BRANCH_VAR}"             # Expande o valor da variável com esse nome
-  if [[ "$BRANCH" != "stable" ]]; then
-    msg_info "sudo sed -i 's/-Xcompression-level 22/-Xcompression-level 7/g' /usr/lib/manjaro-tools/util-iso.sh"
-    sudo sed -i 's/-Xcompression-level 22/-Xcompression-level 7/g' /usr/lib/manjaro-tools/util-iso.sh
+  if [[ "$BRANCH" == "stable" ]]; then
+    msg_info "sed -i 's/-Xcompression-level [0-9]\+/-Xcompression-level 22/g' /usr/lib/manjaro-tools/util-iso.sh"
+    sudo sed -i 's/-Xcompression-level [0-9]\+/-Xcompression-level 22/g' /usr/lib/manjaro-tools/util-iso.sh
+  else
+    msg_info "sed -i 's/-Xcompression-level [0-9]\+/-Xcompression-level 3/g' /usr/lib/manjaro-tools/util-iso.sh"
+    sudo sed -i 's/-Xcompression-level [0-9]\+/-Xcompression-level 3/g' /usr/lib/manjaro-tools/util-iso.sh
   fi
 	msg_info "sudo sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh"
 	sudo sed -i 's/256K/1024K/g' /usr/lib/manjaro-tools/util-iso.sh
@@ -1539,7 +1542,7 @@ configure_iso_name() {
 		unstable) ISO_BASENAME="${DISTRONAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 		esac
 	elif [[ "$DISTRONAME" == 'chililinux' ]]; then
-		case "$MANJARO_BRANCH/$BIGLINUX_BRANCH" in
+		case "$MANJARO_BRANCH/$CHILILINUX_BRANCH" in
 		stable/stable) ISO_BASENAME="${DISTRONAME}_STABLE_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 		stable/testing | testing/*) ISO_BASENAME="${DISTRONAME}_BETA_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
 		unstable/*) ISO_BASENAME="${DISTRONAME}_DEVELOPMENT_${EDITION}_${RELEASE_TAG%%_*}_k${KERNEL}.iso" ;;
@@ -1649,16 +1652,26 @@ export -f cleanup_and_move_files
 
 sh_install_manjaro_build_packages() {
 	cleaning_working_directories
-	msg 'Install the manjaro-tools-packages required'
-	sudo pacman -Sy --quiet --noconfirm \
+	msg 'Install tools packages required'
+	sudo pacman -Sy --quiet --needed --noconfirm \
 		git \
 		base-devel \
+		cdrkit &>/dev/null
+
+	msg 'Install the manjaro-tools-packages required'
+	sudo pacman -Sy --quiet --noconfirm \
 		manjaro-chrootbuild \
 		manjaro-tools-iso-git \
 		manjaro-tools-base-git \
 		manjaro-tools-pkg-git \
-		manjaro-tools-yaml-git \
-		cdrkit &>/dev/null
+		manjaro-tools-yaml-git &>/dev/null
+
+    if [[ $? -eq 0 ]]; then
+      msg "All packages installed successfully."
+    else
+      die "${red}" "[L1656]Failed to install manjaro-tools-packages. ${reset}"
+      exit 1
+    fi
 }
 
 make_iso() {
