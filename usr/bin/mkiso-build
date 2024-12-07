@@ -949,26 +949,22 @@ add_repositorys_only_install() {
 	done
 	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
-	msg 'Configurando repositórios do BigCommunity'
-	case "$BIGCOMMUNITY_BRANCH" in
-	stable)
-		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	testing)
-		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	*)
-		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-		;;
-	esac
+	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
+  	msg 'Configurando repositórios do BigCommunity'
+  	case "$BIGCOMMUNITY_BRANCH" in
+  	stable)
+  		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+  		;;
+  	testing)
+  		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+  		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+  		;;
+  	esac
+  fi
 
 	if [[ "$DISTRONAME" == "chililinux" ]]; then
 		msg 'Configurando repositórios do ChiliLinux'
@@ -982,12 +978,6 @@ add_repositorys_only_install() {
 		testing)
 			add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
 			add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
-			;;
-		*)
-			add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
 			add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
 			;;
 		esac
@@ -1050,29 +1040,38 @@ add_iso_cleanups() {
 	# cleanups
 	local cleanup_script="/usr/lib/manjaro-tools/util-iso-image.sh"
 
-	sudo tee -a "$cleanup_script" >/dev/null <<-EOF_CLEANUPS
-		# Big cleanups
-		local cpath="$1"
+  #adicionar a chamada da função iso_cleanups antes do fechamento (}) da função
+  sudo sed -i '/^}/i \ \ mkiso_build_iso_cleanups "$1"' "$cleanup_script"
 
-		# Remove documentation
-		rm -rf "$cpath/usr/share/doc"/* 2> /dev/null
+  #adicionar a unção iso_cleanups no fim do arquivo $cleanup_script
+  #Delimitador de EOF_CLEANUPS entre aspas simples (<<-'EOF_CLEANUPS'):
+  #Evita a expansão de variáveis e trata todo o conteúdo como literal.
+	sudo tee -a "$cleanup_script" >/dev/null <<-'EOF_CLEANUPS'
 
-		# Remove man pages
-		rm -rf "$cpath/usr/share/man"/* 2> /dev/null
+mkiso_build_iso_cleanups() {
+  # Big cleanups
+  local cpath="$1"
 
-		# Clean LibreOffice configs
-		local libreoffice_path="$cpath/usr/lib/libreoffice/share/config"
-		if [[ -d "$libreoffice_path" ]]; then
-		  rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
-		  rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
-		fi
+  # Remove documentation
+  rm -rf "$cpath/usr/share/doc"/* 2> /dev/null
 
-		# Clean wallpapers
-		local wallpapers_path="$cpath/usr/share/wallpapers"
-		if [[ -d "$wallpapers_path" ]]; then
-		  rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
-		fi
-	EOF_CLEANUPS
+  # Remove man pages
+  rm -rf "$cpath/usr/share/man"/* 2> /dev/null
+
+  # Clean LibreOffice configs
+  local libreoffice_path="$cpath/usr/lib/libreoffice/share/config"
+  if [[ -d "$libreoffice_path" ]]; then
+    rm -f "$libreoffice_path"/images_{karasa_jaga,elementary,sukapura}* 2> /dev/null
+    rm -f "$libreoffice_path"/images_{colibre,sifr_dark,sifr,breeze_dark,breeze}_svg.zip 2> /dev/null
+  fi
+
+  # Clean wallpapers
+  local wallpapers_path="$cpath/usr/share/wallpapers"
+  if [[ -d "$wallpapers_path" ]]; then
+    rm -rf "$wallpapers_path"/{Altai,BytheWater,Cascade,ColdRipple,DarkestHour,EveningGlow,Flow,FlyingKonqui,IceCold,Kokkini,Next,Opal,Patak,SafeLanding,summer_1am,Autumn,Canopee,Cluster,ColorfulCups,Elarun,FallenLeaf,Fluent,Grey,Kite,MilkyWay,OneStandsOut,PastelHills,Path,Shell,Volna}
+  fi
+}
+EOF_CLEANUPS
 }
 export -f add_iso_cleanups
 
@@ -1656,8 +1655,9 @@ sh_install_manjaro_build_packages() {
 		base-devel \
 		manjaro-chrootbuild \
 		manjaro-tools-iso-git \
-		manjaro-tools-yaml-git \
 		manjaro-tools-base-git \
+		manjaro-tools-pkg-git \
+		manjaro-tools-yaml-git \
 		cdrkit &>/dev/null
 }
 
@@ -1674,7 +1674,7 @@ make_iso() {
 	checkout_iso-profiles_and_clean_directories
 	check_directories_and_path
 	configurar_manjaro_tools_para_usuario_builduser
-	configure_repositories_and_build_environment
+  configure_repositories_and_build_environment
 	# Community Pre Config Build ISO
 	setup_manjaro_tools
 	#configure_dwarfs # substituto ao squashfs
