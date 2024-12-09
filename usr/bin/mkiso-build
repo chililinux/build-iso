@@ -376,6 +376,8 @@ get_distroname_isoprofiles() {
 	# Extraindo a organização
 	if [[ $ISO_PROFILES_REPO == 'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git' ]]; then
 		DISTRONAME_ISOPROFILES="${DISTRONAME}"
+	elif [[ $ISO_PROFILES_REPO == 'https://github.com/communitybig/iso-profiles' ]]; then
+		DISTRONAME_ISOPROFILES='bigcommunity'
 	else
 		if [[ $ISO_PROFILES_REPO =~ https?://[^/]+/([^/]+)/.* ]]; then
 			DISTRONAME_ISOPROFILES="${BASH_REMATCH[1]}"
@@ -994,39 +996,45 @@ add_repositorys_only_install() {
 	done
 	echo '' | sudo tee -a "$arquivo_conf" >/dev/null
 
-	if [[ "$DISTRONAME" == "bigcommunity" ]]; then
-  	msg 'Configurando repositórios do BigCommunity'
-  	case "$BIGCOMMUNITY_BRANCH" in
-  	stable)
-  		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
-  		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-  		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-  		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-  		;;
-  	testing)
-  		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
-  		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
-  		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
-  		;;
-  	esac
-  fi
+	msg 'Configurando repositórios do BigCommunity'
+	case "$BIGCOMMUNITY_BRANCH" in
+	stable)
+		add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+	testing)
+		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+	*)
+		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+ 	esac
 
-	if [[ "$DISTRONAME" == "chililinux" ]]; then
-		msg 'Configurando repositórios do ChiliLinux'
-		case "$CHILILINUX_BRANCH" in
-		stable)
-			add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
-			;;
-		testing)
-			add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
-			add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
-			;;
-		esac
-	fi
+  msg 'Configurando repositórios do ChiliLinux'
+	case "$CHILILINUX_BRANCH" in
+	stable)
+	  add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
+    add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+  testing)
+		add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+  *)
+		add_chili-testing | sudo tee -a "$arquivo_conf" >/dev/null
+		add_chili-stable | sudo tee -a "$arquivo_conf" >/dev/null
+		add_chili-extra | sudo tee -a "$arquivo_conf" >/dev/null
+		;;
+	esac
 
 	msg 'Configurando repositórios do BigLinux'
 	case "$BIGLINUX_BRANCH" in
@@ -1164,6 +1172,9 @@ setup_manjaro_tools() {
 	find "$WORK_PATH_ISO_PROFILES/shared/live-overlay/usr/share/grub/cfg/" -name "grub.cfg" -exec sed -i \
 		"s#theme=(\$root)/boot/grub/themes/[^/]*/theme.txt#theme=(\$root)/boot/grub/themes/${DISTRONAME_ISOPROFILES,,}-live/theme.txt#g" {} + || true
 
+  msg "Ajustando o tema no arquivo '/usr/lib/manjaro-tools/util-iso-boot.sh' parar usar DISTRONAME_ISOPROFILES (${DISTRONAME_ISOPROFILES,,})."
+  sudo sed -i "s|\${data_live}/themes/[^ ]*-live \${grub}/themes/|\${data_live}/themes/${DISTRONAME_ISOPROFILES,,}-live \${grub}/themes/|g" /usr/lib/manjaro-tools/util-iso-boot.sh
+
 	# Apply Custom Profile Modifications
 	# Apply edition-specific removals
 	for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
@@ -1220,6 +1231,7 @@ setup_manjaro_tools() {
 		ls -la "$VAR_CACHE_MANJARO_TOOLS_ISO"
 		replicate '#'
 	fi
+
 }
 export -f setup_manjaro_tools
 
