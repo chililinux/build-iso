@@ -7,7 +7,7 @@
 #  ao fluxo padrão de construção de ISOs.
 #
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: dom 08 dez 2024 22:23:06 -04
+#  Altered: dom 08 dez 2024 23:39:02 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -110,6 +110,7 @@ configure_vars() {
   	get_edition "$ISO_PROFILES_REPO" "$BUILD_DIR"
   fi
  	DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
+ 	DISTRONAME_ISOPROFILES="vcatafesta"
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}"
@@ -1161,8 +1162,11 @@ setup_manjaro_tools() {
 
 	# Substituição no arquivo grub.cfg
 	msg "Ajustando 'themes' no arquivo grub.cfg em $WORK_PATH_ISO_PROFILES"
-	find "$WORK_PATH_ISO_PROFILES" -name "grub.cfg" -exec sed -i \
+	find "$WORK_PATH_ISO_PROFILES/shared/live-overlay/usr/share/grub/cfg/" -name "grub.cfg" -exec sed -i \
 		"s#theme=(\$root)/boot/grub/themes/[^/]*/theme.txt#theme=(\$root)/boot/grub/themes/${DISTRONAME_ISOPROFILES,,}-live/theme.txt#g" {} + || true
+
+exit
+
 
 	# Apply Custom Profile Modifications
 	# Apply edition-specific removals
