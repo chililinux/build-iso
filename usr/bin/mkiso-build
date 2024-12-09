@@ -101,15 +101,15 @@ configure_vars() {
 	declare -g CHILILINUX_BRANCH='stable'
 	declare -g MANJARO_BRANCH='stable'
   declare -g ISO_PROFILES_REPO='https://github.com/chililinux/iso-profiles'
-  declare -g DISTRONAME_ISOPROFILES="$DISTRONAME"
+  declare -g DISTRONAME_ISOPROFILES
 
   if ! $PARAM_DEFAULT; then
   	get_distroname
 	  get_iso_profiles_repo
   	get_build_list "$ISO_PROFILES_REPO"
   	get_edition "$ISO_PROFILES_REPO" "$BUILD_DIR"
-  	DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
   fi
+ 	DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}"
