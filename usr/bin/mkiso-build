@@ -101,6 +101,7 @@ configure_vars() {
 	declare -g CHILILINUX_BRANCH='stable'
 	declare -g MANJARO_BRANCH='stable'
   declare -g ISO_PROFILES_REPO='https://github.com/chililinux/iso-profiles'
+  declare -g DISTRONAME_ISOPROFILES="$DISTRONAME"
 
   if ! $PARAM_DEFAULT; then
   	get_distroname
