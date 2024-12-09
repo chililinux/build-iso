@@ -7,7 +7,7 @@
 #  ao fluxo padrão de construção de ISOs.
 #
 #  Created: ter 24 set 2024 04:26:12 -04
-#  Altered: sex 06 dez 2024 10:09:52 -04
+#  Altered: dom 08 dez 2024 22:23:06 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -38,6 +38,7 @@ declare VERSION="1.12.3" # Versão do script
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
+declare PARAM_DEFAULT=false
 
 configure_vars() {
 	# Declare variáveis de ambiente
@@ -87,22 +88,27 @@ configure_vars() {
 	declare -g DISTRONAME='chililinux'
 	declare -g EDITION='base'
 	declare -g KERNEL='lts'
-	declare -g TMATE='Sim'
+	declare -g TMATE=true
+	declare -g DEBUG=true
+  declare -g BUILD_DIR='chililinux'
 	#
-	REPO_PATH="$PWD"
-	USERNAME="$USER"
-	GITHUB_USER_NAME="$USERNAME"
-	HOME_FOLDER="/home/$USERNAME"
-	BIGCOMMUNITY_BRANCH=''
-	BIGLINUX_BRANCH='stable'
-	CHILILINUX_BRANCH='stable'
-	MANJARO_BRANCH='stable'
+	declare -g REPO_PATH="$PWD"
+	declare -g USERNAME="$USER"
+	declare -g GITHUB_USER_NAME="$USERNAME"
+	declare -g HOME_FOLDER="/home/$USERNAME"
+	declare -g BIGCOMMUNITY_BRANCH=''
+	declare -g BIGLINUX_BRANCH='stable'
+	declare -g CHILILINUX_BRANCH='stable'
+	declare -g MANJARO_BRANCH='stable'
+  declare -g ISO_PROFILES_REPO='https://github.com/chililinux/iso-profiles'
 
-	get_distroname
-	get_iso_profiles_repo
-	get_build_list "$ISO_PROFILES_REPO"
-	get_edition "$ISO_PROFILES_REPO" "$BUILD_DIR"
-	DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
+  if ! $PARAM_DEFAULT; then
+  	get_distroname
+	  get_iso_profiles_repo
+  	get_build_list "$ISO_PROFILES_REPO"
+  	get_edition "$ISO_PROFILES_REPO" "$BUILD_DIR"
+  	DISTRONAME_ISOPROFILES="$(get_distroname_isoprofiles)"
+  fi
 	WORK_PATH="$HOME_FOLDER/__w/build-iso/build-iso"
 	WORK_PATH_ISO_PROFILES="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles"
 	PROFILE_PATH="$HOME_FOLDER/__w/build-iso/build-iso/iso-profiles/${BUILD_DIR}"
@@ -113,34 +119,64 @@ configure_vars() {
 	VAR_CACHE_MANJARO_TOOLS_ISO='/var/cache/manjaro-tools/iso'
 	RELEASE_TAG=$(date "+%Y-%m-%d_%H-%M")
 
-	get_manjaro_branch
-	if [[ "$DISTRONAME" =~ ^(manjaro)$ ]]; then
-		BIGCOMMUNITY_BRANCH=
-		BIGLINUX_BRANCH=
-		CHILILINUX_BRANCH=
-	else
-		get_biglinux_branch
-	fi
+  if ! $PARAM_DEFAULT; then
+  	get_manjaro_branch
+  	if [[ "$DISTRONAME" =~ ^(manjaro)$ ]]; then
+  		BIGCOMMUNITY_BRANCH=
+  		BIGLINUX_BRANCH=
+  		CHILILINUX_BRANCH=
+  	else
+  		get_biglinux_branch
+  	fi
 
-	if [[ "$DISTRONAME" =~ ^(manjaro|biglinux|chililinux)$ ]]; then
-		BIGCOMMUNITY_BRANCH=
-	else
-		get_bigcommunity_branch
-	fi
+  	if [[ "$DISTRONAME" =~ ^(manjaro|biglinux|chililinux)$ ]]; then
+  		BIGCOMMUNITY_BRANCH=
+  	else
+  		get_bigcommunity_branch
+  	fi
 
-	if [[ "$DISTRONAME" =~ ^(manjaro|biglinux|bigcommunity|talesam)$ ]]; then
-		CHILILINUX_BRANCH=
-	else
-		get_chililinux_branch
-	fi
+  	if [[ "$DISTRONAME" =~ ^(manjaro|biglinux|bigcommunity|talesam)$ ]]; then
+  		CHILILINUX_BRANCH=
+  	else
+  		get_chililinux_branch
+  	fi
 
-	get_kernel
-	get_debug
-
+  	get_kernel
+  	get_debug
+  else
+    resume_and_build
+  fi
 	mkdir -p "$WORK_PATH" &>/dev/null
 	pushd "$WORK_PATH" &>/dev/null || false
 }
 export -f configure_vars
+
+resume_and_build() {
+  # Confirmar as escolhas
+  clear
+  echo "${black}$(replicate '=')${reset}"
+  echo -e "${cyan}Resumo das escolhas:${reset}"
+  echo "${black}$(replicate '=')${reset}"
+  echo "Organization     : ${orange}$ORGANIZATION ${reset}"
+  echo "Repo Workflow    : ${orange}$REPO_WORKFLOW ${reset}"
+  echo "User Name        : ${orange}$GITHUB_USER_NAME ${reset}"
+  echo "Distroname       : ${orange}$DISTRONAME ${reset}"
+  echo "Iso Profiles repo: ${orange}$ISO_PROFILES_REPO ${reset}"
+  echo "Build dir        : ${orange}$BUILD_DIR ${reset}"
+  echo "Edition          : ${orange}$EDITION ${reset}"
+  echo "Manjaro Branch   : ${orange}$MANJARO_BRANCH ${reset}"
+  echo "Community Branch : ${orange}$BIGCOMMUNITY_BRANCH ${reset}"
+  echo "BigLinux Branch  : ${orange}$BIGLINUX_BRANCH ${reset}"
+  echo "ChiliLinux Branch: ${orange}$CHILILINUX_BRANCH ${reset}"
+  echo "Kernel           : ${orange}$KERNEL ${reset}"
+  echo "Release Tag      : ${orange}$RELEASE_TAG ${reset}"
+  echo "TMATE Debug      : ${orange}$TMATE ${reset}"
+  echo "${black}$(replicate '=')${reset}"
+
+  if ! conf "${YELLOW}Deseja prosseguir com a construção da ISO?"; then
+    die "${RED}" "Construção da ISO cancelada."
+  fi
+}
 
 get_distroname() {
 	create_menu_with_array "Escolha nome da ${yellow}DISTRIBUIÇÃO:" aDistros[@] "$DISTRONAME"
@@ -484,6 +520,13 @@ p_log() {
 	#echo "[$(date '+%Y-%m-%d %H:%M:%S')] ${clean_log}" >>"${LOG_FILE}"
 }
 
+# Funções auxiliares
+conf() {
+  read -r -p "$1 [S/n]"
+  [[ ${REPLY^} == "" ]] && return 0
+  [[ ${REPLY^} == N ]] && return 1 || return 0
+}
+
 die() {
 	local color="$1"
 	local message="$2"
@@ -525,6 +568,7 @@ sh_usage() {
       -o|--org|--organization ${orange}<name> ${cyan} # Configura organização de trabalho no Github ${yellow}(default: communitybig)${reset}
       -a|--auto|--automatic          ${cyan} # Construir ISO automaticamente pelo Action do github ${reset}
       -m|--manual|--standalone       ${cyan} # Construir ISO localmente ${reset}
+      -d|--defa|--default            ${cyan} # Construir ISO localmente com parametros default - válido somente com -m ${reset}
       -n|--nocolor                   ${cyan} # Suprime a impressão de cores ${reset}
       -V|--version                   ${cyan} # Imprime a versão do aplicativo ${reset}
       -h|--help                      ${cyan} # Mostra este Help ${reset}
@@ -1746,18 +1790,25 @@ for arg in "$@"; do
 		sh_usage
 		exit $(($# ? 0 : 1))
 	elif [[ "$arg" = @(-a|--auto|--automatic) ]]; then
-		#unset_varcolors
-		set_varcolors
+		#set_varcolors
 		IS_AUTO=true
-		make_iso
+		#make_iso
 	elif [[ "$arg" = @(-m|--manual|--standalone) ]]; then
-		set_varcolors
+		#set_varcolors
 		IS_AUTO=false
-		configure_vars
-		make_iso
+		#configure_vars
+		#make_iso
+	elif [[ "$arg" = @(-d|--defa|--default) ]]; then
+    PARAM_DEFAULT=true
 	else
 		set_varcolors
 		sh_usage
 		exit $(($# ? 0 : 1))
 	fi
 done
+
+set_varcolors
+if ! $IS_AUTO; then
+	configure_vars
+fi
+make_iso
