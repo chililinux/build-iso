@@ -1164,9 +1164,6 @@ setup_manjaro_tools() {
 	find "$WORK_PATH_ISO_PROFILES/shared/live-overlay/usr/share/grub/cfg/" -name "grub.cfg" -exec sed -i \
 		"s#theme=(\$root)/boot/grub/themes/[^/]*/theme.txt#theme=(\$root)/boot/grub/themes/${DISTRONAME_ISOPROFILES,,}-live/theme.txt#g" {} + || true
 
-exit
-
-
 	# Apply Custom Profile Modifications
 	# Apply edition-specific removals
 	for remove_file in Root-remove Live-remove Mhwd-remove Desktop-remove; do
