@@ -364,8 +364,8 @@ jobs:
           replicate '='
           duf || true
           replicate '='
-          echo 'ls /mnt || true'
-          ls /mnt || true
+          echo 'ls -lha --color=auto /mnt || true'
+          ls -lha --color=auto /mnt || true
           replicate '='
 
   build:
@@ -557,7 +557,7 @@ jobs:
           # Calculate ISO MD5 Hash
           source /tmp/send_telegram_message.sh
           replicate '='
-          ls -lah
+          ls -lha --color=auto
           replicate '='
           msg "Calculating MD5 hash for ISO file ${ISO_PATH}"
           pushd "${{ env.WORK_PATH }}" || true
@@ -569,7 +569,7 @@ jobs:
             msg_warning "Error: ${{ env.ISO_BASENAME }} file not found at ${{ env.WORK_PATH }}"
             exit 1
           fi
-          ls -lah --color=auto
+          ls -lha --color=auto
           replicate '='
           popd || true
 
@@ -594,7 +594,7 @@ jobs:
             -d parse_mode="HTML"
 
           replicate '='
-          ls -lah
+          ls -lha --color=auto
 
           release=$(basename "${ISO_PATH}" .iso)
           release_name="${release}"
@@ -618,7 +618,7 @@ jobs:
 
           msg_info "ISO ${release} prepared for release"
           replicate '='
-          ls -lah
+          ls -lha --color=auto
           replicate '='
           # Debug
           msg_info "ISO_PATH (original): ${ISO_PATH}"
