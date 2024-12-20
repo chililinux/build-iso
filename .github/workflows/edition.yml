@@ -840,7 +840,7 @@ jobs:
 
           # Converte o tamanho do artefato para um formato legível
           if [[ -z "${artifact_size_in_bytes}" ]]; then
-            artifact_size_in_bytes=$(stat -c%s "${{ env.ISO_FULLNAME }}")
+            artifact_size_in_bytes=$(stat -c%s "${{ env.ISO_PATH }}")
           fi
           iso_size=$(numfmt --to=iec --suffix=B "${artifact_size_in_bytes}") || true
 
