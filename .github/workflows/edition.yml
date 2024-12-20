@@ -552,15 +552,12 @@ jobs:
         if: ${{ inputs.teste_input != true }}
         uses: actions/upload-artifact@v4
         with:
-          #name: Full_ISO_${{ steps.prepare-iso.outputs.release_name }}
-          #name: ${{ steps.prepare-iso.outputs.release_name }}
-          name: ${{ env.ISO_BASENAME }}
+          #name: ${{ env.ISO_BASENAME }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}
           path: |
             ${{ env.ISO_PATH }}
             ${{ env.ISO_PATH }}.md5
             ${{ env.ISO_PATH }}.pkgs
-            #${{ steps.prepare-iso.outputs.upload_path }}
-            #${{ env.ISO_FULLNAME }}.md5
           if-no-files-found: warn
           include-hidden-files: false
 
@@ -570,10 +567,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
+            ${{ steps.prepare-iso.outputs.upload_path }}
             ${{ env.ISO_PATH }}.md5
             ${{ env.ISO_PATH }}.pkgs
-            #${{ steps.prepare-iso.outputs.release_name }}.7z.*
-            ${{ steps.prepare-iso.outputs.upload_path }}
           tag_name: ${{ env.ISO_TAG_NAME }}
           name: ${{ steps.prepare-iso.outputs.release_name }}
           generate_release_notes: true
@@ -581,6 +577,7 @@ jobs:
             - **Data e Hora        :** ${{ env.START_TIME }}
             - **Arquivo ISO        :** ${{ env.ISO_BASENAME }}
             - **Arquivo MD5        :** ${{ env.ISO_BASENAME }}.md5
+            - **Arquivo PKGS       :** ${{ env.ISO_BASENAME }}.pkgs
             - **Nome do Repositório:** ${{ env.REPO_NAME }}
           draft: false
           prerelease: false
