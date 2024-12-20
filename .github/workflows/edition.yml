@@ -298,7 +298,8 @@ jobs:
       #image: talesam/community-build:1.4.1
       #image: talesam/community-build:1.3
       #image: talesam/community-build:1.5.1
-      image: talesam/community-build:1.6
+      #image: talesam/community-build:1.6
+      image: vcatafesta/build-iso:1.5.1
       options: --privileged
       volumes:
         - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
@@ -333,8 +334,8 @@ jobs:
       - name: Set up volume directory in CONTAINER
         run: |
           #Set up volume directory in HOST
-          mkdir -p /mnt/lfs
-          ln -sf /mnt/lfs /lfs
+          sudo mkdir -p /mnt/lfs
+          sudo ln -sf /mnt/lfs /lfs
 
       - name: Install Required Packages and Libraries no CONTAINER
         shell: bash
