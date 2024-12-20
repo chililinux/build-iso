@@ -643,12 +643,18 @@ jobs:
         if: ${{ inputs.teste_input != true }}
         run: |
           #Enviar arquivo ISO para o servidor via SCP com porta customizada
+          source /tmp/send_telegram_message.sh
+          replicate '='
+          msg_info "$PWD"
+          msg_info 'ls -lah --color=auto'
+          ls -lah --color=auto
+          replicate '='
           scp -P 65002 \
               -v \
               -o StrictHostKeyChecking=no \
               -i /root/.ssh/id_rsa \
-              ${{ env.ISO_FULLNAME }} \
-              ${{ env.ISO_FULLNAME }}.md5 \
+              ${{ env.ISO_PATH }} \
+              ${{ env.ISO_PATH }}.md5 \
               ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/download/iso
 
       - name: Telegram Alert Fail
