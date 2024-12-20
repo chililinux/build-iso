@@ -27,8 +27,12 @@
 ##############################################################################
 name: 💿 Build ISO
 
+# Gatilhos para o workflow
 on:
-  repository_dispatch:
+  #  push:
+  #    branches:
+  #      - main
+  repository_dispatch: # aguarda um evento externo para iniciar o workflow (útil para automações externas que acionam o GitHub Actions).
     types:
       - "ISO-*"
   workflow_dispatch:
@@ -137,6 +141,7 @@ on:
 env:
   TELEGRAM_TOKEN: "${{ secrets.TOKEN_BOT }}"
   #GITHUB_TOKEN: "${{ secrets.TOKEN_RELEASE }}"
+  #GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
   CHAT_ID: "${{ secrets.CHAT_ID }}"
   started_by_user: "${{ github.actor }}"
@@ -152,11 +157,24 @@ env:
   iso_release_tag: "${{ github.event.client_payload.release_tag || inputs.release_tag }}"
   iso_kernel: "${{ github.event.client_payload.kernel || inputs.kernel }}"
   iso_basename: "${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}"
+	vol_id: "${{ github.event.client_payload.vol_id || inputs.vol_id }}"
+  DEBUG: "${{ github.event.client_payload.tmate || inputs.tmate || false }}"
+  tmate: "${{ github.event.client_payload.tmate || inputs.tmate || false }}"
 
 jobs:
   setup:
     runs-on: ubuntu-latest
+    outputs:
+      time: ${{ steps.time.outputs.time }} # Saída do job
+      REPOSITORY_NAME: ${{ steps.get-repo-name.outputs.repo_name }}
     steps:
+      - name: Obter a hora atual
+        id: time
+        run: |
+          #Obter a hora atual
+          #echo "::set-output name=time::$(date +'%Y.%m.%d-%H%M')"
+          echo "time=$(date +'%Y.%m.%d-%H%M')" >> $GITHUB_OUTPUT
+
       - name: Capturar hora de início do workflow
         id: start-time
         shell: bash
@@ -169,16 +187,25 @@ jobs:
           echo "START_TIME='$START_TIME'"           >> shared_file.txt
           echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
 
-      - name: Install dependencies on HOST
+      - name: Install dependencies in HOST
         shell: bash
         run: |
+          #Install dependencies in HOST
           #sudo apt-get update
-          sudo apt-get autoremove
-          sudo apt-get install -y inetutils-tools
+          #sudo apt-get autoremove
+          #sudo apt-get install -y inetutils-tools duf tree tmate
+          sudo apt-get install -y inetutils-tools duf tree
 
-      - name: Set up volume directory on HOST
+      #      - name: Setup TMATE Session in HOST
+      #        uses: mxschmitt/action-tmate@v3
+      #        with:
+      #          install-dependencies: false
+      #          detached: true
+
+      - name: Set up volume directory in HOST
         shell: bash
         run: |
+          #Set up volume directory in HOST
           sudo mkdir -p /mnt/var_lib_manjaro_tools_buildiso
           sudo mkdir -p /mnt/var_cache_manjaro_tools_iso
           sudo mkdir -p /mnt/lfs
@@ -213,6 +240,7 @@ jobs:
           <b>ChiliLinux Branch:</b> <code>${iso_chililinux_branch}</code>
           <b>Release:</b> <code>${iso_release_tag}</code>
           <b>Kernel:</b> <code>${iso_kernel}</code>
+          <b>Tmate:</b> <code>${{ env.DEBUG }}</code>
           <b>ISO Name:</b> <code>${iso_distroname}_${iso_branch^^}_${iso_edition}_${iso_release_tag}</code>"
           # Remove as tags HTML e exibe o resultado no terminal
           echo -e "${green}$(sed 's/<[^>]*>//g' <<< "$MESSAGE")${reset}"
@@ -230,13 +258,20 @@ jobs:
       #          echo "START_TIMESTAMP='$START_TIMESTAMP'" >> shared_file.txt
       #          echo "ISO_BRANCH='$iso_branch'"           >> shared_file.txt
 
+      - name: Obter nome do repositório
+        id: get-repo-name
+        run: |
+          #Obter nome do repositório
+          #echo "::set-output name=repo_name::$(basename $GITHUB_REPOSITORY)"
+          echo "repo_name=$(basename $GITHUB_REPOSITORY)" >> $GITHUB_OUTPUT
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: shared-file
           path: shared_file.txt
 
-      - name: Display the current user in host
+      - name: Display the current user in HOST
         run: |
           # Display the current user in host
           echo "#########################################"
@@ -246,7 +281,8 @@ jobs:
           echo "Current user details:"
           id
           echo "#########################################"
-          df -hT
+          #df -hT
+          duf
           echo "#########################################"
           ls -lah --color=auto /mnt
           echo "#########################################"
@@ -255,6 +291,9 @@ jobs:
     name: Build ISO ${{ github.event.client_payload.distroname || inputs.distroname }} ${{ github.event.client_payload.edition || inputs.edition }}
     runs-on: ubuntu-latest
     needs: [setup] # Espera o job "setup" terminar
+    env:
+      #REPO_NAME: ${{ needs.set-repo-name.outputs.REPOSITORY_NAME }} # Acesso à variável de ambiente definida no job anterior
+      REPO_NAME: "${{ github.repository }}"
     container:
       #image: talesam/community-build:1.4.1
       #image: talesam/community-build:1.3
@@ -267,15 +306,15 @@ jobs:
         - /mnt/lfs:/mnt/lfs
 
     steps:
-      - name: Download artifact
+      - name: Download artifact shared-file
         uses: actions/download-artifact@v4
         with:
           name: shared-file
 
-      - name: Exibir conteúdo do arquivo e carregar variáveis
+      - name: Exibir e carregar variáveis do arquivo shared_file.txt no CONTAINER
         shell: bash
         run: |
-          #Exibir conteúdo do arquivo e carregar variáveis
+          #Exibir e carregar variáveis do arquivo shared_file.txt no CONTAINER
           cat shared_file.txt
           # Atribuir o conteúdo do arquivo à variável START_TIME
           #START_TIME="$(<shared_file.txt)"
@@ -285,16 +324,22 @@ jobs:
           echo "START_TIMESTAMP=$START_TIMESTAMP" >> $GITHUB_ENV
           echo "ISO_BRANCH=$ISO_BRANCH"           >> $GITHUB_ENV
 
-      - name: Checkout repository
+      - name: Checkout repository chililinux/build-iso
         uses: actions/checkout@v4
         with:
           #fetch-depth: 0    # All commit history is downloaded
           fetch-depth: 1 # Only the most recent commit of the branch will be downloaded
 
-      - name: Install some necessary packages
+      - name: Set up volume directory in CONTAINER
+        run: |
+          #Set up volume directory in HOST
+          mkdir -p /mnt/lfs
+          ln -sf /mnt/lfs /lfs
+
+      - name: Install Required Packages and Libraries no CONTAINER
         shell: bash
         run: |
-          # Install some necessary packages
+          #Install Required Packages and Libraries no CONTAINER
           sudo pacman -Sy p7zip inetutils tree --needed --quiet --noconfirm >/dev/null
 
       - name: Set up aliases
@@ -325,27 +370,29 @@ jobs:
           # Carrega o .bashrc para aplicar os aliases na sessão atual
           source $HOME/.bashrc
 
-      - name: Initial Debug
+      - name: Initial Debug in CONTAINER
         run: |
+          #Initial Debug
           echo "Workflow started"
-      #          echo "Event Name: ${{ github.event_name }}"
-      #          echo "Event Action: ${{ github.event.action }}"
-      #          echo "Edition: ${{ github.event.client_payload.edition || inputs.edition }}"
-      #          echo "Tmate from payload: ${{ github.event.client_payload.tmate }}"
-      #          echo "Full github event: ${{ toJson(github.event) }}"
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Event Action: ${{ github.event.action }}"
+          echo "Edition: ${{ github.event.client_payload.edition || inputs.edition }}"
+          echo "Tmate from payload: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}"
+          echo "Full github event: ${{ toJson(github.event) }}"
 
       - name: Display the current user in CONTAINER
         shell: bash
         run: |
-          # Display the current user in CONTAINER
+          #Display the current user in CONTAINER
           echo "#########################################"
-          echo "Current host is: $(hostname)"
+          echo "Current container is: $(hostname)"
           echo "Current user is: $(whoami)"
           echo "Current user ID is: $(id -u)"
           echo "Current user details:"
           id
           echo "#########################################"
-          df -hT
+          #df -hT
+          duf
           echo "#########################################"
           ls -lah --color=auto /mnt
           echo "#########################################"
@@ -392,6 +439,7 @@ jobs:
           start_time: "${{ env.START_TIME }}"
           start_timestamp: "${{ env.START_TIMESTAMP }}"
 
+      #ponto de retorno do action.yml
       - name: Set ISO path
         shell: bash
         run: |
@@ -417,16 +465,18 @@ jobs:
           ls -lah
           replicate '='
           msg "Calculating MD5 hash for ISO file ${ISO_PATH}"
-          if [[ -f "${ISO_PATH}" ]]; then
-            md5sum "${ISO_PATH}" > "${ISO_PATH}.md5"
-            msg_info "MD5 hash calculated and saved:"
-            cat "${ISO_PATH}".md5
+          pushd "${{ env.WORK_PATH }}" || true
+          if [[ -f "${{ env.ISO_BASENAME }}" ]]; then
+            md5sum "${{ env.ISO_BASENAME }}" > "${{ env.ISO_BASENAME }}.md5"
+            msg_info "MD5 '$ISO_BASENAME.md5' hash calculated and saved:"
+            cat "${{ env.ISO_BASENAME }}.md5"
           else
-            msg_warning "Error: ISO file not found at ${ISO_PATH}"
+            msg_warning "Error: ${{ env.ISO_BASENAME }} file not found at ${{ env.WORK_PATH }}"
             exit 1
           fi
-          ls -lah
+          ls -lah --color=auto
           replicate '='
+          popd || true
 
       - name: Prepare ISO for release (7z)
         id: prepare-iso
@@ -450,42 +500,88 @@ jobs:
 
           replicate '='
           ls -lah
+
           release=$(basename "${ISO_PATH}" .iso)
-          7z a -v2000m ${release}.7z "${ISO_PATH}" # Compacta e divide em partes de 2000 MB
-          echo "release_name=${release}" >> "$GITHUB_OUTPUT"
-          msg_info "ISO prepared for release"
+          release_name="${release}"
+
+          # Obtém o tamanho do arquivo em bytes
+          file_size=$(stat -c%s "${ISO_PATH}")
+
+          # Verifica se o tamanho é maior que 2000 MB (2000 * 1024 * 1024 bytes)
+          if (( file_size > 2000 * 1024 * 1024 )); then
+            msg_info "O arquivo é maior que 2000 MB. Compactando e dividindo..."
+            7z a -v2000m "${release}.7z" "${ISO_PATH}" # Compacta e divide em partes de 2000 MB
+            upload_path="${release}.7z*"
+          else
+            msg_info "O arquivo não é maior que 2000 MB. Não será compactado."
+            upload_path="${ISO_PATH}"
+          fi
+
+          echo "release=${release}"         >> "$GITHUB_OUTPUT"
+          echo "release_name=${release}"    >> "$GITHUB_OUTPUT"
+          echo "upload_path=${upload_path}" >> "$GITHUB_OUTPUT"
+
+          msg_info "ISO ${release} prepared for release"
           replicate '='
           ls -lah
           replicate '='
           # Debug
-          echo "ISO_PATH (original): ${ISO_PATH}"
-          echo "ISO_PATH (md5)     : ${ISO_PATH}.md5"
-          echo "ISO_PATH (pkgs)    : ${ISO_PATH}.pkgs"
-          echo "release            : ${release}"
-          echo "release_name       : ${release_name}"
+          msg_info "ISO_PATH (original): ${ISO_PATH}"
+          msg_info "Upload Path        : ${upload_path}"
+          msg_info "ISO_PATH (md5)     : ${ISO_PATH}.md5"
+          msg_info "release            : ${release}"
+          msg_info "release_name       : ${release_name}"
           replicate '='
 
+      - name: Verificar se o arquivo .iso foi gerado corretamente
+        if: ${{ inputs.teste_input != true }}
+        shell: bash
+        run: |
+          # Verificar se o arquivo .iso foi gerado corretamente
+          source /tmp/send_telegram_message.sh
+          replicate '='
+          pushd "${{ env.WORK_PATH }}" || true
+          msg_info 'ls -lah --color=auto'
+          ls -lah --color=auto
+          replicate '='
+          popd || true
+
       - name: Upload ISO as artifact
+        if: ${{ inputs.teste_input != true }}
         uses: actions/upload-artifact@v4
         with:
           #name: Full_ISO_${{ steps.prepare-iso.outputs.release_name }}
-          name: ${{ steps.prepare-iso.outputs.release_name }}
+          #name: ${{ steps.prepare-iso.outputs.release_name }}
+          name: ${{ env.ISO_BASENAME }}
           path: |
-            ${{ env.ISO_PATH }}
-            ${{ env.ISO_PATH }}.md5
-            ${{ env.ISO_PATH }}.pkgs
+            ${{ env.ISO_FULLNAME }}
+            ${{ env.ISO_FULLNAME }}.md5
+            #${{ steps.prepare-iso.outputs.upload_path }}
+            #${{ env.ISO_FULLNAME }}.md5
+          if-no-files-found: warn
+          include-hidden-files: false
 
       - name: Create Release
+        if: ${{ inputs.teste_input != true }}
+        id: create_release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             ${{ env.ISO_PATH }}.md5
             ${{ env.ISO_PATH }}.pkgs
-            ${{ steps.prepare-iso.outputs.release_name }}.7z.*
-          #tag_name: ${{ github.event.client_payload.release_tag || inputs.release_tag }}
-          tag_name: ${{ env.RELEASE_TAG }}
+            #${{ steps.prepare-iso.outputs.release_name }}.7z.*
+            ${{ steps.prepare-iso.outputs.upload_path }}
+          tag_name: ${{ env.ISO_TAG_NAME }}
           name: ${{ steps.prepare-iso.outputs.release_name }}
           generate_release_notes: true
+          body: |
+            - **Data e Hora        :** ${{ env.START_TIME }}
+            - **Arquivo ISO        :** ${{ env.ISO_BASENAME }}
+            - **Arquivo MD5        :** ${{ env.ISO_BASENAME }}.md5
+            - **Nome do Repositório:** ${{ env.REPO_NAME }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
 
       - name: Get Artifact URL
         id: get-artifact-url
@@ -515,6 +611,28 @@ jobs:
             artifact_url=https://github.com/$REPO/actions/runs/$RUN_ID/artifacts/$artifact_id
             echo "artifact_url=$artifact_url" >> $GITHUB_ENV
             echo "Artifact URL: $artifact_url"
+
+      - name: Configurar chave SSH e Adicionar chave do host remoto ao known_hosts
+        if: ${{ inputs.teste_input != true }}
+        run: |
+          #Configurar chave SSH e Adicionar chave do host remoto ao known_hosts
+          mkdir -p /root/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > /root/.ssh/id_rsa
+          chmod 600 /root/.ssh/id_rsa
+          ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} >> /root/.ssh/known_hosts
+          ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} >> /root/.ssh/known_hosts2
+
+      - name: Enviar arquivo ISO para o servidor via SCP com porta customizada
+        if: ${{ inputs.teste_input != true }}
+        run: |
+          #Enviar arquivo ISO para o servidor via SCP com porta customizada
+          scp -P 65002 \
+              -v \
+              -o StrictHostKeyChecking=no \
+              -i /root/.ssh/id_rsa \
+              ${{ env.ISO_FULLNAME }} \
+              ${{ env.ISO_FULLNAME }}.md5 \
+              ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/home/${{ secrets.SERVER_USER }}/void/iso
 
       - name: Telegram Alert Fail
         if: failure()
@@ -601,7 +719,10 @@ jobs:
           file_name="${{ steps.prepare-iso.outputs.release_name }}"
 
           # Converte o tamanho do artefato para um formato legível
-          iso_size=$(numfmt --to=iec --suffix=B "${artifact_size_in_bytes}")
+          if [[ -z "${artifact_size_in_bytes}" ]]; then
+            artifact_size_in_bytes=$(stat -c%s "${{ env.ISO_FULLNAME }}")
+          fi
+          iso_size=$(numfmt --to=iec --suffix=B "${artifact_size_in_bytes}") || true
 
           # Prepara a mensagem
           MESSAGE="⏳ <b>[step 3/3] Job <code>#${GITHUB_RUN_NUMBER}</code> finalizado em:</b> <code>${hours}h ${minutes}m ${seconds}s</code>

@@ -86,7 +86,7 @@ configure_vars() {
 	declare -g ORGANIZATION='<local>'
 	declare -g REPO_WORKFLOW='<local>'
 	declare -g DISTRONAME='chililinux'
-	declare -g EDITION='base'
+	declare -g EDITION='bootstrap'
 	declare -g KERNEL='lts'
 	declare -g TMATE=true
 	declare -g DEBUG=true
@@ -1067,6 +1067,7 @@ configure_repositories_and_build_environment() {
   # Acessa dinamicamente a variável correspondente ao DISTRONAME_BRANCH
   BRANCH_VAR="${DISTRONAME^^}_BRANCH" # Converte DISTRONAME para maiúsculas
   BRANCH="${!BRANCH_VAR}"             # Expande o valor da variável com esse nome
+
   if [[ "$BRANCH" == "stable" ]]; then
     msg_info "sed -i 's/-Xcompression-level [0-9]\+/-Xcompression-level 22/g' /usr/lib/manjaro-tools/util-iso.sh"
     sudo sed -i 's/-Xcompression-level [0-9]\+/-Xcompression-level 22/g' /usr/lib/manjaro-tools/util-iso.sh
