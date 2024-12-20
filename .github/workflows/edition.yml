@@ -364,8 +364,8 @@ jobs:
           replicate '='
           duf || true
           replicate '='
-          echo 'ls -la /mnt || true'
-          ls -la /mnt || true
+          echo 'ls /mnt || true'
+          ls /mnt || true
           replicate '='
 
   build:
@@ -461,36 +461,38 @@ jobs:
 
           echo "alias ll='ls -lah --color=auto'" >> $HOME/.bashrc
           echo "alias gs='git status'"           >> $HOME/.bashrc
-          # Carrega o .bashrc para aplicar os aliases na sessão atual
-          source $HOME/.bashrc
 
       - name: Initial Debug in CONTAINER
         run: |
           #Initial Debug
-          echo "Workflow started"
-          echo "Event Name: ${{ github.event_name }}"
-          echo "Event Action: ${{ github.event.action }}"
-          echo "Edition: ${{ github.event.client_payload.edition || inputs.edition }}"
-          echo "Tmate from payload: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}"
-          echo "Full github event: ${{ toJson(github.event) }}"
+          source /tmp/send_telegram_message.sh
+          replicate '='
+          msg_raw "Workflow started"
+          msg_raw "Event Name: ${{ github.event_name }}"
+          msg_raw "Event Action: ${{ github.event.action }}"
+          msg_raw "Edition: ${{ github.event.client_payload.edition || inputs.edition }}"
+          msg_raw "Tmate from payload: ${{ github.event.client_payload.tmate || inputs.tmate != false && inputs.tmate }}"
+          msg_raw "Full github event: ${{ toJson(github.event) }}"
+          replicate '='
 
       - name: Display the current user in CONTAINER
         shell: bash
         run: |
           #Display the current user in CONTAINER
-          echo "#########################################"
-          echo "Current container is: $(hostname)"
-          echo "Current user is: $(whoami)"
-          echo "Current user ID is: $(id -u)"
-          echo "Current user details:"
+          source /tmp/send_telegram_message.sh
+          replicate '#'
+          msg_raw "Current container is: $(hostname)"
+          msg_raw "Current user is: $(whoami)"
+          msg_raw "Current user ID is: $(id -u)"
+          msg_raw "Current user details:"
           id
-          echo "#########################################"
+          replicate '#'
           duf || true
-          echo "#########################################"
+          replicate '#'
           ls -lah --color=auto /mnt
-          echo "#########################################"
+          replicate '#'
           tree -d /mnt
-          echo "#########################################"
+          replicate '#'
 
       - name: Set release tag manually
         id: date
