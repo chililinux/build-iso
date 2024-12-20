@@ -1,6 +1,6 @@
 #  edition.yml
 #  Created: 2024/09/15 - 08:10
-#  Altered: qua 20 nov 2024 10:00:22 -04
+#  Altered: qui 19 dez 2024 23:39:36 -04
 #
 #  Copyright (c) 2024-2024, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -553,7 +553,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           #name: ${{ env.ISO_BASENAME }}
-          name: ${{ steps.prepare-iso.outputs.release_name }}
+          name: ${{ steps.prepare-iso.outputs.release_name }}.zip
           path: |
             ${{ env.ISO_PATH }}
             ${{ env.ISO_PATH }}.md5
