@@ -406,22 +406,13 @@ runs:
       run: |
         # Loading script and building ISO
         if [[ ! -x "$WORK_PATH/usr/bin/mkiso-build" ]]; then
-          echo "ERROR(ACTION.YML/L316): Script $WORK_PATH/usr/bin/mkiso-build not found or size zero!"
+          echo "ERROR(action.yml/L316): Script $WORK_PATH/usr/bin/mkiso-build not found or size zero!"
           exit 1
         fi
         pushd "$WORK_PATH" || true
         #source "$WORK_PATH/usr/bin/mkiso-build"
         #make_iso
         ./usr/bin/mkiso-build --automatic
-
-    - name: Extrair data do nome do arquivo .iso e definir tag_name
-      if: ${{ inputs.teste_input != true }}
-      id: set-tag-name
-      shell: bash
-      run: |
-        FILENAME="$ISO_BASENAME"
-        TAG_NAME=$(echo "$FILENAME" | grep -oP '\d{8}')-$(date +%H%M)
-        echo "ISO_TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
 
     - name: Set ISO path
       shell: bash

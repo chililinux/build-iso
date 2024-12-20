@@ -570,7 +570,7 @@ jobs:
             ${{ steps.prepare-iso.outputs.upload_path }}
             ${{ env.ISO_PATH }}.md5
             ${{ env.ISO_PATH }}.pkgs
-          tag_name: ${{ env.ISO_TAG_NAME }}
+          tag_name: ${{ env.RELEASE_TAG }}
           name: ${{ steps.prepare-iso.outputs.release_name }}
           generate_release_notes: true
           body: |
