@@ -414,7 +414,18 @@ runs:
         #make_iso
         ./usr/bin/mkiso-build --automatic
 
+    - name: Extrair data do nome do arquivo .iso e definir tag_name
+      if: ${{ inputs.teste_input != true }}
+      id: set-tag-name
+      shell: bash
+      run: |
+        FILENAME="$ISO_BASENAME"
+        TAG_NAME=$(echo "$FILENAME" | grep -oP '\d{8}')-$(date +%H%M)
+        echo "ISO_TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
+
     - name: Set ISO path
       shell: bash
       run: |
+        # Set outputs
+        echo "iso_path=$WORK_PATH/$ISO_BASENAME" >> "$GITHUB_OUTPUT"
         echo "ISO_PATH=$WORK_PATH/$ISO_BASENAME" >> $GITHUB_ENV

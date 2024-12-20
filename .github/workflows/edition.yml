@@ -530,6 +530,7 @@ jobs:
           msg_info "ISO_PATH (original): ${ISO_PATH}"
           msg_info "Upload Path        : ${upload_path}"
           msg_info "ISO_PATH (md5)     : ${ISO_PATH}.md5"
+          msg_info "ISO_PATH (pkgs)    : ${ISO_PATH}.pkgs"
           msg_info "release            : ${release}"
           msg_info "release_name       : ${release_name}"
           replicate '='
@@ -555,8 +556,9 @@ jobs:
           #name: ${{ steps.prepare-iso.outputs.release_name }}
           name: ${{ env.ISO_BASENAME }}
           path: |
-            ${{ env.ISO_FULLNAME }}
-            ${{ env.ISO_FULLNAME }}.md5
+            ${{ env.ISO_PATH }}
+            ${{ env.ISO_PATH }}.md5
+            ${{ env.ISO_PATH }}.pkgs
             #${{ steps.prepare-iso.outputs.upload_path }}
             #${{ env.ISO_FULLNAME }}.md5
           if-no-files-found: warn
