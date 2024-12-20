@@ -612,17 +612,32 @@ jobs:
             echo "artifact_url=$artifact_url" >> $GITHUB_ENV
             echo "Artifact URL: $artifact_url"
 
-      - name: Configurar chave SSH e Adicionar chave do host remoto ao known_hosts
+      - name: Configurar chave SSH e Adicionar chave do host remoto ao known_hosts do user builduser
+        if: inputs.teste_input != 'true'
+        run: |
+          # Configurar chave SSH
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tee ~/.ssh/id_rsa > /dev/null
+          chmod 600 ~/.ssh/id_rsa
+
+          # Adicionar chave do host remoto ao known_hosts
+          ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts2
+
+      - name: Configurar chave SSH e Adicionar chave do host remoto ao known_hosts do user root
         if: ${{ inputs.teste_input != true }}
         run: |
           #Configurar chave SSH e Adicionar chave do host remoto ao known_hosts
           sudo mkdir -p /root/.ssh
           sudo chmod 700 /root/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" | sudo tee /root/.ssh/id_rsa > /dev/null
-          sudo chmod 700 /root/.ssh/id_rsa
+          sudo chmod 600 /root/.ssh/id_rsa
           # Adicionar chave do host remoto ao known_hosts
-          sudo ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} >> /root/.ssh/known_hosts
-          sudo ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} >> /root/.ssh/known_hosts2
+          echo | sudo tee -a /root/.ssh/known_hosts > /dev/null
+          echo | sudo tee -a /root/.ssh/known_hosts2 > /dev/null
+          sudo ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} | sudo tee -a /root/.ssh/known_hosts
+          sudo ssh-keyscan -p 65002 -H ${{ secrets.SERVER_HOST }} | sudo tee -a /root/.ssh/known_hosts2
 
       - name: Enviar arquivo ISO para o servidor via SCP com porta customizada
         if: ${{ inputs.teste_input != true }}
