@@ -157,7 +157,7 @@ env:
   iso_release_tag: "${{ github.event.client_payload.release_tag || inputs.release_tag }}"
   iso_kernel: "${{ github.event.client_payload.kernel || inputs.kernel }}"
   iso_basename: "${iso_distroname}_${iso_branch}_${iso_edition}_${iso_release_tag}"
-	vol_id: "${{ github.event.client_payload.vol_id || inputs.vol_id }}"
+  vol_id: "${{ github.event.client_payload.vol_id || inputs.vol_id }}"
   DEBUG: "${{ github.event.client_payload.tmate || inputs.tmate || false }}"
   tmate: "${{ github.event.client_payload.tmate || inputs.tmate || false }}"
 
