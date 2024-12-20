@@ -553,7 +553,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           #name: ${{ env.ISO_BASENAME }}
-          name: ${{ steps.prepare-iso.outputs.release_name }}.zip
+          name: ${{ steps.prepare-iso.outputs.release_name }}
           path: |
             ${{ env.ISO_PATH }}
             ${{ env.ISO_PATH }}.md5
