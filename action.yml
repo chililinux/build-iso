@@ -132,7 +132,7 @@ runs:
         TELEGRAM_CHAT_ID: "${{ inputs.telegram_chat_id }}"
       run: |
         #Definir a função send_telegram_message no script temporário
-        cat << 'EOF' > /tmp/send_telegram_message.sh
+        cat << 'EOF' > /tmp/send_telegram_message_new.sh
         export TERM=${TERM:-xterm}
         export TERM=${TERM:-xterm-256color}
 
@@ -202,8 +202,7 @@ runs:
         echo -e "${cyan}Current user ID is  : ${yellow}$(id -u)${reset}"
         echo -e "${cyan}Current user details: ${yellow}$(id)${reset}"
         replicate '='
-        echo 'df -hT || true'
-        df -hT || true
+        duf || true
         replicate '='
         echo 'ls -la /mnt || true'
         ls -la /mnt || true
