@@ -160,6 +160,8 @@ env:
   vol_id: "${{ github.event.client_payload.vol_id || inputs.vol_id }}"
   DEBUG: "${{ github.event.client_payload.tmate || inputs.tmate || false }}"
   tmate: "${{ github.event.client_payload.tmate || inputs.tmate || false }}"
+  ACTIONS_STEP_DEBUG: true
+  ACTIONS_RUNNER_DEBUG: true
 
 jobs:
   setup:
@@ -380,7 +382,8 @@ jobs:
       #image: talesam/community-build:1.3
       #image: talesam/community-build:1.5.1
       #image: talesam/community-build:1.6
-      image: vcatafesta/build-iso:1.5.1
+      #image: vcatafesta/build-iso:1.5.1
+      image: vcatafesta/build-iso:1.6
       options: --privileged
       volumes:
         - /mnt/var_lib_manjaro_tools_buildiso:/var/lib/manjaro-tools/buildiso
@@ -461,6 +464,8 @@ jobs:
 
           echo "alias ll='ls -lah --color=auto'" >> $HOME/.bashrc
           echo "alias gs='git status'"           >> $HOME/.bashrc
+          # Carrega o .bashrc para aplicar os aliases na sessão atual
+          source $HOME/.bashrc
 
       - name: Initial Debug in CONTAINER
         run: |
