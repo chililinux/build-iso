@@ -86,7 +86,7 @@ configure_vars() {
 	declare -g ORGANIZATION='<local>'
 	declare -g REPO_WORKFLOW='<local>'
 	declare -g DISTRONAME='chililinux'
-	declare -g EDITION='bootstrap'
+	declare -g EDITION='cinnamon'
 	declare -g KERNEL='lts'
 	declare -g TMATE=true
 	declare -g DEBUG=true
