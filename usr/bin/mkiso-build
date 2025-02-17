@@ -84,7 +84,7 @@ configure_vars() {
 	declare -g DISTRONAME='chililinux'
 	declare -g BUILD_DIR='chililinux'
 	if ! $VALUE_DEFAULT; then
-		declare -g EDITION='xfce'
+		declare -g EDITION='server'
 	fi
 	declare -g KERNEL='lts'
 	declare -g TMATE=true
@@ -94,11 +94,11 @@ configure_vars() {
 	declare -g USERNAME="$USER"
 	declare -g GITHUB_USER_NAME="$USERNAME"
 	declare -g HOME_FOLDER="/home/$USERNAME"
-	declare -g BIGCOMMUNITY_BRANCH=''
+	declare -g BIGCOMMUNITY_BRANCH='testing'
 	declare -g BIGLINUX_BRANCH='stable'
 	declare -g CHILILINUX_BRANCH='stable'
 	declare -g MANJARO_BRANCH='stable'
-	declare -g ISO_PROFILES_REPO='https://github.com/chililinux/iso-profiles'
+	declare -g ISO_PROFILES_REPO="https://github.com/${DISTRONAME}/iso-profiles"
 	declare -g DISTRONAME_ISOPROFILES
 
 	if ! $PARAM_DEFAULT; then
@@ -502,8 +502,8 @@ msg_info() {
 }
 
 msg_sub() {
-	local msg="$1"
-	echo -e "              =>${green}${msg}${reset}"
+  local msg="$1"
+  echo -e "               >${green}${msg}${reset}"
 }
 
 msg_raw() {
@@ -651,14 +651,14 @@ create_menu_with_array() {
 		fi
 
 		if $IS_BUILD_ISO_RESUME; then
-			msg_info "Distroname     : ${green}$DISTRONAME${reset}"
-			msg_info "Edition        : ${green}$EDITION${reset}"
-			msg_info "Iso-Profiles   : ${green}$ISO_PROFILES_REPO${reset}"
-			msg_info "Br Manjaro     : ${green}$MANJARO_BRANCH${reset}"
-			msg_info "Br BigLinux    : ${green}$BIGLINUX_BRANCH${reset}"
-			msg_info "Br BigCommunity: ${green}$BIGCOMMUNITY_BRANCH${reset}"
-			msg_info "Br ChiliLinux  : ${green}$CHILILINUX_BRANCH${reset}"
-			msg_info "Kernel         : ${green}$KERNEL${reset}"
+			msg_info "DISTRONAME         : ${green}$DISTRONAME${reset}"
+			msg_info "EDITION            : ${green}$EDITION${reset}"
+			msg_info "ISO_PROFILES       : ${green}$ISO_PROFILES_REPO${reset}"
+			msg_info "MANJARO_BRANCH     : ${green}$MANJARO_BRANCH${reset}"
+			msg_info "BIGCOMMUNITY_BRANCH: ${green}$BIGCOMMUNITY_BRANCH${reset}"
+			msg_info "CHILILINUX_BRANCH  : ${green}$CHILILINUX_BRANCH${reset}"
+			msg_info "BIGLINUX_BRANCH    : ${green}$BIGLINUX_BRANCH${reset}"
+			msg_info "KERNEL             : ${green}$KERNEL${reset}"
 			echo '---------------------------------------------------------------------------------'
 		fi
 		echo -e "${BLUE}${BOLD}$title${NC}\n"
@@ -1089,7 +1089,6 @@ add_repositorys_only_install() {
 	msg 'Configurando repositórios do BigCommunity'
 	case "$BIGCOMMUNITY_BRANCH" in
 	stable)
-		#add_biglinux-update-stable | sudo tee -a "$arquivo_conf" >/dev/null
 		add_community-stable | sudo tee -a "$arquivo_conf" >/dev/null
 		add_community-testing | sudo tee -a "$arquivo_conf" >/dev/null
 		add_community-extra | sudo tee -a "$arquivo_conf" >/dev/null
@@ -1533,16 +1532,11 @@ add_repos_to_pacman_conf_into_iso_distro() {
 	# Community repositories
 	if [[ "${DISTRONAME,,}" == "bigcommunity" ]]; then
 		if [[ "${bigcommunity_branch,,}" == "testing" ]]; then
-			msg_sub 'add_community-testing | sudo tee -a "$config_file" >/dev/null'
 			add_community-testing | sudo tee -a "$config_file" >/dev/null
-			msg_sub 'add_community-stable | sudo tee -a "$config_file" >/dev/null'
 			add_community-stable | sudo tee -a "$config_file" >/dev/null
-			msg_sub 'add_community-extra | sudo tee -a "$config_file" >/dev/null'
 			add_community-extra | sudo tee -a "$config_file" >/dev/null
 		else
-			msg_sub 'add_community-stable | sudo tee -a "$config_file" >/dev/null'
 			add_community-stable | sudo tee -a "$config_file" >/dev/null
-			msg_sub 'add_community-extra | sudo tee -a "$config_file" >/dev/null'
 			add_community-extra | sudo tee -a "$config_file" >/dev/null
 		fi
 	fi
@@ -1550,17 +1544,12 @@ add_repos_to_pacman_conf_into_iso_distro() {
 	# Chililinux repositories
 	if [[ "${DISTRONAME,,}" == "chililinux" ]]; then
 		if [[ "${chililinux_branch,,}" == "testing" ]]; then
-			msg_sub 'add_chili-testing | sudo tee -a "$config_file" 1>/dev/null'
-			add_chili-testing | sudo tee -a "$config_file" 1>/dev/null
-			msg_sub 'add_chili-stable | sudo tee -a "$config_file" 1>/dev/null'
-			add_chili-stable | sudo tee -a "$config_file" 1>/dev/null
-			msg_sub 'add_chili-extra | sudo tee -a "$config_file" 1>/dev/null'
-			add_chili-extra | sudo tee -a "$config_file" 1>/dev/null
+			add_chili-testing | sudo tee -a "$config_file" >/dev/null
+			add_chili-stable | sudo tee -a "$config_file" >/dev/null
+			add_chili-extra | sudo tee -a "$config_file" >/dev/null
 		else
-			msg_sub 'add_chili-stable | sudo tee -a "$config_file" 1>/dev/null'
-			add_chili-stable | sudo tee -a "$config_file" 1>/dev/null
-			msg_sub 'add_chili-extra | sudo tee -a "$config_file" 1>/dev/null'
-			add_chili-extra | sudo tee -a "$config_file" 1>/dev/null
+			add_chili-stable | sudo tee -a "$config_file" >/dev/null
+			add_chili-extra | sudo tee -a "$config_file" >/dev/null
 		fi
 	fi
 
@@ -1797,7 +1786,7 @@ make_iso() {
 	start_time=$(date +%s) # Obtém o tempo de início em segundos desde a época Unix
 	start_datetime=$(date)
 
-	msg_info "Construindo com nome de usuário '$USERNAME'"
+	msg_info "Construindo ISO como usuário '$USERNAME'"
 	sh_install_manjaro_build_packages
 	checkout_iso-profiles_and_clean_directories
 	check_directories_and_path
@@ -1872,14 +1861,15 @@ for arg in "$@"; do
 		#configure_vars
 		#make_iso
 	elif [[ "$arg" = @(-d|--defa|--default) ]]; then
-		if [[ "$2" =~ ^(base|bootstrap|cinnamon|cosmic|deepin|fullx|gnome|hyprland|i3|kde|wmaker|xfce)?$ ]]; then
+		if [[ "$2" = @(base|bootstrap|cinnamon|cosmic|deepin|fullx|gnome|hyprland|i3|kde|wmaker|xfce|server) ]]; then
 			declare -g EDITION="$2"
 			VALUE_DEFAULT=true
 			msg_info "Definindo EDITION=${yellow}${EDITION}${reset}"
 			sleep 2
 			shift
 		else
-			die "Argumento inválido para --default. Use ${yellow}base|bootstrap|cinnamon|cosmic|deepin|fullx|gnome|hyprland|i3|kde|wmaker|xfce${reset}"
+			die "Argumento inválido para ${cyan}--default${rst}.\n" \
+"    Use ${yellow}base|bootstrap|cinnamon|cosmic|deepin|fullx|gnome|hyprland|i3|kde|wmaker|xfce${reset}"
 		fi
 		PARAM_DEFAULT=true
 		break
