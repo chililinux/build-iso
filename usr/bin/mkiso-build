@@ -2309,7 +2309,7 @@ for arg in "$@"; do
 		ccabec="$APP --default"
 		sh_get_all_custom_perfil
 		Names="${!ACustomPerfilKey[*]}"
-    if [[ -n "$2" && "${Names}" =~ " $2 " ]]; then
+    if [[ -n "$2" && "${Names}" =~ "$2" ]]; then
 			var="$2"
 			perfil_name="${var%"${var##*[![:space:]]}"}"
 			IS_AUTO=false
