@@ -2324,6 +2324,8 @@ for arg in "$@"; do
 #					print "${yellow}nenhum perfil disponível"
 #			) ${rst}" >&2
       get_perfil
+			PARAM_DEFAULT=true
+      shift
 		fi
 		break
 	else
