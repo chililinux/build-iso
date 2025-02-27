@@ -245,7 +245,7 @@ resume_and_build() {
 	if $IS_ADD_PERFIL; then
 		if conf "${YELLOW}Deseja gravar o perfil?"; then
 			local get_perfil_name
-			local def_perfil_name="$DISTRONAME-$BUILD_DIR-$EDITION"
+			local def_perfil_name="$DISTRONAME-$EDITION-$KERNEL"
 			local nRow=21
 
 			while true; do
