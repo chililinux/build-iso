@@ -8,7 +8,7 @@
 #
 #  Created: ter 24 set 2024 04:26:12 -04
 #  Altered: dom 08 dez 2024 23:39:02 -04
-#  Updated: qui 27 fev 2025 23:55:11 -04
+#  Updated: qui 03 abr 2025 22:10:35 -04
 #
 #  Copyright (c) 2024-2025, Vilmar Catafesta <vcatafesta@gmail.com>
 #  All rights reserved.
@@ -35,7 +35,7 @@
 ##############################################################################
 declare APP="${0##*/}"
 declare APPDESC="Wrapper bash para o buildiso"
-declare VERSION="1.02.27"
+declare VERSION="1.04.03"
 export TERM=${TERM:-xterm}
 export TERM=${TERM:-xterm-256color}
 declare IS_AUTO=false
@@ -59,13 +59,13 @@ declare -A ACustomPerfilKey
 configure_base_vars() {
 	# Declare variáveis de ambiente
 	# somente ativada quando rodar manualmente (-m), no github não é necessário
-	aDistros=('bigcommunity' 'biglinux' 'chililinux' 'manjaro' 'Sair')
+	aDistros=('chililinux' 'bigcommunity' 'biglinux' 'manjaro' 'Sair')
 	aBranchs=('stable' 'testing' 'unstable' 'Sair')
 	aKernels=('latest' 'lts' 'oldlts' 'xanmod' 'Sair')
 	aProfiles=(
+		'https://github.com/chililinux/iso-profiles'
 		'https://github.com/communitybig/iso-profiles'
 		'https://github.com/biglinux/iso-profiles'
-		'https://github.com/chililinux/iso-profiles'
 		'https://gitlab.manjaro.org/profiles-and-settings/iso-profiles.git'
 		'https://github.com/vcatafesta/iso-profiles'
 	)
